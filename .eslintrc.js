@@ -2,13 +2,29 @@ module.exports = {
   env: {
     browser: true,
     es2021: true,
-    node: true,
+    node: true
   },
-  extends: ["standard-with-typescript", "prettier"],
+  extends: [
+    "eslint:recommended",
+    "plugin:@typescript-eslint/recommended",
+    "plugin:@typescript-eslint/interface-name-prefix"
+  ],
   overrides: [],
+  parser: "@typescript-eslint/parser",
   parserOptions: {
     ecmaVersion: "latest",
-    sourceType: "module",
+    sourceType: "module"
   },
-  rules: {},
+  plugins: ["@typescript-eslint"],
+  rules: {
+    complexity: ["warning", 10],
+    indent: ["error", 2],
+    "linebreak-style": ["error", "windows"],
+    quotes: ["error", "double"],
+    semi: ["error", "always"],
+    "@typescript-eslint/interface-name-prefix": [
+      "error",
+      { prefixWithI: "always" }
+    ]
+  }
 };
