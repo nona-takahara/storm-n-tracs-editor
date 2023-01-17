@@ -2,6 +2,7 @@
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^5.48.2",
     "@typescript-eslint/parser": "^5.48.2",
+    "cpx": "^1.5.0",
     "electron": "^22.0.2",
     "eslint": "^8.32.0",
     "eslint-config-prettier": "^8.6.0",
@@ -9,7 +10,9 @@
     "eslint-plugin-import": "^2.27.5",
     "eslint-plugin-n": "^15.6.1",
     "eslint-plugin-promise": "^6.1.1",
+    "npm-run-all": "^4.1.5",
     "prettier": "^2.8.3",
+    "sass": "^1.57.1",
     "typescript": "^4.9.4"
   },
   "name": "storm-n-tracs-editor",
@@ -17,7 +20,13 @@
   "version": "0.1.0",
   "main": "dist/index.js",
   "scripts": {
-    "start": "electron ."
+    "prestart": "npm-run-all build:rm build",
+    "start": "electron .",
+    "build": "npm-run-all --parallel build:scss build:ts build:copy",
+    "build:scss": "sass src:dist",
+    "build:rm": "rimraf dist/*",
+    "build:ts": "tsc",
+    "build:copy": "cpx src/**/*.{html,css} dist"
   },
   "repository": {
     "type": "git",

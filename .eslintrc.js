@@ -7,6 +7,7 @@ module.exports = {
   extends: [
     "eslint:recommended",
     "plugin:@typescript-eslint/recommended",
+    "plugin:@typescript-eslint/no-explicit-any",
     "plugin:@typescript-eslint/interface-name-prefix"
   ],
   overrides: [],
@@ -25,6 +26,7 @@ module.exports = {
     "@typescript-eslint/interface-name-prefix": [
       "error",
       { prefixWithI: "always" }
-    ]
+    ],
+    "@typescript-eslint/no-explicit-any": "error"
   }
 };
