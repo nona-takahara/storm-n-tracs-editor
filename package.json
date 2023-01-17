@@ -22,7 +22,9 @@
   "scripts": {
     "prestart": "npm-run-all build:rm build",
     "start": "electron .",
-    "build": "npm-run-all --parallel build:scss build:ts build:copy",
+    "build": "npm-run-all build:nodelatest build:main",
+    "build:nodelatest": "nvm use",
+    "build:main": "npm-run-all --parallel build:scss build:ts build:copy",
     "build:scss": "sass src:dist",
     "build:rm": "rimraf dist/*",
     "build:ts": "tsc",
