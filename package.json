@@ -1,6 +1,7 @@
 {
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^5.48.2",
+    "@typescript-eslint/parser": "^5.48.2",
     "electron": "^22.0.2",
     "eslint": "^8.32.0",
     "eslint-config-prettier": "^8.6.0",
@@ -15,9 +16,8 @@
   "description": "Area Editor of N-TRACS for Stormworks",
   "version": "0.1.0",
   "main": "dist/index.js",
-  "dependencies": {},
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "electron ."
   },
   "repository": {
     "type": "git",
