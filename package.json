@@ -18,7 +18,7 @@
   "name": "storm-n-tracs-editor",
   "description": "Area Editor of N-TRACS for Stormworks",
   "version": "0.1.0",
-  "main": "dist/index.js",
+  "main": "dist/main.js",
   "scripts": {
     "prestart": "npm-run-all build:rm build",
     "start": "electron .",
