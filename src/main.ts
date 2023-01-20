@@ -13,10 +13,28 @@ async function handleLoadRomTrack() {
       ignoreDeclaration: true
     });
     const xmlContent = xmlParser.parse(data.toString());
-    return xmlContent;
+
+    let list: any = {};
+    if (xmlContent) {
+      for (const i of xmlContent.definition.train_tracks.track) {
+        list[i["@_id"]] = {
+          x: Number(i.transform["@_30"]),
+          z: Number(i.transform["@_32"]),
+          links:
+            i.links.link["@_id"] !== undefined
+              ? [i.links.link["@_id"] as string]
+              : (i.links.link as Array<any>).map(
+                  (v: any) => v["@_id"] as string
+                )
+        };
+      }
+      return list;
+    } else {
+      return undefined;
+    }
   } catch (e) {
     console.error(e);
-    return e;
+    return undefined;
   }
 }
 
@@ -24,6 +42,7 @@ function createWindow() {
   const win = new BrowserWindow({
     width: 800,
     height: 600,
+    useContentSize: true,
     webPreferences: {
       preload: path.join(__dirname, "preload.js")
     }
