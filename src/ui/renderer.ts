@@ -1,4 +1,9 @@
 /// <reference path="./renderer.d.ts" />
+import * as __PIXI from "pixi.js";
+declare const PIXI: typeof __PIXI;
+
+const app = new PIXI.Application();
+
 let islandData: any;
 let context: CanvasRenderingContext2D | null;
 let canvasMove = {
