@@ -24,12 +24,11 @@
     "start": "electron .",
     "build": "npm-run-all build:nodelatest build:main",
     "build:nodelatest": "nvm use",
-    "build:main": "npm-run-all --parallel build:scss build:ts build:copy build:pixi",
+    "build:main": "npm-run-all --parallel build:scss build:ts build:copy",
     "build:scss": "sass src:dist",
     "build:rm": "rimraf dist/*",
     "build:ts": "tsc",
-    "build:copy": "cpx src/**/*.{html,css} dist",
-    "build:pixi": "cpx node_modules/pixi.js/dist/pixi.{min.js,min.js.map} dist"
+    "build:copy": "cpx src/**/*.{html,css} dist"
   },
   "repository": {
     "type": "git",
@@ -42,7 +41,6 @@
   },
   "homepage": "https://github.com/nona-takahara/storm-n-tracs-editor#readme",
   "dependencies": {
-    "fast-xml-parser": "^4.0.13",
-    "pixi.js": "^7.1.0"
+    "fast-xml-parser": "^4.0.13"
   }
 }
