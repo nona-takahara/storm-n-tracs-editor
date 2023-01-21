@@ -1,3 +1,5 @@
+import * as PIXI from "pixi.js";
+
 export interface IElectronAPI {
   node: () => string;
   chrome: () => string;
@@ -9,4 +11,6 @@ declare global {
   interface Window {
     electronAPI: IElectronAPI;
   }
+
+  const PIXI: PIXI;
 }
