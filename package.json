@@ -24,9 +24,10 @@
     "start": "electron .",
     "build": "npm-run-all build:nodelatest build:main",
     "build:nodelatest": "nvm use",
-    "build:main": "npm-run-all --parallel build:scss build:ts-main build:ts-browser build:copy",
+    "build:main": "npm-run-all --parallel build:scss build:ts-main build:ts-browser build:pixi build:copy",
     "build:scss": "sass src/ui:dist",
     "build:rm": "rimraf dist/*",
+    "build:pixi": "cpx node_modules/pixi.js/dist/pixi.min.js{,.map} dist",
     "build:ts-main": "tsc -p tsconfig.cjs.json",
     "build:ts-browser": "tsc -p tsconfig.esm.json",
     "build:copy": "cpx src/ui/**/*.{html,css} dist"
