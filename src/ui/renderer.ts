@@ -178,25 +178,30 @@ function moveView() {
 }
 
 parentApp.appendChild(<HTMLCanvasElement>app.view);
-addEventListener("DOMContentLoaded", async () => {
+addEventListener("load", async () => {
   const islandData = await window.electronAPI.loadRomTrack();
   const componentsData = await window.electronAPI.loadAddon();
+
   const graphics = new PIXI.Graphics();
+
   for (let ix = -1000; ix <= 10 * 1000; ix += 1000) {
-    for (let iy = -10000 + (ix % 2000); iy <= -3 * 1000; iy += 2000) {
+    for (let iy = -12000 + (ix % 2000); iy <= -3 * 1000; iy += 2000) {
       graphics.beginFill(0xf0f0f0);
       graphics.drawRect(ix - 500, iy + 500, 1000, 1000);
       graphics.endFill();
     }
   }
 
+  console.log(islandData);
   graphics.lineStyle(4, 0xffd000, 1);
   for (const key in islandData) {
     if (Object.prototype.hasOwnProperty.call(islandData, key)) {
       const i = islandData[key];
       for (const j of i.links) {
-        graphics.moveTo(i.x, i.z);
-        graphics.lineTo(islandData[j].x, islandData[j].z);
+        if (islandData[j]?.x && islandData[j]?.z) {
+          graphics.moveTo(i.x, i.z);
+          graphics.lineTo(islandData[j].x, islandData[j].z);
+        }
       }
     }
   }
@@ -205,8 +210,10 @@ addEventListener("DOMContentLoaded", async () => {
     if (Object.prototype.hasOwnProperty.call(islandData, key)) {
       const i = islandData[key];
       for (const j of i.links) {
-        graphics.moveTo(i.x, i.z);
-        graphics.lineTo(islandData[j].x, islandData[j].z);
+        if (islandData[j]?.x && islandData[j]?.z) {
+          graphics.moveTo(i.x, i.z);
+          graphics.lineTo(islandData[j].x, islandData[j].z);
+        }
       }
       if (i.links.length > 2) {
         graphics.drawCircle(i.x, i.z, 1);
@@ -215,9 +222,6 @@ addEventListener("DOMContentLoaded", async () => {
   }
 
   drawPolygons();
-
-  mainContainer.addChild(graphics);
-  mainContainer.addChild(polygonGraphics);
 
   console.log(componentsData);
   for (const c of componentsData) {
@@ -250,6 +254,8 @@ addEventListener("DOMContentLoaded", async () => {
       graphics.endFill();
     }
   }
+  mainContainer.addChild(graphics);
+  mainContainer.addChild(polygonGraphics);
 });
 
 addEventListener("resize", () => {
