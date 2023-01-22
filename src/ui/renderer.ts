@@ -2,8 +2,89 @@
 import * as __PIXI from "pixi.js";
 declare const PIXI: typeof __PIXI;
 
-const app = new PIXI.Application();
+const app = new PIXI.Application({
+  width: window.innerWidth,
+  height: window.innerHeight,
+  antialias: true,
+  background: 0xe0e0e0
+});
 
+const parentApp = <HTMLDivElement>document.getElementById("canvas");
+
+app.stage.scale.x = 5;
+app.stage.scale.y = -5;
+
+parentApp.appendChild(<HTMLCanvasElement>app.view);
+addEventListener("DOMContentLoaded", async () => {
+  const islandData = await window.electronAPI.loadRomTrack();
+  const graphics = new PIXI.Graphics();
+  graphics.lineStyle(4, 0xffd000, 1);
+  for (const key in islandData) {
+    if (Object.prototype.hasOwnProperty.call(islandData, key)) {
+      const i = islandData[key];
+      for (const j of i.links) {
+        graphics.moveTo(i.x, i.z);
+        graphics.lineTo(islandData[j].x, islandData[j].z);
+      }
+    }
+  }
+  graphics.lineStyle(1, 0xff8000, 1);
+  for (const key in islandData) {
+    if (Object.prototype.hasOwnProperty.call(islandData, key)) {
+      const i = islandData[key];
+      for (const j of i.links) {
+        graphics.moveTo(i.x, i.z);
+        graphics.lineTo(islandData[j].x, islandData[j].z);
+      }
+    }
+  }
+  app.stage.addChild(graphics);
+});
+
+let canvasMove = {
+  left: 0,
+  top: 0,
+  scale: 5
+};
+
+addEventListener("resize", () => {
+  app.renderer.resize(window.innerWidth, window.innerHeight);
+  app.stage.x = canvasMove.left * canvasMove.scale + innerWidth / 2;
+  app.stage.y = canvasMove.top * canvasMove.scale + innerHeight / 2;
+});
+
+parentApp.addEventListener("mousedown", (e) => {});
+
+parentApp.addEventListener("mousemove", (e) => {});
+
+parentApp.addEventListener("mouseup", () => {});
+
+parentApp.addEventListener("wheel", (e) => {
+  const oldScale = canvasMove.scale;
+  if (e.ctrlKey) {
+    if (e.deltaY > 0) {
+      canvasMove.scale = Math.max(0.5, oldScale - 0.25);
+    } else {
+      canvasMove.scale = Math.min(10, oldScale + 0.25);
+    }
+  } else if (e.shiftKey) {
+    canvasMove.left -= (e.deltaY / 25) * canvasMove.scale;
+  } else {
+    canvasMove.top -= (e.deltaY / 25) * canvasMove.scale;
+  }
+  app.stage.x = canvasMove.left * canvasMove.scale + innerWidth / 2;
+  app.stage.y = canvasMove.top * canvasMove.scale + innerHeight / 2;
+  app.stage.scale.x = canvasMove.scale;
+  app.stage.scale.y = -canvasMove.scale;
+  (document.getElementById("debug") as HTMLParagraphElement).innerText =
+    JSON.stringify({
+      x: app.stage.x,
+      y: app.stage.y,
+      scale: app.stage.scale.x
+    });
+});
+
+/*
 let islandData: any;
 let context: CanvasRenderingContext2D | null;
 let canvasMove = {
@@ -134,3 +215,4 @@ addEventListener("resize", () => {
     canvas.height = height * devicePixelRatio;
   }
 });
+// */
