@@ -1,8 +1,6 @@
 export interface IElectronAPI {
-  node: () => string;
-  chrome: () => string;
-  electron: () => string;
   loadRomTrack: () => Promise<any>;
+  loadAddon: () => Promise<any>;
 }
 
 declare global {

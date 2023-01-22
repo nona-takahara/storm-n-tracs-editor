@@ -11,13 +11,55 @@ const app = new PIXI.Application({
 
 const parentApp = <HTMLDivElement>document.getElementById("canvas");
 
-app.stage.scale.x = 5;
-app.stage.scale.y = -5;
+let vertex = [
+  { x: 1417.5, z: -3758.5 },
+  { x: 1160.0, z: -3756.3 },
+  { x: 1159.8, z: -3764.6 },
+  { x: 1417.0, z: -3767.1 }
+];
+let polydata: { [name: string]: any } = {
+  NHB3T: {
+    links: [],
+    vertex: [0, 1, 2, 3]
+  }
+};
+
+let canvasMove = {
+  left: -1500,
+  top: -3750,
+  scale: 3
+};
+moveView();
+
+function moveView() {
+  app.stage.x = canvasMove.left * canvasMove.scale + innerWidth / 2;
+  app.stage.y = canvasMove.top * canvasMove.scale + innerHeight / 2;
+  app.stage.scale.x = canvasMove.scale;
+  app.stage.scale.y = -canvasMove.scale;
+
+  (document.getElementById("debug") as HTMLParagraphElement).innerText =
+    JSON.stringify({
+      x: app.stage.x,
+      y: app.stage.y,
+      scale: app.stage.scale.x,
+      left: canvasMove.left,
+      top: canvasMove.top
+    });
+}
 
 parentApp.appendChild(<HTMLCanvasElement>app.view);
 addEventListener("DOMContentLoaded", async () => {
   const islandData = await window.electronAPI.loadRomTrack();
+  const componentsData = await window.electronAPI.loadAddon();
   const graphics = new PIXI.Graphics();
+  for (let ix = -1000; ix <= 10 * 1000; ix += 1000) {
+    for (let iy = -10000 + (ix % 2000); iy <= -3 * 1000; iy += 2000) {
+      graphics.beginFill(0xf0f0f0);
+      graphics.drawRect(ix - 500, iy + 500, 1000, 1000);
+      graphics.endFill();
+    }
+  }
+
   graphics.lineStyle(4, 0xffd000, 1);
   for (const key in islandData) {
     if (Object.prototype.hasOwnProperty.call(islandData, key)) {
@@ -36,21 +78,52 @@ addEventListener("DOMContentLoaded", async () => {
         graphics.moveTo(i.x, i.z);
         graphics.lineTo(islandData[j].x, islandData[j].z);
       }
+      if (i.links.length > 2) {
+        graphics.drawCircle(i.x, i.z, 1);
+      }
     }
   }
-  app.stage.addChild(graphics);
-});
 
-let canvasMove = {
-  left: 0,
-  top: 0,
-  scale: 5
-};
+  graphics.lineStyle(0.1, 0x0000ff, 1);
+  for (const key in polydata) {
+    if (Object.prototype.hasOwnProperty.call(polydata, key)) {
+      const p: any = polydata[key];
+      const pp = new PIXI.Polygon(
+        (p.vertex as Array<any>)
+          .reverse()
+          .map(
+            (v: any) => <__PIXI.IPointData>{ x: vertex[v].x, y: vertex[v].z }
+          )
+      );
+      pp.closeStroke = true;
+      console.log(pp);
+      graphics.beginFill(0x0000ff, 0.4);
+      graphics.drawPolygon(pp);
+      graphics.endFill();
+    }
+  }
+
+  app.stage.addChild(graphics);
+
+  console.log(componentsData);
+  for (const c of componentsData) {
+    if ((c.tag as string).includes("stake")) {
+      graphics.lineStyle(0);
+      graphics.beginFill(0xff0000, 1);
+      graphics.drawCircle(c.x, c.z, 0.5);
+      graphics.endFill();
+    } else {
+      graphics.lineStyle(0.1, 0xff3000, 1);
+      graphics.beginFill(0xff3000, 0.4);
+      graphics.drawCircle(c.x, c.z, 2);
+      graphics.endFill();
+    }
+  }
+});
 
 addEventListener("resize", () => {
   app.renderer.resize(window.innerWidth, window.innerHeight);
-  app.stage.x = canvasMove.left * canvasMove.scale + innerWidth / 2;
-  app.stage.y = canvasMove.top * canvasMove.scale + innerHeight / 2;
+  moveView();
 });
 
 parentApp.addEventListener("mousedown", (e) => {});
@@ -72,16 +145,7 @@ parentApp.addEventListener("wheel", (e) => {
   } else {
     canvasMove.top -= Math.floor(e.deltaY / canvasMove.scale);
   }
-  app.stage.x = canvasMove.left * canvasMove.scale + innerWidth / 2;
-  app.stage.y = canvasMove.top * canvasMove.scale + innerHeight / 2;
-  app.stage.scale.x = canvasMove.scale;
-  app.stage.scale.y = -canvasMove.scale;
-  (document.getElementById("debug") as HTMLParagraphElement).innerText =
-    JSON.stringify({
-      x: app.stage.x,
-      y: app.stage.y,
-      scale: app.stage.scale.x
-    });
+  moveView();
 });
 
 /*

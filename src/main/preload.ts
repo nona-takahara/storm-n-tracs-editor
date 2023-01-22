@@ -1,8 +1,6 @@
 import { contextBridge, ipcRenderer } from "electron";
 
 contextBridge.exposeInMainWorld("electronAPI", {
-  node: () => process.versions.node,
-  chrome: () => process.versions.chrome,
-  electron: () => process.versions.electron,
-  loadRomTrack: () => ipcRenderer.invoke("load:romTrack")
+  loadRomTrack: () => ipcRenderer.invoke("load:romTrack"),
+  loadAddon: () => ipcRenderer.invoke("load:addon")
 });
