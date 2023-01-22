@@ -335,6 +335,55 @@ parentApp.addEventListener("mousemove", (e) => {
 
 parentApp.addEventListener("mousedown", (e) => {
   mousedown = true;
+  const mouse_ax = -(
+    (innerWidth / 2 - e.clientX) / canvasMove.scale +
+    canvasMove.left
+  );
+  const mouse_az =
+    (innerHeight / 2 - e.clientY) / canvasMove.scale + canvasMove.top;
+  for (const key in polydata) {
+    if (Object.prototype.hasOwnProperty.call(polydata, key)) {
+      const element = polydata[key];
+      function contains(vs: NtracsPolygon, x: number, z: number): boolean {
+        const poly = vs.vertex.map((v) => vertex[v]);
+        let vt: number;
+        let f = false;
+        for (let i = 0; i < poly.length - 1; i++) {
+          if (
+            (poly[i].z <= z && poly[i + 1].z > z) ||
+            (poly[i].z > z && poly[i + 1].z <= z)
+          ) {
+            vt = (z - poly[i].z) / (poly[i + 1].z - poly[i].z);
+            if (x < poly[i].x + vt * (poly[i + 1].x - poly[i].x)) {
+              f = !f;
+            }
+          }
+        }
+        if (
+          (poly[poly.length - 1].z <= z && poly[0].z > z) ||
+          (poly[poly.length - 1].z > z && poly[0].z <= z)
+        ) {
+          vt =
+            (z - poly[poly.length - 1].z) /
+            (poly[0].z - poly[poly.length - 1].z);
+          if (
+            x <
+            poly[poly.length - 1].x + vt * (poly[0].x - poly[poly.length - 1].x)
+          ) {
+            f = !f;
+          }
+        }
+        return f;
+      }
+
+      if (contains(element, mouse_ax, mouse_az)) {
+        const hud = document.getElementById("hud");
+        if (hud) {
+          hud.innerText = key;
+        }
+      }
+    }
+  }
 });
 
 parentApp.addEventListener("mouseup", (e) => {
