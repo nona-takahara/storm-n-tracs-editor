@@ -187,6 +187,17 @@ addEventListener("load", async () => {
 
   console.log(componentsData);
   for (const c of componentsData) {
+    const basicText = new PIXI.Text(c.tag || "", {
+      fontFamily: "Consolas, monospace",
+      fontSize: 20
+    });
+    basicText.x = c.x + 0.8;
+    basicText.y = c.z + 0.8;
+    basicText.scale.x = 0.1;
+    basicText.scale.y = -0.1;
+
+    graphics.addChild(basicText);
+
     if ((c.tag as string).includes("stake")) {
       graphics.lineStyle(0);
       graphics.beginFill(0xa00000, 1);
@@ -194,6 +205,7 @@ addEventListener("load", async () => {
       graphics.endFill();
     } else {
       graphics.lineStyle(0.1, 0xff3000, 1);
+
       function rotate(x: number, z: number) {
         return {
           x: x * c.m00 + z * c.m10,
