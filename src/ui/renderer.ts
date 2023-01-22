@@ -1,5 +1,6 @@
 /// <reference path="./renderer.d.ts" />
 import * as __PIXI from "pixi.js";
+import { Polygon } from "pixi.js";
 declare const PIXI: typeof __PIXI;
 
 const app = new PIXI.Application({
@@ -11,7 +12,39 @@ const app = new PIXI.Application({
 
 const parentApp = <HTMLDivElement>document.getElementById("canvas");
 
-let vertex = [
+class Vertex {
+  x: number;
+  z: number;
+  constructor(x: number, z: number) {
+    this.x = x;
+    this.z = z;
+  }
+  poly?: NtracsPolygon[];
+}
+
+class NtracsPolygon {
+  vertex: number[];
+  polygon?: Polygon;
+  constructor(vertex: number[]) {
+    this.vertex = vertex;
+  }
+
+  createPolygon(): __PIXI.Polygon {
+    this.polygon = new PIXI.Polygon(
+      this.vertex.map(
+        (v) => <__PIXI.IPointData>{ x: vertex[v].x, y: vertex[v].z }
+      )
+    );
+    return this.polygon;
+  }
+
+  getPolygon(): __PIXI.Polygon {
+    return this.polygon || this.createPolygon();
+  }
+}
+
+let vertex: Vertex[] = [
+  { x: 0, z: 0 },
   { x: 1417.5, z: -3758.5 },
   { x: 1160, z: -3756.3 },
   { x: 1159.8, z: -3764.6 },
@@ -92,23 +125,23 @@ let vertex = [
   { x: 248.7, z: -4802.1 },
   { x: 257.7, z: -4785.1 }
 ];
-let polydata: { [name: string]: any } = {
-  NHB3T: { links: [], vertex: [0, 1, 2, 3] },
-  NHB2T: { links: [], vertex: [4, 5, 6, 7] },
-  NHB1RT: { links: [], vertex: [8, 9, 10, 11] },
-  NHB2LT: { links: [], vertex: [12, 13, 14, 15] },
-  NHB1T: { links: [], vertex: [16, 17, 18, 19] },
-  NHB4T: { links: [], vertex: [20, 21, 22, 23] },
-  NHB33AT: { links: [], vertex: [24, 25, 26, 27, 28, 29, 30] },
-  NHB33BT: { links: [], vertex: [31, 32, 33, 34, 35, 36, 37] },
-  HLT_NHB1T: { links: [], vertex: [38, 39, 40, 41, 42, 43, 44] },
-  NHB_HLT3T: { links: [], vertex: [45, 46, 47, 48, 49, 50] },
-  HLT_NHB2T: { links: [], vertex: [51, 52, 53, 54, 55] },
-  NHB_HLT2T: { links: [], vertex: [56, 57, 58, 59, 60, 61] },
-  NHB5LT: { links: [], vertex: [62, 63, 64, 65] },
-  NHB4RT: { links: [], vertex: [66, 67, 68, 69] },
-  NHB_HLT1T: { links: [], vertex: [70, 71, 72, 73] },
-  HLT2LT: { links: [], vertex: [74, 75, 76, 77, 78] }
+let polydata: { [name: string]: NtracsPolygon } = {
+  NHB3T: new NtracsPolygon([0, 1, 2, 3].map((v) => v + 1)),
+  NHB2T: new NtracsPolygon([4, 5, 6, 7].map((v) => v + 1)),
+  NHB1RT: new NtracsPolygon([8, 9, 10, 11].map((v) => v + 1)),
+  NHB2LT: new NtracsPolygon([12, 13, 14, 15].map((v) => v + 1)),
+  NHB1T: new NtracsPolygon([16, 17, 18, 19].map((v) => v + 1)),
+  NHB4T: new NtracsPolygon([20, 21, 22, 23].map((v) => v + 1)),
+  NHB33AT: new NtracsPolygon([24, 25, 26, 27, 28, 29, 30].map((v) => v + 1)),
+  NHB33BT: new NtracsPolygon([31, 32, 33, 34, 35, 36, 37].map((v) => v + 1)),
+  HLT_NHB1T: new NtracsPolygon([38, 39, 40, 41, 42, 43, 44].map((v) => v + 1)),
+  NHB_HLT3T: new NtracsPolygon([45, 46, 47, 48, 49, 50].map((v) => v + 1)),
+  HLT_NHB2T: new NtracsPolygon([51, 52, 53, 54, 55].map((v) => v + 1)),
+  NHB_HLT2T: new NtracsPolygon([56, 57, 58, 59, 60, 61].map((v) => v + 1)),
+  NHB5LT: new NtracsPolygon([62, 63, 64, 65].map((v) => v + 1)),
+  NHB4RT: new NtracsPolygon([66, 67, 68, 69].map((v) => v + 1)),
+  NHB_HLT1T: new NtracsPolygon([70, 71, 72, 73].map((v) => v + 1)),
+  HLT2LT: new NtracsPolygon([74, 75, 76, 77, 78].map((v) => v + 1))
 };
 
 let canvasMove = {
@@ -117,9 +150,24 @@ let canvasMove = {
   scale: 3
 };
 
-const mainContainer = new PIXI.Container();
-moveView();
+for (const key in polydata) {
+  if (Object.prototype.hasOwnProperty.call(polydata, key)) {
+    const poly = polydata[key];
+    for (const v of poly.vertex) {
+      if (vertex[v].poly) {
+        vertex[v].poly?.push(poly);
+      } else {
+        vertex[v].poly = [poly];
+      }
+    }
+    poly.createPolygon();
+  }
+}
 
+const mainContainer = new PIXI.Container();
+let polygonGraphics = new PIXI.Graphics();
+
+moveView();
 app.stage.addChild(mainContainer);
 
 function moveView() {
@@ -166,35 +214,39 @@ addEventListener("DOMContentLoaded", async () => {
     }
   }
 
-  graphics.lineStyle(0.2, 0x0000ff, 1);
-  for (const key in polydata) {
-    if (Object.prototype.hasOwnProperty.call(polydata, key)) {
-      const p: any = polydata[key];
-      const pp = new PIXI.Polygon(
-        (p.vertex as Array<any>).map(
-          (v: any) => <__PIXI.IPointData>{ x: vertex[v].x, y: vertex[v].z }
-        )
-      );
-      pp.closeStroke = true;
-      graphics.beginFill(0x0000ff, 0.3);
-      graphics.drawPolygon(pp);
-      graphics.endFill();
-    }
-  }
+  drawPolygons();
 
   mainContainer.addChild(graphics);
+  mainContainer.addChild(polygonGraphics);
 
   console.log(componentsData);
   for (const c of componentsData) {
     if ((c.tag as string).includes("stake")) {
       graphics.lineStyle(0);
-      graphics.beginFill(0xff0000, 1);
+      graphics.beginFill(0xa00000, 1);
       graphics.drawCircle(c.x, c.z, 0.5);
       graphics.endFill();
     } else {
       graphics.lineStyle(0.1, 0xff3000, 1);
+      function rotate(x: number, z: number) {
+        return {
+          x: x * c.m00 + z * c.m10,
+          z: x * c.m01 + z * c.m11
+        };
+      }
+      const m = [
+        rotate(-c.size_x / 2, c.size_z / 2),
+        rotate(-c.size_x / 2, -c.size_z / 2),
+        rotate(c.size_x / 2, -c.size_z / 2),
+        rotate(c.size_x / 2, c.size_z / 2)
+      ];
       graphics.beginFill(0xff3000, 0.4);
-      graphics.drawCircle(c.x, c.z, 1.5);
+      graphics.moveTo(c.x + m[0].x, c.z + m[0].z);
+      graphics.lineTo(c.x + m[1].x, c.z + m[1].z);
+      graphics.lineTo(c.x + m[2].x, c.z + m[2].z);
+      graphics.lineTo(c.x + m[3].x, c.z + m[3].z);
+      graphics.closePath();
+      graphics.drawCircle(c.x, c.z, 0.5);
       graphics.endFill();
     }
   }
@@ -257,6 +309,14 @@ parentApp.addEventListener("mousemove", (e) => {
   } else if (nearestVertex && mousedown) {
     vertex[nearestVertex].x = mouse_ax;
     vertex[nearestVertex].z = mouse_az;
+
+    const ps = vertex[nearestVertex].poly;
+    if (ps) {
+      for (const p of ps) {
+        p.createPolygon();
+      }
+    }
+    drawPolygons();
   }
 
   (document.getElementById("debug") as HTMLParagraphElement).innerText =
@@ -271,8 +331,46 @@ parentApp.addEventListener("mousedown", (e) => {
   mousedown = true;
 });
 
-parentApp.addEventListener("mouseup", () => {
+parentApp.addEventListener("mouseup", (e) => {
   mousedown = false;
+  const mouse_ax = -(
+    (innerWidth / 2 - e.clientX) / canvasMove.scale +
+    canvasMove.left
+  );
+  const mouse_az =
+    (innerHeight / 2 - e.clientY) / canvasMove.scale + canvasMove.top;
+
+  if (nearestVertex) {
+    let length = 8.0 / canvasMove.scale;
+    length *= length;
+    let newNearestVertex = nearestVertex;
+    for (let j = 0; j < vertex.length; j++) {
+      const i = vertex[j];
+      if (j != nearestVertex && len(mouse_ax, mouse_az, i.x, i.z) < length) {
+        length = len(mouse_ax, mouse_az, i.x, i.z);
+        newNearestVertex = j;
+      }
+    }
+
+    if (!e.shiftKey && newNearestVertex != nearestVertex) {
+      const polygons = vertex[nearestVertex].poly;
+      if (polygons) {
+        for (const i of polygons) {
+          i.vertex = <number[]>(
+            i.vertex.map((v) => (v == nearestVertex ? newNearestVertex : v))
+          );
+          if (vertex[newNearestVertex].poly) {
+            vertex[newNearestVertex].poly?.push(i);
+          } else {
+            vertex[newNearestVertex].poly = [i];
+          }
+          i.createPolygon();
+        }
+        vertex[nearestVertex] = new Vertex(0, 0);
+        drawPolygons();
+      }
+    }
+  }
 });
 
 parentApp.addEventListener("wheel", (e) => {
@@ -291,6 +389,24 @@ parentApp.addEventListener("wheel", (e) => {
   moveView();
 });
 
+function drawPolygons() {
+  polygonGraphics.clear();
+  polygonGraphics.lineStyle(0.2, 0x0000ff, 1);
+  for (const key in polydata) {
+    if (Object.prototype.hasOwnProperty.call(polydata, key)) {
+      polygonGraphics.beginFill(0x0000ff, 0.3);
+      polygonGraphics.drawPolygon(polydata[key].getPolygon());
+      polygonGraphics.endFill();
+    }
+  }
+
+  polygonGraphics.lineStyle(0);
+  for (const v of vertex) {
+    polygonGraphics.beginFill(0x0000ff, 1);
+    polygonGraphics.drawCircle(v.x, v.z, 0.3);
+    polygonGraphics.endFill();
+  }
+}
 /*
 let islandData: any;
 let context: CanvasRenderingContext2D | null;

@@ -88,7 +88,17 @@ async function handleLoadAddon() {
             list.push({
               tag: c["@_name"],
               x: Number(c.spawn_transform["@_30"]) + tile.offsetX,
-              z: Number(c.spawn_transform["@_32"]) + tile.offsetY
+              z: Number(c.spawn_transform["@_32"]) + tile.offsetY,
+              m00: Number(c.spawn_transform["@_00"]),
+              m01: Number(c.spawn_transform["@_02"]),
+              m10: Number(c.spawn_transform["@_20"]),
+              m11: Number(c.spawn_transform["@_22"]),
+              size_x:
+                Number(c.spawn_bounds.max["@_x"]) -
+                Number(c.spawn_bounds.min["@_x"]),
+              size_z:
+                Number(c.spawn_bounds.min["@_z"]) -
+                Number(c.spawn_bounds.max["@_z"])
             });
           }
         }
