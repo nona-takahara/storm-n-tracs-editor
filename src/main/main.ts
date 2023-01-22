@@ -85,11 +85,6 @@ async function handleLoadAddon() {
         const tile = listOfIsland[l["@_tile"].replace("data/tiles/", "")];
         if (tile) {
           for (const c of l.components.c) {
-            console.log({
-              tag: c["@_name"],
-              x: Number(c.spawn_transform["@_30"]) + tile.offsetX,
-              z: Number(c.spawn_transform["@_32"]) + tile.offsetY
-            });
             list.push({
               tag: c["@_name"],
               x: Number(c.spawn_transform["@_30"]) + tile.offsetX,

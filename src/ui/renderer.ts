@@ -13,15 +13,102 @@ const parentApp = <HTMLDivElement>document.getElementById("canvas");
 
 let vertex = [
   { x: 1417.5, z: -3758.5 },
-  { x: 1160.0, z: -3756.3 },
+  { x: 1160, z: -3756.3 },
   { x: 1159.8, z: -3764.6 },
-  { x: 1417.0, z: -3767.1 }
+  { x: 1417, z: -3767.1 },
+  { x: 1417, z: -3767.1 },
+  { x: 1159.8, z: -3764.6 },
+  { x: 1159.3, z: -3773.9 },
+  { x: 1416.1, z: -3776.2 },
+  { x: 1160, z: -3756.3 },
+  { x: 1116.2, z: -3758.9 },
+  { x: 1116.7, z: -3768.1 },
+  { x: 1159.8, z: -3764.6 },
+  { x: 1159.8, z: -3764.6 },
+  { x: 1116.7, z: -3768.1 },
+  { x: 1117, z: -3778.7 },
+  { x: 1159.3, z: -3773.9 },
+  { x: 1416.1, z: -3776.2 },
+  { x: 1159.3, z: -3773.9 },
+  { x: 1292.5, z: -3785.8 },
+  { x: 1415.6, z: -3786.5 },
+  { x: 1418.2, z: -3748.6 },
+  { x: 1293, z: -3744.7 },
+  { x: 1160, z: -3756.3 },
+  { x: 1417.5, z: -3758.5 },
+  { x: 1625.7, z: -3768.2 },
+  { x: 1625.4, z: -3761.9 },
+  { x: 1472.9, z: -3760.2 },
+  { x: 1418.2, z: -3748.6 },
+  { x: 1417.5, z: -3758.5 },
+  { x: 1417, z: -3767.1 },
+  { x: 1497.9, z: -3768.1 },
+  { x: 1625.4, z: -3776.3 },
+  { x: 1625.7, z: -3768.2 },
+  { x: 1497.9, z: -3768.1 },
+  { x: 1417, z: -3767.1 },
+  { x: 1416.1, z: -3776.2 },
+  { x: 1415.6, z: -3786.5 },
+  { x: 1472.5, z: -3775.4 },
+  { x: 1116.2, z: -3758.9 },
+  { x: 993.7, z: -3770 },
+  { x: 871.3, z: -3847.9 },
+  { x: 561.7, z: -4137.2 },
+  { x: 567.8, z: -4145.1 },
+  { x: 1003.3, z: -3797.3 },
+  { x: 1116.7, z: -3768.1 },
+  { x: 1116.7, z: -3768.1 },
+  { x: 1003.3, z: -3797.3 },
+  { x: 854.3, z: -3969.7 },
+  { x: 907, z: -4159.4 },
+  { x: 1196.4, z: -4471.8 },
+  { x: 1202.3, z: -4466.5 },
+  { x: 567.8, z: -4145.1 },
+  { x: 561.7, z: -4137.2 },
+  { x: -44, z: -4506.7 },
+  { x: 170.9, z: -4510.9 },
+  { x: 186.7, z: -4518.1 },
+  { x: 1202.3, z: -4466.5 },
+  { x: 1196.4, z: -4471.8 },
+  { x: 720.2, z: -4987.8 },
+  { x: 717, z: -5006.6 },
+  { x: 1123, z: -5108.3 },
+  { x: 1340, z: -4621.3 },
+  { x: 1897, z: -3767.7 },
+  { x: 1625.7, z: -3768.2 },
+  { x: 1625.4, z: -3776.3 },
+  { x: 1896.7, z: -3774.1 },
+  { x: 1896.8, z: -3761.3 },
+  { x: 1625.4, z: -3761.9 },
+  { x: 1625.7, z: -3768.2 },
+  { x: 1897, z: -3767.7 },
+  { x: 717, z: -5006.6 },
+  { x: 720.2, z: -4987.8 },
+  { x: 257.7, z: -4785.1 },
+  { x: 248.7, z: -4802.1 },
+  { x: 186.7, z: -4518.1 },
+  { x: 170.9, z: -4510.9 },
+  { x: 40.9, z: -4725.6 },
+  { x: 248.7, z: -4802.1 },
+  { x: 257.7, z: -4785.1 }
 ];
 let polydata: { [name: string]: any } = {
-  NHB3T: {
-    links: [],
-    vertex: [0, 1, 2, 3]
-  }
+  NHB3T: { links: [], vertex: [0, 1, 2, 3] },
+  NHB2T: { links: [], vertex: [4, 5, 6, 7] },
+  NHB1RT: { links: [], vertex: [8, 9, 10, 11] },
+  NHB2LT: { links: [], vertex: [12, 13, 14, 15] },
+  NHB1T: { links: [], vertex: [16, 17, 18, 19] },
+  NHB4T: { links: [], vertex: [20, 21, 22, 23] },
+  NHB33AT: { links: [], vertex: [24, 25, 26, 27, 28, 29, 30] },
+  NHB33BT: { links: [], vertex: [31, 32, 33, 34, 35, 36, 37] },
+  HLT_NHB1T: { links: [], vertex: [38, 39, 40, 41, 42, 43, 44] },
+  NHB_HLT3T: { links: [], vertex: [45, 46, 47, 48, 49, 50] },
+  HLT_NHB2T: { links: [], vertex: [51, 52, 53, 54, 55] },
+  NHB_HLT2T: { links: [], vertex: [56, 57, 58, 59, 60, 61] },
+  NHB5LT: { links: [], vertex: [62, 63, 64, 65] },
+  NHB4RT: { links: [], vertex: [66, 67, 68, 69] },
+  NHB_HLT1T: { links: [], vertex: [70, 71, 72, 73] },
+  HLT2LT: { links: [], vertex: [74, 75, 76, 77, 78] }
 };
 
 let canvasMove = {
@@ -84,20 +171,17 @@ addEventListener("DOMContentLoaded", async () => {
     }
   }
 
-  graphics.lineStyle(0.1, 0x0000ff, 1);
+  graphics.lineStyle(0.2, 0x0000ff, 1);
   for (const key in polydata) {
     if (Object.prototype.hasOwnProperty.call(polydata, key)) {
       const p: any = polydata[key];
       const pp = new PIXI.Polygon(
-        (p.vertex as Array<any>)
-          .reverse()
-          .map(
-            (v: any) => <__PIXI.IPointData>{ x: vertex[v].x, y: vertex[v].z }
-          )
+        (p.vertex as Array<any>).map(
+          (v: any) => <__PIXI.IPointData>{ x: vertex[v].x, y: vertex[v].z }
+        )
       );
       pp.closeStroke = true;
-      console.log(pp);
-      graphics.beginFill(0x0000ff, 0.4);
+      graphics.beginFill(0x0000ff, 0.3);
       graphics.drawPolygon(pp);
       graphics.endFill();
     }
@@ -115,7 +199,7 @@ addEventListener("DOMContentLoaded", async () => {
     } else {
       graphics.lineStyle(0.1, 0xff3000, 1);
       graphics.beginFill(0xff3000, 0.4);
-      graphics.drawCircle(c.x, c.z, 2);
+      graphics.drawCircle(c.x, c.z, 1.5);
       graphics.endFill();
     }
   }
