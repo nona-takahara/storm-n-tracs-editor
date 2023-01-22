@@ -116,13 +116,17 @@ let canvasMove = {
   top: -3750,
   scale: 3
 };
+
+const mainContainer = new PIXI.Container();
 moveView();
 
+app.stage.addChild(mainContainer);
+
 function moveView() {
-  app.stage.x = canvasMove.left * canvasMove.scale + innerWidth / 2;
-  app.stage.y = canvasMove.top * canvasMove.scale + innerHeight / 2;
-  app.stage.scale.x = canvasMove.scale;
-  app.stage.scale.y = -canvasMove.scale;
+  mainContainer.x = canvasMove.left * canvasMove.scale + innerWidth / 2;
+  mainContainer.y = canvasMove.top * canvasMove.scale + innerHeight / 2;
+  mainContainer.scale.x = canvasMove.scale;
+  mainContainer.scale.y = -canvasMove.scale;
 }
 
 parentApp.appendChild(<HTMLCanvasElement>app.view);
@@ -178,7 +182,7 @@ addEventListener("DOMContentLoaded", async () => {
     }
   }
 
-  app.stage.addChild(graphics);
+  mainContainer.addChild(graphics);
 
   console.log(componentsData);
   for (const c of componentsData) {
@@ -201,15 +205,75 @@ addEventListener("resize", () => {
   moveView();
 });
 
+let nearestVertex: number | undefined = undefined;
+
+let circle: __PIXI.Graphics | undefined;
+app.ticker.add(() => {
+  if (nearestVertex) {
+    if (!circle) {
+      circle = new PIXI.Graphics();
+      circle.beginFill(0xff0000);
+      circle.drawCircle(0, 0, 5);
+      circle.endFill();
+      app.stage.addChild(circle);
+    }
+    circle.x =
+      (canvasMove.left + vertex[nearestVertex].x) * canvasMove.scale +
+      innerWidth / 2;
+    circle.y =
+      (canvasMove.top - vertex[nearestVertex].z) * canvasMove.scale +
+      innerHeight / 2;
+  } else {
+    circle?.destroy();
+    circle = undefined;
+  }
+});
+let mousedown = false;
+function len(x1: number, y1: number, x2: number, y2: number) {
+  return (x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2);
+}
 parentApp.addEventListener("mousemove", (e) => {
+  let length = 8.0 / canvasMove.scale;
+  length *= length;
+
+  const mouse_ax = -(
+    (innerWidth / 2 - e.clientX) / canvasMove.scale +
+    canvasMove.left
+  );
+  const mouse_az =
+    (innerHeight / 2 - e.clientY) / canvasMove.scale + canvasMove.top;
+
+  if (!mousedown) {
+    nearestVertex = undefined;
+    for (let j = 0; j < vertex.length; j++) {
+      const i = vertex[j];
+
+      if (len(mouse_ax, mouse_az, i.x, i.z) < length) {
+        console.log(len(mouse_ax, mouse_az, i.x, i.z));
+        length = len(mouse_ax, mouse_az, i.x, i.z);
+        nearestVertex = j;
+      }
+    }
+  } else if (nearestVertex && mousedown) {
+    vertex[nearestVertex].x = mouse_ax;
+    vertex[nearestVertex].z = mouse_az;
+  }
+
   (document.getElementById("debug") as HTMLParagraphElement).innerText =
     JSON.stringify({
-      x: (innerWidth / 2 - e.clientX) / canvasMove.scale + canvasMove.left,
-      y: (innerHeight / 2 - e.clientY) / canvasMove.scale + canvasMove.top
+      x: mouse_ax,
+      y: mouse_az,
+      nearestVertex: nearestVertex
     });
 });
 
-parentApp.addEventListener("mouseup", () => {});
+parentApp.addEventListener("mousedown", (e) => {
+  mousedown = true;
+});
+
+parentApp.addEventListener("mouseup", () => {
+  mousedown = false;
+});
 
 parentApp.addEventListener("wheel", (e) => {
   const oldScale = canvasMove.scale;
