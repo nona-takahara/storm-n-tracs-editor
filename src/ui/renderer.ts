@@ -307,8 +307,8 @@ parentApp.addEventListener("mousemove", (e) => {
       }
     }
   } else if (nearestVertex && mousedown) {
-    vertex[nearestVertex].x = mouse_ax;
-    vertex[nearestVertex].z = mouse_az;
+    vertex[nearestVertex].x = Math.floor(mouse_ax * 10) / 10.0;
+    vertex[nearestVertex].z = Math.floor(mouse_az * 10) / 10.0;
 
     const ps = vertex[nearestVertex].poly;
     if (ps) {
@@ -403,7 +403,7 @@ function drawPolygons() {
   polygonGraphics.lineStyle(0);
   for (const v of vertex) {
     polygonGraphics.beginFill(0x0000ff, 1);
-    polygonGraphics.drawCircle(v.x, v.z, 0.3);
+    polygonGraphics.drawCircle(v.x, v.z, 0.4);
     polygonGraphics.endFill();
   }
 }
