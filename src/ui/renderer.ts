@@ -68,9 +68,9 @@ parentApp.addEventListener("wheel", (e) => {
       canvasMove.scale = Math.min(10, oldScale + 0.25);
     }
   } else if (e.shiftKey) {
-    canvasMove.left -= (e.deltaY / 25) * canvasMove.scale;
+    canvasMove.left -= e.deltaY / canvasMove.scale;
   } else {
-    canvasMove.top -= (e.deltaY / 25) * canvasMove.scale;
+    canvasMove.top -= e.deltaY / canvasMove.scale;
   }
   app.stage.x = canvasMove.left * canvasMove.scale + innerWidth / 2;
   app.stage.y = canvasMove.top * canvasMove.scale + innerHeight / 2;
