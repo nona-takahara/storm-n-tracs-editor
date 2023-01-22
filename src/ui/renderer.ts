@@ -123,15 +123,6 @@ function moveView() {
   app.stage.y = canvasMove.top * canvasMove.scale + innerHeight / 2;
   app.stage.scale.x = canvasMove.scale;
   app.stage.scale.y = -canvasMove.scale;
-
-  (document.getElementById("debug") as HTMLParagraphElement).innerText =
-    JSON.stringify({
-      x: app.stage.x,
-      y: app.stage.y,
-      scale: app.stage.scale.x,
-      left: canvasMove.left,
-      top: canvasMove.top
-    });
 }
 
 parentApp.appendChild(<HTMLCanvasElement>app.view);
@@ -210,9 +201,13 @@ addEventListener("resize", () => {
   moveView();
 });
 
-parentApp.addEventListener("mousedown", (e) => {});
-
-parentApp.addEventListener("mousemove", (e) => {});
+parentApp.addEventListener("mousemove", (e) => {
+  (document.getElementById("debug") as HTMLParagraphElement).innerText =
+    JSON.stringify({
+      x: (innerWidth / 2 - e.clientX) / canvasMove.scale + canvasMove.left,
+      y: (innerHeight / 2 - e.clientY) / canvasMove.scale + canvasMove.top
+    });
+});
 
 parentApp.addEventListener("mouseup", () => {});
 
