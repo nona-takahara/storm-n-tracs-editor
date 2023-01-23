@@ -13,7 +13,7 @@ const parentApp = <HTMLDivElement>document.getElementById("canvas");
 
 const textSettings = {
   fontFamily: "Consolas, monospace",
-  fontSize: 20
+  fontSize: 20 * devicePixelRatio
 };
 
 class Vertex {
@@ -194,8 +194,8 @@ addEventListener("load", async () => {
     const basicText = new PIXI.Text(c.tag || "", textSettings);
     basicText.x = c.x + 0.8;
     basicText.y = c.z + 0.8;
-    basicText.scale.x = 0.1;
-    basicText.scale.y = -0.1;
+    basicText.scale.x = 0.1 / devicePixelRatio;
+    basicText.scale.y = -0.1 / devicePixelRatio;
 
     graphics.addChild(basicText);
 
@@ -252,9 +252,16 @@ app.ticker.add(() => {
       app.stage.addChild(circle);
     }
     if (!circleText) {
-      circleText = new PIXI.Text(nearestVertex.toString(), textSettings);
+      circleText = new PIXI.Text(nearestVertex.toString(), {
+        ...textSettings,
+        fill: "#ff0000",
+        stroke: "#ffffff",
+        strokeThickness: 3 * devicePixelRatio
+      });
       circleText.y = -10;
       circleText.x = 8;
+      circleText.scale.x = 0.8 / devicePixelRatio;
+      circleText.scale.y = 0.8 / devicePixelRatio;
       circle.addChild(circleText);
     } else {
       circleText.text = nearestVertex.toString();
