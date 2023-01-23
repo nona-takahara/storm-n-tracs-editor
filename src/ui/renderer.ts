@@ -418,7 +418,17 @@ function updateHud() {
         name_h3.innerText = ss.name;
       });
       hud.appendChild(name_h3);
-      hud.appendChild(name_input);
+
+      const rvbutton = document.createElement("button");
+      rvbutton.innerText = "reverse";
+      rvbutton.addEventListener("click", () => {
+        if (selectedPolygon) {
+          polydata[selectedPolygon].vertex =
+            polydata[selectedPolygon].vertex.reverse();
+          polydata[selectedPolygon].createPolygon();
+          updateHud();
+        }
+      });
 
       const rmbutton = document.createElement("button");
       rmbutton.innerText = "remove";
@@ -434,7 +444,10 @@ function updateHud() {
           updateHud();
         }
       });
+      hud.appendChild(rvbutton);
       hud.appendChild(rmbutton);
+
+      hud.appendChild(name_input);
 
       const ul = document.createElement("ul");
       const ss = polydata[selectedPolygon];
