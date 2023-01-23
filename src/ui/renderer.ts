@@ -1,6 +1,5 @@
 /// <reference path="./renderer.d.ts" />
 import * as __PIXI from "pixi.js";
-import { Polygon } from "pixi.js";
 declare const PIXI: typeof __PIXI;
 
 const app = new PIXI.Application({
@@ -24,7 +23,7 @@ class Vertex {
 
 class NtracsPolygon {
   vertex: number[];
-  polygon?: Polygon;
+  polygon?: __PIXI.Polygon;
   constructor(vertex: number[]) {
     this.vertex = vertex;
   }
@@ -301,8 +300,8 @@ parentApp.addEventListener("mousemove", (e) => {
 
   (document.getElementById("debug") as HTMLParagraphElement).innerText =
     JSON.stringify({
-      x: mouse_ax,
-      y: mouse_az,
+      x: mouse_ax.toFixed(1),
+      y: mouse_az.toFixed(1),
       nearestVertex: nearestVertex
     });
 });
@@ -353,7 +352,15 @@ parentApp.addEventListener("mousedown", (e) => {
       if (contains(element, mouse_ax, mouse_az)) {
         const hud = document.getElementById("hud");
         if (hud) {
-          hud.innerText = key;
+          let item = "";
+          for (let i = 0; i < polydata[key].vertex.length; i++) {
+            const v = polydata[key].vertex[i];
+            item += `<li>${v} (${vertex[v].x.toFixed(1)},${vertex[v].z.toFixed(
+              1
+            )}) <button>x</button></li><li><button>+</button></li>`;
+          }
+
+          hud.innerHTML = `<h3>${key}</h3><ul>${item}</ul>`;
         }
       }
     }
@@ -414,6 +421,7 @@ parentApp.addEventListener("wheel", (e) => {
     canvasMove.left -= Math.floor(e.deltaY / canvasMove.scale);
   } else {
     canvasMove.top -= Math.floor(e.deltaY / canvasMove.scale);
+    canvasMove.left -= Math.floor(e.deltaX / canvasMove.scale);
   }
   moveView();
 });
