@@ -50,7 +50,7 @@ class NtracsPolygon {
 }
 
 let vertex: Vertex[] = [
-  { x: 0, z: 0 },
+  { x: 0, z: 0 }, // dummy
   { x: 1417.5, z: -3758.5 },
   { x: 1160, z: -3756.3 },
   { x: 1159.8, z: -3764.6 },
@@ -94,6 +94,7 @@ let vertex: Vertex[] = [
   { x: 40.9, z: -4725.6 }
 ];
 let polydata: NtracsPolygon[] = [
+  new NtracsPolygon("", []), // dummy
   new NtracsPolygon("NHB3T", [1, 2, 3, 4]),
   new NtracsPolygon("NHB2T", [4, 3, 5, 6]),
   new NtracsPolygon("NHB1RT", [2, 7, 8, 3]),
@@ -327,7 +328,7 @@ parentApp.addEventListener("mousemove", (e) => {
     });
 });
 
-let selectedPolygon: NtracsPolygon | undefined = undefined;
+let selectedPolygon: number | undefined = undefined;
 
 parentApp.addEventListener("mousedown", (e) => {
   mousedown = true;
@@ -339,7 +340,7 @@ parentApp.addEventListener("mousedown", (e) => {
     (innerHeight / 2 - e.clientY) / canvasMove.scale + canvasMove.top;
   if (!nearestVertex || !selectedPolygon) {
     selectedPolygon = undefined;
-    for (let key = 0; key < polydata.length; key++) {
+    for (let key = 1; key < polydata.length; key++) {
       const element = polydata[key];
       function contains(vs: NtracsPolygon, x: number, z: number): boolean {
         const poly = vs.vertex.map((v) => vertex[v]);
@@ -374,7 +375,7 @@ parentApp.addEventListener("mousedown", (e) => {
       }
 
       if (contains(element, mouse_ax, mouse_az)) {
-        selectedPolygon = element;
+        selectedPolygon = key;
       }
     }
     drawPolygons();
@@ -385,12 +386,34 @@ parentApp.addEventListener("mousedown", (e) => {
 function updateHud() {
   const hud = document.getElementById("hud");
   if (hud) {
-    hud.childNodes.forEach((v) => v.remove());
+    while (hud.firstChild) {
+      hud.removeChild(hud.firstChild);
+    }
     if (selectedPolygon) {
+      const name = document.createElement("h3");
+      name.innerHTML = polydata[selectedPolygon].name;
+      hud.appendChild(name);
+
+      const rmbutton = document.createElement("button");
+      rmbutton.innerText = "remove";
+      rmbutton.addEventListener("click", () => {
+        if (
+          selectedPolygon &&
+          confirm(`Remove ${polydata[selectedPolygon].name} ?`)
+        ) {
+          polydata.splice(selectedPolygon, 1);
+          selectedPolygon = undefined;
+
+          drawPolygons();
+          updateHud();
+        }
+      });
+      hud.appendChild(rmbutton);
+
       const ul = document.createElement("ul");
-      const ss = selectedPolygon;
-      for (let i = 0; i < selectedPolygon.vertex.length; i++) {
-        const v = selectedPolygon.vertex[i];
+      const ss = polydata[selectedPolygon];
+      for (let i = 0; i < polydata[selectedPolygon].vertex.length; i++) {
+        const v = polydata[selectedPolygon].vertex[i];
 
         const li1 = document.createElement("li");
         li1.innerText = `${v} (${vertex[v].x.toFixed(1)},${vertex[v].z.toFixed(
@@ -443,6 +466,8 @@ function updateHud() {
         ul.appendChild(li2);
       }
       hud.appendChild(ul);
+    } else {
+      // 未指定のとき
     }
   }
 }
@@ -511,7 +536,7 @@ function drawPolygons() {
   polygonGraphics.clear();
   polygonGraphics.lineStyle(0.2, 0x0000ff, 1);
   for (let key = 0; key < polydata.length; key++) {
-    if (polydata[key] == selectedPolygon) {
+    if (key == selectedPolygon) {
       polygonGraphics.beginFill(0x8080ff, 0.3);
     } else {
       polygonGraphics.beginFill(0x0000ff, 0.3);
