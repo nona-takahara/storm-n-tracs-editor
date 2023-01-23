@@ -16,10 +16,20 @@ div.hud {
   border-bottom: 1px solid #505050;
   border-bottom-left-radius: 8px;
   backdrop-filter: blur(4px);
-  padding: 8px;
+  padding: 12px;
 
   font-size: 12px;
   line-height: 16px;
+  h3 {
+    margin: 0;
+  }
+
+  ul {
+    padding-left: 6px;
+    li {
+      display: block;
+    }
+  }
 }
 
 div#canvas,

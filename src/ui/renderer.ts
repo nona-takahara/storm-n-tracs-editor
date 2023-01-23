@@ -11,6 +11,11 @@ const app = new PIXI.Application({
 
 const parentApp = <HTMLDivElement>document.getElementById("canvas");
 
+const textSettings = {
+  fontFamily: "Consolas, monospace",
+  fontSize: 20
+};
+
 class Vertex {
   x: number;
   z: number;
@@ -22,9 +27,11 @@ class Vertex {
 }
 
 class NtracsPolygon {
+  name: string;
   vertex: number[];
   polygon?: __PIXI.Polygon;
-  constructor(vertex: number[]) {
+  constructor(name: string, vertex: number[]) {
+    this.name = name;
     this.vertex = vertex;
   }
 
@@ -86,24 +93,24 @@ let vertex: Vertex[] = [
   { x: 248.7, z: -4802.1 },
   { x: 40.9, z: -4725.6 }
 ];
-let polydata: { [name: string]: NtracsPolygon } = {
-  NHB3T: new NtracsPolygon([1, 2, 3, 4]),
-  NHB2T: new NtracsPolygon([4, 3, 5, 6]),
-  NHB1RT: new NtracsPolygon([2, 7, 8, 3]),
-  NHB2LT: new NtracsPolygon([3, 8, 9, 5]),
-  NHB1T: new NtracsPolygon([6, 5, 10, 11]),
-  NHB4T: new NtracsPolygon([12, 13, 2, 1]),
-  NHB33AT: new NtracsPolygon([14, 15, 16, 12, 1, 4, 17]),
-  NHB33BT: new NtracsPolygon([18, 14, 17, 4, 6, 11, 19]),
-  HLT_NHB1T: new NtracsPolygon([7, 20, 21, 22, 23, 24, 8]),
-  NHB_HLT3T: new NtracsPolygon([8, 24, 25, 26, 27, 28]),
-  HLT_NHB2T: new NtracsPolygon([23, 22, 29, 30, 31]),
-  NHB_HLT2T: new NtracsPolygon([28, 27, 32, 33, 34, 35]),
-  NHB5LT: new NtracsPolygon([36, 14, 18, 37]),
-  NHB4RT: new NtracsPolygon([38, 15, 14, 36]),
-  NHB_HLT1T: new NtracsPolygon([33, 32, 39, 40]),
-  HLT2LT: new NtracsPolygon([31, 30, 41, 40, 39])
-};
+let polydata: NtracsPolygon[] = [
+  new NtracsPolygon("NHB3T", [1, 2, 3, 4]),
+  new NtracsPolygon("NHB2T", [4, 3, 5, 6]),
+  new NtracsPolygon("NHB1RT", [2, 7, 8, 3]),
+  new NtracsPolygon("NHB2LT", [3, 8, 9, 5]),
+  new NtracsPolygon("NHB1T", [6, 5, 10, 11]),
+  new NtracsPolygon("NHB4T", [12, 13, 2, 1]),
+  new NtracsPolygon("NHB33AT", [14, 15, 16, 12, 1, 4, 17]),
+  new NtracsPolygon("NHB33BT", [18, 14, 17, 4, 6, 11, 19]),
+  new NtracsPolygon("HLT_NHB1T", [7, 20, 21, 22, 23, 24, 8]),
+  new NtracsPolygon("NHB_HLT3T", [8, 24, 25, 26, 27, 28]),
+  new NtracsPolygon("HLT_NHB2T", [23, 22, 29, 30, 31]),
+  new NtracsPolygon("NHB_HLT2T", [28, 27, 32, 33, 34, 35]),
+  new NtracsPolygon("NHB5LT", [36, 14, 18, 37]),
+  new NtracsPolygon("NHB4RT", [38, 15, 14, 36]),
+  new NtracsPolygon("NHB_HLT1T", [33, 32, 39, 40]),
+  new NtracsPolygon("HLT2LT", [31, 30, 41, 40, 39])
+];
 
 let canvasMove = {
   left: -1500,
@@ -111,18 +118,16 @@ let canvasMove = {
   scale: 3
 };
 
-for (const key in polydata) {
-  if (Object.prototype.hasOwnProperty.call(polydata, key)) {
-    const poly = polydata[key];
-    for (const v of poly.vertex) {
-      if (vertex[v].poly) {
-        vertex[v].poly?.push(poly);
-      } else {
-        vertex[v].poly = [poly];
-      }
+for (let key = 0; key < polydata.length; key++) {
+  const poly = polydata[key];
+  for (const v of poly.vertex) {
+    if (vertex[v].poly) {
+      vertex[v].poly?.push(poly);
+    } else {
+      vertex[v].poly = [poly];
     }
-    poly.createPolygon();
   }
+  poly.createPolygon();
 }
 
 const mainContainer = new PIXI.Container();
@@ -186,10 +191,7 @@ addEventListener("load", async () => {
 
   console.log(componentsData);
   for (const c of componentsData) {
-    const basicText = new PIXI.Text(c.tag || "", {
-      fontFamily: "Consolas, monospace",
-      fontSize: 20
-    });
+    const basicText = new PIXI.Text(c.tag || "", textSettings);
     basicText.x = c.x + 0.8;
     basicText.y = c.z + 0.8;
     basicText.scale.x = 0.1;
@@ -239,6 +241,7 @@ addEventListener("resize", () => {
 let nearestVertex: number | undefined = undefined;
 
 let circle: __PIXI.Graphics | undefined;
+let circleText: __PIXI.Text | undefined;
 app.ticker.add(() => {
   if (nearestVertex) {
     if (!circle) {
@@ -248,6 +251,14 @@ app.ticker.add(() => {
       circle.endFill();
       app.stage.addChild(circle);
     }
+    if (!circleText) {
+      circleText = new PIXI.Text(nearestVertex.toString(), textSettings);
+      circleText.y = -10;
+      circleText.x = 8;
+      circle.addChild(circleText);
+    } else {
+      circleText.text = nearestVertex.toString();
+    }
     circle.x =
       (canvasMove.left + vertex[nearestVertex].x) * canvasMove.scale +
       innerWidth / 2;
@@ -255,7 +266,9 @@ app.ticker.add(() => {
       (canvasMove.top - vertex[nearestVertex].z) * canvasMove.scale +
       innerHeight / 2;
   } else {
+    circleText?.destroy();
     circle?.destroy();
+    circleText = undefined;
     circle = undefined;
   }
 });
@@ -296,15 +309,18 @@ parentApp.addEventListener("mousemove", (e) => {
       }
     }
     drawPolygons();
+    updateHud();
   }
 
   (document.getElementById("debug") as HTMLParagraphElement).innerText =
     JSON.stringify({
       x: mouse_ax.toFixed(1),
       y: mouse_az.toFixed(1),
-      nearestVertex: nearestVertex
+      v: nearestVertex
     });
 });
+
+let selectedPolygon: NtracsPolygon | undefined = undefined;
 
 parentApp.addEventListener("mousedown", (e) => {
   mousedown = true;
@@ -314,8 +330,9 @@ parentApp.addEventListener("mousedown", (e) => {
   );
   const mouse_az =
     (innerHeight / 2 - e.clientY) / canvasMove.scale + canvasMove.top;
-  for (const key in polydata) {
-    if (Object.prototype.hasOwnProperty.call(polydata, key)) {
+  if (!nearestVertex || !selectedPolygon) {
+    selectedPolygon = undefined;
+    for (let key = 0; key < polydata.length; key++) {
       const element = polydata[key];
       function contains(vs: NtracsPolygon, x: number, z: number): boolean {
         const poly = vs.vertex.map((v) => vertex[v]);
@@ -350,22 +367,78 @@ parentApp.addEventListener("mousedown", (e) => {
       }
 
       if (contains(element, mouse_ax, mouse_az)) {
-        const hud = document.getElementById("hud");
-        if (hud) {
-          let item = "";
-          for (let i = 0; i < polydata[key].vertex.length; i++) {
-            const v = polydata[key].vertex[i];
-            item += `<li>${v} (${vertex[v].x.toFixed(1)},${vertex[v].z.toFixed(
-              1
-            )}) <button>x</button></li><li><button>+</button></li>`;
-          }
-
-          hud.innerHTML = `<h3>${key}</h3><ul>${item}</ul>`;
-        }
+        selectedPolygon = element;
       }
     }
+    drawPolygons();
+    updateHud();
   }
 });
+
+function updateHud() {
+  const hud = document.getElementById("hud");
+  if (hud) {
+    hud.childNodes.forEach((v) => v.remove());
+    if (selectedPolygon) {
+      const ul = document.createElement("ul");
+      const ss = selectedPolygon;
+      for (let i = 0; i < selectedPolygon.vertex.length; i++) {
+        const v = selectedPolygon.vertex[i];
+
+        const li1 = document.createElement("li");
+        li1.innerText = `${v} (${vertex[v].x.toFixed(1)},${vertex[v].z.toFixed(
+          1
+        )})`;
+        const delbutton = document.createElement("button");
+        delbutton.innerText = "x";
+
+        delbutton.addEventListener("click", () => {
+          if (ss) {
+            const [data] = ss.vertex.splice(i, 1);
+            const polys = vertex[data].poly;
+            const did = polys?.findIndex((s) => s == ss);
+            if (polys && did) {
+              polys.splice(did, 1);
+              if (polys.length <= 0) {
+                vertex[data] = new Vertex(0, 0);
+              }
+            }
+          }
+          ss.vertex = [...ss.vertex];
+          ss.createPolygon();
+          drawPolygons();
+          updateHud();
+        });
+        if (ss.vertex.length > 3) {
+          li1.appendChild(delbutton);
+        }
+
+        const li2 = document.createElement("li");
+        const addbutton = document.createElement("button");
+        addbutton.innerHTML = "+";
+        addbutton.addEventListener("click", () => {
+          if (selectedPolygon) {
+            const s = vertex[ss.vertex[i]];
+            const e = vertex[ss.vertex[(i + 1) % ss.vertex.length]];
+            vertex.push(new Vertex((s.x + e.x) / 2, (s.z + e.z) / 2));
+            vertex[vertex.length - 1].poly = [ss];
+            console.log(JSON.stringify(ss));
+            ss.vertex.splice(i + 1, 0, vertex.length - 1);
+            ss.vertex = [...ss.vertex];
+            console.log(JSON.stringify(ss));
+            ss.createPolygon();
+            drawPolygons();
+            updateHud();
+          }
+        });
+        li2.appendChild(addbutton);
+        ul.appendChild(li1);
+        ul.appendChild(li2);
+      }
+      hud.appendChild(ul);
+    }
+  }
+}
 
 parentApp.addEventListener("mouseup", (e) => {
   mousedown = false;
@@ -404,6 +477,7 @@ parentApp.addEventListener("mouseup", (e) => {
         }
         vertex[nearestVertex] = new Vertex(0, 0);
         drawPolygons();
+        updateHud();
       }
     }
   }
@@ -429,12 +503,14 @@ parentApp.addEventListener("wheel", (e) => {
 function drawPolygons() {
   polygonGraphics.clear();
   polygonGraphics.lineStyle(0.2, 0x0000ff, 1);
-  for (const key in polydata) {
-    if (Object.prototype.hasOwnProperty.call(polydata, key)) {
+  for (let key = 0; key < polydata.length; key++) {
+    if (polydata[key] == selectedPolygon) {
+      polygonGraphics.beginFill(0x8080ff, 0.3);
+    } else {
       polygonGraphics.beginFill(0x0000ff, 0.3);
-      polygonGraphics.drawPolygon(polydata[key].getPolygon());
-      polygonGraphics.endFill();
     }
+    polygonGraphics.drawPolygon(polydata[key].getPolygon());
+    polygonGraphics.endFill();
   }
 
   polygonGraphics.lineStyle(0);
@@ -444,135 +520,3 @@ function drawPolygons() {
     polygonGraphics.endFill();
   }
 }
-/*
-let islandData: any;
-let context: CanvasRenderingContext2D | null;
-let canvasMove = {
-  mouseDown: false,
-  left: 0,
-  top: 0,
-  lastMouseX: 0,
-  lastMouseY: 0,
-  scale: 1
-};
-
-function frame() {
-  if (context && islandData) {
-    context.clearRect(0, 0, context.canvas.width, context.canvas.height);
-
-    context.beginPath();
-
-    const vpos = (sx: number, sy: number) => {
-      return {
-        x: (512 + sx + canvasMove.left) * canvasMove.scale,
-        y: (512 - sy + canvasMove.top) * canvasMove.scale
-      };
-    };
-    const line = (sx: number, sy: number, ex: number, ey: number) => {
-      const s = vpos(sx, sy),
-        e = vpos(ex, ey);
-      if (context) {
-        if (
-          (s.x > 0 &&
-            s.x < context.canvas.width &&
-            s.y > 0 &&
-            s.y < context.canvas.height) ||
-          (e.x > 0 &&
-            e.x < context.canvas.width &&
-            e.y > 0 &&
-            e.y < context.canvas.height)
-        ) {
-          context.moveTo(s.x, s.y);
-          context.lineTo(e.x, e.y);
-        }
-      }
-    };
-
-    context.strokeStyle = "#ffc000";
-    context.lineWidth = 3.5 * canvasMove.scale;
-    for (const key in islandData) {
-      if (Object.prototype.hasOwnProperty.call(islandData, key)) {
-        const i = islandData[key];
-        for (const j of i.links) {
-          line(i.x, i.z, islandData[j].x, islandData[j].z);
-          context.stroke();
-        }
-      }
-    }
-
-    context.strokeStyle = "#000000";
-    context.lineWidth = 0.5;
-    for (const key in islandData) {
-      if (Object.prototype.hasOwnProperty.call(islandData, key)) {
-        const i = islandData[key];
-        for (const j of i.links) {
-          line(i.x, i.z, islandData[j].x, islandData[j].z);
-          context.stroke();
-        }
-      }
-    }
-
-    requestAnimationFrame(frame);
-  }
-}
-
-addEventListener("load", async () => {
-  const canvas = <HTMLCanvasElement>document.getElementById("canvas");
-  const body = document.body;
-  if (canvas) {
-    const width = body.clientWidth,
-      height = body.clientHeight;
-    canvas.width = width * devicePixelRatio;
-    canvas.height = height * devicePixelRatio;
-    context = canvas.getContext("2d", { alpha: false });
-    islandData = await window.electronAPI.loadRomTrack();
-
-    canvas.addEventListener("mousedown", (e) => {
-      canvasMove.mouseDown = true;
-      canvasMove.lastMouseX = e.clientX;
-      canvasMove.lastMouseY = e.clientY;
-    });
-
-    canvas.addEventListener("mousemove", (e) => {
-      if (canvasMove.mouseDown && e.shiftKey) {
-        canvasMove.left +=
-          (e.clientX - canvasMove.lastMouseX) / canvasMove.scale;
-        canvasMove.top +=
-          (e.clientY - canvasMove.lastMouseY) / canvasMove.scale;
-      }
-      canvasMove.lastMouseX = e.clientX;
-      canvasMove.lastMouseY = e.clientY;
-    });
-
-    canvas.addEventListener("mouseup", () => {
-      canvasMove.mouseDown = false;
-    });
-
-    canvas.addEventListener("wheel", (e) => {
-      const oldScale = canvasMove.scale;
-      if (e.ctrlKey) {
-        if (e.deltaY > 0) {
-          canvasMove.scale = Math.max(0.1, oldScale - 0.1);
-        } else {
-          canvasMove.scale = Math.min(10, oldScale + 0.1);
-        }
-      }
-      canvasMove.left -= e.clientX / oldScale - e.clientX / canvasMove.scale;
-      canvasMove.top -= e.clientY / oldScale - e.clientY / canvasMove.scale;
-    });
-
-    requestAnimationFrame(frame);
-  }
-});
-
-addEventListener("resize", () => {
-  const canvas = <HTMLCanvasElement>document.getElementById("canvas");
-  const body = document.body;
-  if (canvas) {
-    const width = body.clientWidth,
-      height = body.clientHeight;
-    canvas.width = width * devicePixelRatio;
-    canvas.height = height * devicePixelRatio;
-  }
-});
-// */
