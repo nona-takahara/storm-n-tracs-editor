@@ -319,16 +319,10 @@ parentApp.addEventListener("mousemove", (e) => {
     drawPolygons();
     updateHud();
   }
-
-  (document.getElementById("debug") as HTMLParagraphElement).innerText =
-    JSON.stringify({
-      x: mouse_ax.toFixed(1),
-      y: mouse_az.toFixed(1),
-      v: nearestVertex
-    });
 });
 
 let selectedPolygon: number | undefined = undefined;
+let newPolygon = false;
 
 parentApp.addEventListener("mousedown", (e) => {
   mousedown = true;
@@ -338,14 +332,38 @@ parentApp.addEventListener("mousedown", (e) => {
   );
   const mouse_az =
     (innerHeight / 2 - e.clientY) / canvasMove.scale + canvasMove.top;
-  if (!nearestVertex || !selectedPolygon) {
+
+  if (newPolygon) {
+    if (selectedPolygon) {
+      if (nearestVertex) {
+        if (polydata[selectedPolygon].vertex[0] == nearestVertex) {
+          newPolygon = false;
+        } else {
+          polydata[selectedPolygon].vertex.push(nearestVertex);
+          vertex[nearestVertex].poly?.push(polydata[selectedPolygon]);
+        }
+      } else {
+        const v = new Vertex(mouse_ax, mouse_az);
+        v.poly = [polydata[selectedPolygon]];
+        vertex.push(v);
+        polydata[selectedPolygon].vertex.push(vertex.length - 1);
+      }
+    } else {
+      newPolygon = false;
+    }
+    updateHud();
+    drawPolygons();
+  } else if (!nearestVertex || !selectedPolygon) {
     selectedPolygon = undefined;
-    for (let key = 1; key < polydata.length; key++) {
+    for (let key = 0; key < polydata.length; key++) {
       const element = polydata[key];
       function contains(vs: NtracsPolygon, x: number, z: number): boolean {
         const poly = vs.vertex.map((v) => vertex[v]);
         let vt: number;
         let f = false;
+        if (poly.length < 2) {
+          return false;
+        }
         for (let i = 0; i < poly.length - 1; i++) {
           if (
             (poly[i].z <= z && poly[i + 1].z > z) ||
@@ -390,9 +408,17 @@ function updateHud() {
       hud.removeChild(hud.firstChild);
     }
     if (selectedPolygon) {
-      const name = document.createElement("h3");
-      name.innerHTML = polydata[selectedPolygon].name;
-      hud.appendChild(name);
+      const name_h3 = document.createElement("h3");
+      name_h3.innerText = polydata[selectedPolygon].name;
+
+      const name_input = document.createElement("input");
+      name_input.value = polydata[selectedPolygon].name;
+      name_input.addEventListener("input", () => {
+        ss.name = name_input.value;
+        name_h3.innerText = ss.name;
+      });
+      hud.appendChild(name_h3);
+      hud.appendChild(name_input);
 
       const rmbutton = document.createElement("button");
       rmbutton.innerText = "remove";
@@ -467,7 +493,14 @@ function updateHud() {
       }
       hud.appendChild(ul);
     } else {
-      // 未指定のとき
+      const button = document.createElement("button");
+      button.innerHTML = "Create Polygon";
+      button.addEventListener("click", () => {
+        polydata.push(new NtracsPolygon(`Area_${polydata.length}`, []));
+        selectedPolygon = polydata.length - 1;
+        newPolygon = true;
+      });
+      hud.appendChild(button);
     }
   }
 }
