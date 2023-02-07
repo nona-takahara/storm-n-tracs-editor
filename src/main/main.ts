@@ -78,7 +78,7 @@ async function loadAddon(path: string) {
         }
       }
     }
-    return list;
+    return { path: path, data: list };
   }
   return undefined;
 }
@@ -129,12 +129,12 @@ async function loadProject() {
   if (!res.canceled && res.filePaths[0]) {
     if (existsSync(res.filePaths[0])) {
       let data = JSON.parse((await fs.readFile(res.filePaths[0])).toString());
-      for (const path of data.addons) {
-        if (existsSync(path)) {
-          if (!data.components) {
-            data.components = {};
+      if (data.addons) {
+        data.components = [];
+        for (const path of data.addons) {
+          if (existsSync(path)) {
+            data.components.push(await loadAddon(path));
           }
-          data.components[path] = await loadAddon(path);
         }
       }
       return data;

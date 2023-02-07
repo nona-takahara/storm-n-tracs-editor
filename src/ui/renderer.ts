@@ -370,6 +370,16 @@ function updateHud() {
       });
       hud.appendChild(save);
 
+      const add = document.createElement("button");
+      add.innerText = "Add add-on";
+      add.addEventListener("click", async () => {
+        prj.addAndDrawComponents(
+          componentGraphics,
+          await window.electronAPI.loadAddon()
+        );
+      });
+      hud.appendChild(add);
+
       const create = document.createElement("button");
       create.innerHTML = "Create Polygon";
       create.addEventListener("click", () => {

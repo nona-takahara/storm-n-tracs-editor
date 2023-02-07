@@ -73,26 +73,20 @@ export class NtracsProject {
     this.tracks = track;
     this.components = {};
     if (data.components) {
-      for (const key in data.components) {
-        if (Object.prototype.hasOwnProperty.call(data.components, key)) {
-          const element = data.components[key];
-          this.addAndDrawComponents(graphics, key, element);
-        }
+      for (const iterator of data.components) {
+        this.addAndDrawComponents(graphics, iterator);
       }
     }
   }
 
-  addAndDrawComponents(
-    graphics: __PIXI.Graphics,
-    name: string,
-    components: any[]
-  ) {
-    this.components[name] = components;
+  addAndDrawComponents(graphics: __PIXI.Graphics, d: any) {
+    const data = d.data;
+    this.components[d.path] = data;
     const textSettings = {
       fontFamily: "Consolas, monospace",
       fontSize: 20 * devicePixelRatio
     };
-    for (const c of components) {
+    for (const c of data) {
       const basicText = new PIXI.Text(c.tag || "", textSettings);
       basicText.x = c.x + 0.8;
       basicText.y = c.z + 0.8;
