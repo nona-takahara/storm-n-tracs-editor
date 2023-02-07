@@ -108,7 +108,12 @@ function createWindow() {
 }
 
 async function saveProject(event: Electron.IpcMainInvokeEvent, project: any) {
-  console.log(project);
+  const res = await dialog.showSaveDialog({
+    filters: [{ name: "JSON data file", extensions: ["json"] }]
+  });
+  if (!res.canceled && res.filePath) {
+    fs.writeFile(res.filePath, project);
+  }
 }
 
 async function loadProject() {
