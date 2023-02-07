@@ -151,9 +151,11 @@ export class NtracsProject {
         name: v.name,
         vertexId: v.vertex,
         rawVertex: v.vertex.map((k) => this.vertex[k]),
-        related: v.vertex
-          .map((k) => this.vertex[k].poly?.map((s) => s.name))
-          .flat()
+        related: Array.from(
+          new Set(
+            v.vertex.map((k) => this.vertex[k].poly?.map((s) => s.name)).flat()
+          )
+        )
       })),
       addons: (() => {
         let l: string[] = [];

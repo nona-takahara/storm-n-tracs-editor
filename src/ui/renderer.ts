@@ -253,6 +253,12 @@ function updateHud() {
     while (hud.firstChild) {
       hud.removeChild(hud.firstChild);
     }
+    if (newPolygon) {
+      const p = document.createElement("p");
+      p.innerText = "New polygon mode: click first vertex to finish";
+      hud.appendChild(p);
+    }
+
     if (selectedPolygon) {
       const name_h3 = document.createElement("h3");
       name_h3.innerText = prj.polygons[selectedPolygon].name;

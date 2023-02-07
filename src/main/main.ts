@@ -59,7 +59,9 @@ async function loadAddon(path: string) {
     for (const l of xmlContent.playlist.locations.locations.l) {
       const tile = tiles[l["@_tile"].replace("data/tiles/", "")];
       if (tile) {
-        for (const c of l.components.c) {
+        for (const c of l.components.c?.length
+          ? l.components.c
+          : [l.components.c]) {
           list.push({
             tag: c["@_name"],
             x: Number(c.spawn_transform["@_30"]) + tile.offsetX,
