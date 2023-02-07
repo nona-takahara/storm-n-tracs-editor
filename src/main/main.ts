@@ -106,9 +106,14 @@ function createWindow() {
   win.loadFile(path.join(__dirname, "index.html"));
 }
 
+async function saveFile(event: Electron.IpcMainInvokeEvent, project: any) {
+  console.log(project);
+}
+
 app.whenReady().then(() => {
   ipcMain.handle("load:romTrack", handleLoadRomTrack);
   ipcMain.handle("load:addon", handleLoadAddon);
+  ipcMain.handle("save", saveFile);
   createWindow();
 
   app.on("activate", () => {

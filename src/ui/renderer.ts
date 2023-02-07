@@ -340,16 +340,23 @@ function updateHud() {
       }
       hud.appendChild(ul);
     } else {
-      const button = document.createElement("button");
-      button.innerHTML = "Create Polygon";
-      button.addEventListener("click", () => {
+      const save = document.createElement("button");
+      save.innerText = "Save";
+      save.addEventListener("click", () => {
+        window.electronAPI.save(JSON.stringify(prj));
+      });
+      hud.appendChild(save);
+
+      const create = document.createElement("button");
+      create.innerHTML = "Create Polygon";
+      create.addEventListener("click", () => {
         prj.polygons.push(
           new NtracsPolygon(`Area_${prj.polygons.length}`, [], prj)
         );
         selectedPolygon = prj.polygons.length - 1;
         newPolygon = true;
       });
-      hud.appendChild(button);
+      hud.appendChild(create);
     }
   }
 }
