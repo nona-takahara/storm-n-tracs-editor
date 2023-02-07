@@ -38,7 +38,7 @@ addEventListener("load", async () => {
   updateHud();
 
   for (let ix = -1000; ix <= 10 * 1000; ix += 1000) {
-    for (let iy = -12000 + (ix % 2000); iy <= -3 * 1000; iy += 2000) {
+    for (let iy = -14000 + (ix % 2000); iy <= -3 * 1000; iy += 2000) {
       trackGraphics.beginFill(0xf0f0f0);
       trackGraphics.drawRect(ix - 500, iy + 500, 1000, 1000);
       trackGraphics.endFill();

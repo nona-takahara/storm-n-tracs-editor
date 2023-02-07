@@ -2,7 +2,7 @@ import path from "path";
 import { promises as fs } from "fs";
 import { app, BrowserWindow, dialog, ipcMain } from "electron";
 import { XMLParser } from "fast-xml-parser";
-import { tiles } from "./tiles";
+import { romPath, tiles } from "./tiles";
 import { existsSync } from "original-fs";
 
 async function readAndParseXML(_path: string) {
@@ -21,37 +21,33 @@ async function readAndParseXML(_path: string) {
 
 async function handleLoadRomTrack() {
   let list: any = {};
-  try {
-    for (const name in tiles) {
-      if (Object.prototype.hasOwnProperty.call(tiles, name)) {
-        const tile = tiles[name];
 
-        const xmlContent = await readAndParseXML(
-          path.join(__dirname, "../", ".temp", name)
-        );
+  for (const name in tiles) {
+    if (
+      Object.prototype.hasOwnProperty.call(tiles, name) &&
+      existsSync(path.join(romPath, name))
+    ) {
+      const tile = tiles[name];
+      const xmlContent = await readAndParseXML(path.join(romPath, name));
 
-        if (xmlContent) {
-          const tir = xmlContent.definition.train_tracks.track;
-          for (const i of tir ? tir : [tir]) {
-            if (i?.["@_id"]) {
-              list[name + i["@_id"]] = {
-                x: Number(i.transform["@_30"]) + tile.offsetX,
-                z: Number(i.transform["@_32"]) + tile.offsetY,
-                links:
-                  i.links.link?.map === undefined
-                    ? [((name + i?.links?.link?.["@_id"]) as string) || ""]
-                    : (i.links.link as Array<any>).map(
-                        (v: any) => (name + v["@_id"]) as string
-                      )
-              };
-            }
+      if (xmlContent) {
+        const tir = xmlContent.definition.train_tracks.track;
+        for (const i of tir ? tir : [tir]) {
+          if (i?.["@_id"]) {
+            list[name + i["@_id"]] = {
+              x: Number(i.transform["@_30"]) + tile.offsetX,
+              z: Number(i.transform["@_32"]) + tile.offsetY,
+              links:
+                i.links.link?.map === undefined
+                  ? [((name + i?.links?.link?.["@_id"]) as string) || ""]
+                  : (i.links.link as Array<any>).map(
+                      (v: any) => (name + v["@_id"]) as string
+                    )
+            };
           }
         }
       }
     }
-  } catch (e) {
-    console.error(e);
-    list = undefined;
   }
   return list;
 }
