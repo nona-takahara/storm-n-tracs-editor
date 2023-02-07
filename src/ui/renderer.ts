@@ -1,6 +1,6 @@
 /// <reference path="./renderer.d.ts" />
 import * as __PIXI from "pixi.js";
-import { Vertex, NtracsPolygon, loadDummy, NtracsProject } from "./data.js";
+import { Vertex, NtracsPolygon, NtracsProject } from "./data.js";
 export declare const PIXI: typeof __PIXI;
 
 let prj: NtracsProject;
@@ -27,62 +27,67 @@ const parentApp = <HTMLDivElement>document.getElementById("canvas");
 const mainContainer = new PIXI.Container();
 let polygonGraphics = new PIXI.Graphics();
 
+const componentGraphics = new PIXI.Graphics();
+const trackGraphics = new PIXI.Graphics();
+
 moveView();
 app.stage.addChild(mainContainer);
 parentApp.appendChild(<HTMLCanvasElement>app.view);
 
 addEventListener("load", async () => {
-  const graphics = new PIXI.Graphics();
+  updateHud();
 
   for (let ix = -1000; ix <= 10 * 1000; ix += 1000) {
     for (let iy = -12000 + (ix % 2000); iy <= -3 * 1000; iy += 2000) {
-      graphics.beginFill(0xf0f0f0);
-      graphics.drawRect(ix - 500, iy + 500, 1000, 1000);
-      graphics.endFill();
+      trackGraphics.beginFill(0xf0f0f0);
+      trackGraphics.drawRect(ix - 500, iy + 500, 1000, 1000);
+      trackGraphics.endFill();
     }
   }
 
-  prj = new NtracsProject(
-    await loadDummy(),
-    await window.electronAPI.loadRomTrack()
-  );
-  prj.addAndDrawComponents(
-    graphics,
-    "default",
-    await window.electronAPI.loadAddon()
-  );
+  const res = await window.electronAPI.load();
+  if (res) {
+    prj = new NtracsProject(
+      componentGraphics,
+      res,
+      await window.electronAPI.loadRomTrack()
+    );
+  } else {
+    return;
+  }
 
-  graphics.lineStyle(4, 0xffd000, 1);
+  trackGraphics.lineStyle(4, 0xffd000, 1);
   for (const key in prj.tracks) {
     if (Object.prototype.hasOwnProperty.call(prj.tracks, key)) {
       const i = prj.tracks[key];
       for (const j of i.links) {
         if (prj.tracks[j]?.x && prj.tracks[j]?.z) {
-          graphics.moveTo(i.x, i.z);
-          graphics.lineTo(prj.tracks[j].x, prj.tracks[j].z);
+          trackGraphics.moveTo(i.x, i.z);
+          trackGraphics.lineTo(prj.tracks[j].x, prj.tracks[j].z);
         }
       }
     }
   }
-  graphics.lineStyle(1, 0xff8000, 1);
+  trackGraphics.lineStyle(1, 0xff8000, 1);
   for (const key in prj.tracks) {
     if (Object.prototype.hasOwnProperty.call(prj.tracks, key)) {
       const i = prj.tracks[key];
       for (const j of i.links) {
         if (prj.tracks[j]?.x && prj.tracks[j]?.z) {
-          graphics.moveTo(i.x, i.z);
-          graphics.lineTo(prj.tracks[j].x, prj.tracks[j].z);
+          trackGraphics.moveTo(i.x, i.z);
+          trackGraphics.lineTo(prj.tracks[j].x, prj.tracks[j].z);
         }
       }
       if (i.links.length > 2) {
-        graphics.drawCircle(i.x, i.z, 1);
+        trackGraphics.drawCircle(i.x, i.z, 1);
       }
     }
   }
 
   refreshUI();
 
-  mainContainer.addChild(graphics);
+  mainContainer.addChild(trackGraphics);
+  mainContainer.addChild(componentGraphics);
   mainContainer.addChild(polygonGraphics);
 });
 
@@ -156,7 +161,7 @@ parentApp.addEventListener("mousemove", (e) => {
   const m = mousePos(e);
 
   if (!mousedown) {
-    nearestVertex = prj.searchNearestVertex(m.x, m.z, 8.0 / canvasMove.scale);
+    nearestVertex = prj?.searchNearestVertex(m.x, m.z, 8.0 / canvasMove.scale);
   } else if (nearestVertex && mousedown) {
     prj.vertex[nearestVertex].x = Math.floor(m.x * 10) / 10.0;
     prj.vertex[nearestVertex].z = Math.floor(m.z * 10) / 10.0;
@@ -347,7 +352,11 @@ function updateHud() {
       load.addEventListener("click", async () => {
         const res = await window.electronAPI.load();
         if (res) {
-          prj = new NtracsProject(res, await window.electronAPI.loadRomTrack());
+          prj = new NtracsProject(
+            componentGraphics,
+            res,
+            await window.electronAPI.loadRomTrack()
+          );
           selectedPolygon = undefined;
           refreshUI();
         }

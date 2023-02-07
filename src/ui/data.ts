@@ -52,7 +52,7 @@ export class NtracsProject {
   components: { [addonName: string]: Array<any> };
   vertex: Vertex[];
   polygons: NtracsPolygon[];
-  constructor(data: any, track: any[]) {
+  constructor(graphics: __PIXI.Graphics, data: any, track: any[]) {
     this.vertex = data.vertex.map((v: any) => new Vertex(v.x, v.z));
     this.polygons = data.polygons.map(
       (v: any) => new NtracsPolygon(v.name, v.vertexId, this)
@@ -69,8 +69,17 @@ export class NtracsProject {
       }
       poly.createPolygon();
     }
+
     this.tracks = track;
     this.components = {};
+    if (data.components) {
+      for (const key in data.components) {
+        if (Object.prototype.hasOwnProperty.call(data.components, key)) {
+          const element = data.components[key];
+          this.addAndDrawComponents(graphics, key, element);
+        }
+      }
+    }
   }
 
   addAndDrawComponents(
@@ -151,7 +160,14 @@ export class NtracsProject {
         related: v.vertex
           .map((k) => this.vertex[k].poly?.map((s) => s.name))
           .flat()
-      }))
+      })),
+      addons: (() => {
+        let l: string[] = [];
+        for (const key in this.components) {
+          l.push(key);
+        }
+        return l;
+      })()
     };
   }
 }

@@ -56,38 +56,47 @@ async function handleLoadRomTrack() {
   return list;
 }
 
-async function handleLoadAddon() {
-  try {
-    const xmlContent = await readAndParseXML(
-      path.join(__dirname, "../", ".temp/playlist.xml")
-    );
-
-    let list: any[] = [];
-    if (xmlContent) {
-      for (const l of xmlContent.playlist.locations.locations.l) {
-        const tile = tiles[l["@_tile"].replace("data/tiles/", "")];
-        if (tile) {
-          for (const c of l.components.c) {
-            list.push({
-              tag: c["@_name"],
-              x: Number(c.spawn_transform["@_30"]) + tile.offsetX,
-              z: Number(c.spawn_transform["@_32"]) + tile.offsetY,
-              m00: Number(c.spawn_transform["@_00"]),
-              m01: Number(c.spawn_transform["@_02"]),
-              m10: Number(c.spawn_transform["@_20"]),
-              m11: Number(c.spawn_transform["@_22"]),
-              size_x:
-                Number(c.spawn_bounds.max["@_x"]) -
-                Number(c.spawn_bounds.min["@_x"]),
-              size_z:
-                Number(c.spawn_bounds.min["@_z"]) -
-                Number(c.spawn_bounds.max["@_z"])
-            });
-          }
+async function loadAddon(path: string) {
+  const xmlContent = await readAndParseXML(path);
+  let list: any[] = [];
+  if (xmlContent) {
+    for (const l of xmlContent.playlist.locations.locations.l) {
+      const tile = tiles[l["@_tile"].replace("data/tiles/", "")];
+      if (tile) {
+        for (const c of l.components.c) {
+          list.push({
+            tag: c["@_name"],
+            x: Number(c.spawn_transform["@_30"]) + tile.offsetX,
+            z: Number(c.spawn_transform["@_32"]) + tile.offsetY,
+            m00: Number(c.spawn_transform["@_00"]),
+            m01: Number(c.spawn_transform["@_02"]),
+            m10: Number(c.spawn_transform["@_20"]),
+            m11: Number(c.spawn_transform["@_22"]),
+            size_x:
+              Number(c.spawn_bounds.max["@_x"]) -
+              Number(c.spawn_bounds.min["@_x"]),
+            size_z:
+              Number(c.spawn_bounds.min["@_z"]) -
+              Number(c.spawn_bounds.max["@_z"])
+          });
         }
       }
-      return list;
     }
+    return list;
+  }
+  return undefined;
+}
+
+async function handleLoadAddon() {
+  try {
+    const res = await dialog.showOpenDialog({
+      properties: ["openFile"],
+      filters: [{ name: "XML data file", extensions: ["xml"] }]
+    });
+    if (res.canceled || !existsSync(res.filePaths[0])) {
+      return undefined;
+    }
+    return await loadAddon(res.filePaths[0]);
   } catch (e) {
     console.error(e);
   }
@@ -118,11 +127,21 @@ async function saveProject(event: Electron.IpcMainInvokeEvent, project: any) {
 
 async function loadProject() {
   const res = await dialog.showOpenDialog({
-    properties: ["openFile"]
+    properties: ["openFile"],
+    filters: [{ name: "JSON data file", extensions: ["json"] }]
   });
   if (!res.canceled && res.filePaths[0]) {
     if (existsSync(res.filePaths[0])) {
-      return JSON.parse((await fs.readFile(res.filePaths[0])).toString());
+      let data = JSON.parse((await fs.readFile(res.filePaths[0])).toString());
+      for (const path of data.addons) {
+        if (existsSync(path)) {
+          if (!data.components) {
+            data.components = {};
+          }
+          data.components[path] = await loadAddon(path);
+        }
+      }
+      return data;
     }
   }
   return undefined;
