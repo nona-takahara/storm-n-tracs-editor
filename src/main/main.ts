@@ -1,8 +1,9 @@
 import path from "path";
 import { promises as fs } from "fs";
-import { app, BrowserWindow, ipcMain } from "electron";
+import { app, BrowserWindow, dialog, ipcMain } from "electron";
 import { XMLParser } from "fast-xml-parser";
 import { tiles } from "./tiles";
+import { existsSync } from "original-fs";
 
 async function readAndParseXML(_path: string) {
   try {
@@ -106,14 +107,27 @@ function createWindow() {
   win.loadFile(path.join(__dirname, "index.html"));
 }
 
-async function saveFile(event: Electron.IpcMainInvokeEvent, project: any) {
+async function saveProject(event: Electron.IpcMainInvokeEvent, project: any) {
   console.log(project);
+}
+
+async function loadProject() {
+  const res = await dialog.showOpenDialog({
+    properties: ["openFile"]
+  });
+  if (!res.canceled && res.filePaths[0]) {
+    if (existsSync(res.filePaths[0])) {
+      return JSON.parse((await fs.readFile(res.filePaths[0])).toString());
+    }
+  }
+  return undefined;
 }
 
 app.whenReady().then(() => {
   ipcMain.handle("load:romTrack", handleLoadRomTrack);
   ipcMain.handle("load:addon", handleLoadAddon);
-  ipcMain.handle("save", saveFile);
+  ipcMain.handle("save", saveProject);
+  ipcMain.handle("load", loadProject);
   createWindow();
 
   app.on("activate", () => {

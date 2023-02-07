@@ -4,6 +4,7 @@ export interface IElectronAPI {
   loadRomTrack: () => Promise<any>;
   loadAddon: () => Promise<any>;
   save: (project: string) => Promise<any>;
+  load: () => Promise<any>;
 }
 
 declare global {

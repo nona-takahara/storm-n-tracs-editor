@@ -42,7 +42,15 @@ addEventListener("load", async () => {
     }
   }
 
-  prj = await loadDummy(graphics);
+  prj = new NtracsProject(
+    await loadDummy(),
+    await window.electronAPI.loadRomTrack()
+  );
+  prj.addAndDrawComponents(
+    graphics,
+    "default",
+    await window.electronAPI.loadAddon()
+  );
 
   graphics.lineStyle(4, 0xffd000, 1);
   for (const key in prj.tracks) {
@@ -72,7 +80,7 @@ addEventListener("load", async () => {
     }
   }
 
-  drawPolygons();
+  refreshUI();
 
   mainContainer.addChild(graphics);
   mainContainer.addChild(polygonGraphics);
@@ -158,8 +166,7 @@ parentApp.addEventListener("mousemove", (e) => {
         p.createPolygon();
       }
     }
-    drawPolygons();
-    updateHud();
+    refreshUI();
   }
 });
 
@@ -187,8 +194,7 @@ parentApp.addEventListener("mousedown", (e) => {
     } else {
       newPolygon = false;
     }
-    updateHud();
-    drawPolygons();
+    refreshUI();
   } else if (!nearestVertex || !selectedPolygon) {
     selectedPolygon = undefined;
     for (let key = 0; key < prj.polygons.length; key++) {
@@ -232,8 +238,7 @@ parentApp.addEventListener("mousedown", (e) => {
         selectedPolygon = key;
       }
     }
-    drawPolygons();
-    updateHud();
+    refreshUI();
   }
 });
 
@@ -276,8 +281,7 @@ function updateHud() {
           prj.polygons.splice(selectedPolygon, 1);
           selectedPolygon = undefined;
 
-          drawPolygons();
-          updateHud();
+          refreshUI();
         }
       });
       hud.appendChild(rvbutton);
@@ -311,8 +315,7 @@ function updateHud() {
           }
           ss.vertex = [...ss.vertex];
           ss.createPolygon();
-          drawPolygons();
-          updateHud();
+          refreshUI();
         });
         if (ss.vertex.length > 3) {
           li1.appendChild(delbutton);
@@ -330,8 +333,7 @@ function updateHud() {
             ss.vertex.splice(i + 1, 0, prj.vertex.length - 1);
             ss.vertex = [...ss.vertex];
             ss.createPolygon();
-            drawPolygons();
-            updateHud();
+            refreshUI();
           }
         });
         li2.appendChild(addbutton);
@@ -340,6 +342,18 @@ function updateHud() {
       }
       hud.appendChild(ul);
     } else {
+      const load = document.createElement("button");
+      load.innerText = "Load";
+      load.addEventListener("click", async () => {
+        const res = await window.electronAPI.load();
+        if (res) {
+          prj = new NtracsProject(res, await window.electronAPI.loadRomTrack());
+          selectedPolygon = undefined;
+          refreshUI();
+        }
+      });
+      hud.appendChild(load);
+
       const save = document.createElement("button");
       save.innerText = "Save";
       save.addEventListener("click", () => {
@@ -397,8 +411,7 @@ parentApp.addEventListener("mouseup", (e) => {
           i.createPolygon();
         }
         prj.vertex[nearestVertex] = new Vertex(0, 0);
-        drawPolygons();
-        updateHud();
+        refreshUI();
       }
     }
   }
@@ -420,6 +433,11 @@ parentApp.addEventListener("wheel", (e) => {
   }
   moveView();
 });
+
+function refreshUI() {
+  drawPolygons();
+  updateHud();
+}
 
 function drawPolygons() {
   polygonGraphics.clear();
