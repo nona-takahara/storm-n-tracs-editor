@@ -146,6 +146,7 @@ app.ticker.add(() => {
 });
 
 let mousedown = false;
+let mouseRdown = false;
 function len(x1: number, y1: number, x2: number, y2: number) {
   return (x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2);
 }
@@ -157,8 +158,14 @@ function mousePos(e: MouseEvent) {
   };
 }
 
+let lastMousePos: { x: number; z: number } = { x: 0, z: 0 };
+
 parentApp.addEventListener("mousemove", (e) => {
   const m = mousePos(e);
+  if (!mouseRdown) {
+    lastMousePos = m;
+    updateHud();
+  }
 
   if (!mousedown) {
     nearestVertex = prj?.searchNearestVertex(m.x, m.z, 8.0 / canvasMove.scale);
@@ -181,6 +188,9 @@ let newPolygon = false;
 parentApp.addEventListener("mousedown", (e) => {
   mousedown = true;
   const m = mousePos(e);
+  lastMousePos = m;
+  mouseRdown = e.button == 2;
+
   if (newPolygon) {
     if (selectedPolygon) {
       if (nearestVertex) {
@@ -253,6 +263,12 @@ function updateHud() {
     while (hud.firstChild) {
       hud.removeChild(hud.firstChild);
     }
+    const p = document.createElement("p");
+    p.innerText = `${lastMousePos.x.toFixed(1)}, ${lastMousePos.z.toFixed(
+      1
+    )} : ${mlen.toFixed(1)}`;
+    hud.appendChild(p);
+
     if (newPolygon) {
       const p = document.createElement("p");
       p.innerText = "New polygon mode: click first vertex to finish";
@@ -400,8 +416,15 @@ function updateHud() {
   }
 }
 
+let mlen = 0;
 parentApp.addEventListener("mouseup", (e) => {
   mousedown = false;
+  if (mouseRdown) {
+    const m = mousePos(e);
+    mlen = Math.sqrt(len(lastMousePos.x, lastMousePos.z, m.x, m.z));
+    mouseRdown = false;
+  }
+
   const mouse_ax = -(
     (innerWidth / 2 - e.clientX) / canvasMove.scale +
     canvasMove.left
