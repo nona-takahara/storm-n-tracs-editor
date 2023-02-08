@@ -5,6 +5,14 @@ import { XMLParser } from "fast-xml-parser";
 import { romPath, tiles } from "./tiles";
 import { existsSync } from "original-fs";
 
+function itr(item: any[] | any): any[] {
+  if (item?.length) {
+    return item;
+  } else {
+    return [item];
+  }
+}
+
 async function readAndParseXML(_path: string) {
   try {
     const data = await fs.readFile(_path);
@@ -32,7 +40,7 @@ async function handleLoadRomTrack() {
 
       if (xmlContent) {
         const tir = xmlContent.definition.train_tracks.track;
-        for (const i of tir ? tir : [tir]) {
+        for (const i of itr(tir)) {
           if (i?.["@_id"]) {
             list[name + i["@_id"]] = {
               x: Number(i.transform["@_30"]) + tile.offsetX,
@@ -56,12 +64,10 @@ async function loadAddon(path: string) {
   const xmlContent = await readAndParseXML(path);
   let list: any[] = [];
   if (xmlContent) {
-    for (const l of xmlContent.playlist.locations.locations.l) {
+    for (const l of itr(xmlContent.playlist.locations.locations.l)) {
       const tile = tiles[l["@_tile"].replace("data/tiles/", "")];
       if (tile) {
-        for (const c of l.components.c?.length
-          ? l.components.c
-          : [l.components.c]) {
+        for (const c of itr(l.components.c)) {
           list.push({
             tag: c["@_name"],
             x: Number(c.spawn_transform["@_30"]) + tile.offsetX,
