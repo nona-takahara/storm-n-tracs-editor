@@ -320,6 +320,10 @@ function updateHud() {
       const ss = prj.polygons[selectedPolygon];
       for (let i = 0; i < prj.polygons[selectedPolygon].vertex.length; i++) {
         const v = prj.polygons[selectedPolygon].vertex[i];
+        const nv =
+          prj.polygons[selectedPolygon].vertex[
+            (i + 1) % prj.polygons[selectedPolygon].vertex.length
+          ];
 
         const li1 = document.createElement("li");
         li1.innerText = `${v} (${prj.vertex[v].x.toFixed(1)},${prj.vertex[
@@ -364,6 +368,16 @@ function updateHud() {
           }
         });
         li2.appendChild(addbutton);
+        const ttt = document.createElement("span");
+        ttt.innerText = Math.sqrt(
+          len(
+            prj.vertex[v].x,
+            prj.vertex[v].z,
+            prj.vertex[nv].x,
+            prj.vertex[nv].z
+          )
+        ).toFixed(1);
+        li2.appendChild(ttt);
         ul.appendChild(li1);
         ul.appendChild(li2);
       }
