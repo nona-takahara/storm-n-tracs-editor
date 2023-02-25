@@ -382,6 +382,24 @@ function updateHud() {
         ul.appendChild(li2);
       }
       hud.appendChild(ul);
+
+      const downTrack = document.createElement("input");
+      downTrack.value = prj.polygons[selectedPolygon].downTrack || "";
+      downTrack.placeholder = "Down Track";
+      downTrack.addEventListener("input", () => {
+        ss.downTrack = downTrack.value;
+      });
+      hud.appendChild(downTrack);
+
+      hud.appendChild(document.createElement("br"));
+
+      const upTrack = document.createElement("input");
+      upTrack.value = prj.polygons[selectedPolygon].upTrack || "";
+      upTrack.placeholder = "Up Track or blank";
+      upTrack.addEventListener("input", () => {
+        ss.upTrack = upTrack.value;
+      });
+      hud.appendChild(upTrack);
     } else {
       const load = document.createElement("button");
       load.innerText = "Load";
@@ -420,7 +438,7 @@ function updateHud() {
       create.innerHTML = "Create Polygon";
       create.addEventListener("click", () => {
         prj.polygons.push(
-          new NtracsPolygon(`Area_${prj.polygons.length}`, [], prj)
+          new NtracsPolygon(`Area_${prj.polygons.length}`, [], prj, "", "")
         );
         selectedPolygon = prj.polygons.length - 1;
         newPolygon = true;

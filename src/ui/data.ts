@@ -19,10 +19,20 @@ export class NtracsPolygon {
   vertex: number[];
   polygon?: __PIXI.Polygon;
   prj: NtracsProject;
-  constructor(name: string, vertex: number[], prj: NtracsProject) {
+  upTrack: string;
+  downTrack: string;
+  constructor(
+    name: string,
+    vertex: number[],
+    prj: NtracsProject,
+    downTrack: string,
+    upTrack: string
+  ) {
     this.name = name;
     this.vertex = vertex;
     this.prj = prj;
+    this.upTrack = upTrack;
+    this.downTrack = downTrack;
   }
 
   createPolygon(): __PIXI.Polygon {
@@ -55,7 +65,14 @@ export class NtracsProject {
   constructor(graphics: __PIXI.Graphics, data: any, track: any[]) {
     this.vertex = data.vertex.map((v: any) => new Vertex(v.x, v.z));
     this.polygons = data.polygons.map(
-      (v: any) => new NtracsPolygon(v.name, v.vertexId, this)
+      (v: any) =>
+        new NtracsPolygon(
+          v.name,
+          v.vertexId,
+          this,
+          v.downTrack || "",
+          v.upTrack || ""
+        )
     );
 
     for (let key = 0; key < this.polygons.length; key++) {
@@ -155,7 +172,9 @@ export class NtracsProject {
           new Set(
             v.vertex.map((k) => this.vertex[k].poly?.map((s) => s.name)).flat()
           )
-        )
+        ),
+        downTrack: v.downTrack,
+        upTrack: v.upTrack
       })),
       addons: (() => {
         let l: string[] = [];
