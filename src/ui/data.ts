@@ -112,7 +112,7 @@ export class NtracsProject {
 
       graphics.addChild(basicText);
 
-      if ((c.tag as string).includes("stake")) {
+      if (((c.tag as string) || "").includes("stake")) {
         graphics.lineStyle(0);
         graphics.beginFill(0xa00000, 1);
         graphics.drawCircle(c.x, c.z, 0.5);
