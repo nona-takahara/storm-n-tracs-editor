@@ -352,6 +352,30 @@ function updateHud() {
           li1.appendChild(delbutton);
         }
 
+        const left = document.createElement("input");
+        left.name = "left";
+        left.type = "radio";
+        left.checked = ss.leftIndex == i;
+        left.addEventListener("click", () => {
+          if (left.checked) {
+            ss.leftIndex = i;
+            refreshUI();
+          }
+        });
+        li1.appendChild(left);
+
+        const right = document.createElement("input");
+        right.name = "right";
+        right.type = "radio";
+        right.checked = ss.rightIndex == i;
+        right.addEventListener("click", () => {
+          if (right.checked) {
+            ss.rightIndex = i;
+            refreshUI();
+          }
+        });
+        li1.appendChild(right);
+
         const li2 = document.createElement("li");
         const addbutton = document.createElement("button");
         addbutton.innerHTML = "+";
@@ -438,7 +462,15 @@ function updateHud() {
       create.innerHTML = "Create Polygon";
       create.addEventListener("click", () => {
         prj.polygons.push(
-          new NtracsPolygon(`Area_${prj.polygons.length}`, [], prj, "", "")
+          new NtracsPolygon(
+            `Area_${prj.polygons.length}`,
+            [],
+            prj,
+            "",
+            "",
+            0,
+            0
+          )
         );
         selectedPolygon = prj.polygons.length - 1;
         newPolygon = true;
@@ -521,6 +553,31 @@ function refreshUI() {
 
 function drawPolygons() {
   polygonGraphics.clear();
+
+  polygonGraphics.lineStyle(1.5, 0xff00ff, 0.7);
+  if (selectedPolygon) {
+    const poly = prj.polygons[selectedPolygon];
+    polygonGraphics.moveTo(
+      prj.vertex[poly.vertex[poly.leftIndex]].x,
+      prj.vertex[poly.vertex[poly.leftIndex]].z
+    );
+    polygonGraphics.lineTo(
+      prj.vertex[poly.vertex[poly.rightIndex]].x,
+      prj.vertex[poly.vertex[poly.rightIndex]].z
+    );
+
+    polygonGraphics.drawCircle(
+      prj.vertex[poly.vertex[poly.leftIndex]].x,
+      prj.vertex[poly.vertex[poly.leftIndex]].z,
+      1.5
+    );
+
+    polygonGraphics.drawCircle(
+      prj.vertex[poly.vertex[poly.rightIndex]].x,
+      prj.vertex[poly.vertex[poly.rightIndex]].z,
+      0.8
+    );
+  }
   polygonGraphics.lineStyle(0.2, 0x0000ff, 1);
   for (let key = 0; key < prj.polygons.length; key++) {
     if (key == selectedPolygon) {

@@ -21,18 +21,24 @@ export class NtracsPolygon {
   prj: NtracsProject;
   upTrack: string;
   downTrack: string;
+  leftIndex: number;
+  rightIndex: number;
   constructor(
     name: string,
     vertex: number[],
     prj: NtracsProject,
     downTrack: string,
-    upTrack: string
+    upTrack: string,
+    leftIndex: number,
+    rightIndex: number
   ) {
     this.name = name;
     this.vertex = vertex;
     this.prj = prj;
     this.upTrack = upTrack;
     this.downTrack = downTrack;
+    this.leftIndex = leftIndex;
+    this.rightIndex = rightIndex;
   }
 
   createPolygon(): __PIXI.Polygon {
@@ -71,7 +77,9 @@ export class NtracsProject {
           v.vertexId,
           this,
           v.downTrack || "",
-          v.upTrack || ""
+          v.upTrack || "",
+          v.leftIndex || 0,
+          v.rightIndex || 0
         )
     );
 
@@ -174,7 +182,9 @@ export class NtracsProject {
           )
         ),
         downTrack: v.downTrack,
-        upTrack: v.upTrack
+        upTrack: v.upTrack,
+        leftIndex: v.leftIndex,
+        rightIndex: v.rightIndex
       })),
       addons: (() => {
         let l: string[] = [];
