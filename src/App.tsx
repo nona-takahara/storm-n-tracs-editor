@@ -33,6 +33,10 @@ function mousePos(e: React.MouseEvent, innerWidth: number, innerHeight: number, 
   return new Vector2d(-((innerWidth / 2 - e.clientX) / scale + leftPos), (innerHeight / 2 - e.clientY) / scale + topPos);
 }
 
+function len(x1: number, y1: number, x2: number, y2: number) {
+  return Math.sqrt((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2));
+}
+
 function App() {
   const [width, height] = useWindowSize();
   const [leftPos, setLeftPos] = useState(-1500);
@@ -43,19 +47,18 @@ function App() {
   const [mouseX, setMouseX] = useState(-100000);
   const [mouseZ, setMouseZ] = useState(-100000);
   const [tracks, setTracks] = useState<StormTracks[]>([]);
+  const [nearestVertex, setNearestVertex] = useState<number | undefined>(undefined);
 
-  if (project == undefined) {
-    setProject(Project.createTestData())
-  }
+  function reload() {
+    setProject(Project.createTestData());
 
-  if (tracks.length == 0) {
-    read_file_command(DEBUG_VALUES.tile_dir + "mega_island_11_1.xml").then(
+    read_file_command(DEBUG_VALUES.tile_dir + "mega_island_9_8.xml").then(
       (str) => {
         const xmlParser = new XMLParser({
           ignoreAttributes: false,
           ignoreDeclaration: true
         });
-        setTracks([StormTracks.loadFromXML(xmlParser.parse(str))]);
+        setTracks([StormTracks.loadFromXML(1000, -4000, xmlParser.parse(str))]);
       }
     );
   }
@@ -82,6 +85,25 @@ function App() {
     const m = mousePos(e, width, height, leftPos, topPos, scale);
     setMouseX(m.x);
     setMouseZ(m.z);
+
+    if (!mouseLeftButtonDown) {
+      if (project) {
+        let rets: number | undefined = undefined;
+        let length = 1;
+        for (const [k, v] of project?.vertexes.entries()) {
+          const len_to_vx = len(m.x, m.z, v.x, v.z);
+          if (len_to_vx < length) {
+            length = len_to_vx;
+            rets = k;
+          }
+        }
+        setNearestVertex(rets);
+      } else {
+        setNearestVertex(undefined);
+      }
+    }
+
+
     //if (!mouseRdown) {
     //  lastMousePos = m;
     //  updateHud();
@@ -105,7 +127,11 @@ function App() {
   return (
     <>
       <Nav></Nav>
-      <div><br />{leftPos},{topPos},{scale} | {mouseLeftButtonDown.toString()}, {mouseX} {mouseZ} </div>
+      <div style={{
+        position: "absolute",
+        top: "2em",
+        background: "rgba(255,255,255,0.9)"
+      }}>{leftPos},{topPos},{scale} | {mouseLeftButtonDown.toString()}, {mouseX >> 1},{mouseZ >> 1} | {nearestVertex}<br /><button onClick={reload}>RELOAD</button></div>
       <Stage
         width={width}
         height={height}
@@ -126,8 +152,8 @@ function App() {
             topPos * scale + height / 2]}
           scale={scale}
         >
-          <WorldTrackView project={project} />
-          <AreaPolygonsView project={project} />
+          <WorldTrackView project={project} tracks={tracks} />
+          <AreaPolygonsView project={project} nearestIndex={nearestVertex} />
         </Container>
       </Stage>
     </>
