@@ -3,30 +3,10 @@ import { Graphics } from '@pixi/react';
 import * as PIXI from 'pixi.js';
 import Project from '../data/Project';
 import { invoke } from "@tauri-apps/api/tauri";
-import { XMLParser } from 'fast-xml-parser';
-import DEBUG_VALUE from "./debug_value.json";
 
 type WorldTrackViewProps = {
   project: Project | undefined
 };
-
-function read_file_command(filepath: string) {
-  return invoke("read_file_command", {path: filepath});
-}
-
-async function readAndParseXML(path: string) {
-  try {
-    const data = await read_file_command(path) as string;
-    const xmlParser = new XMLParser({
-      ignoreAttributes: false,
-      ignoreDeclaration: true
-    });
-    return xmlParser.parse(data);
-  } catch (e) {
-    console.error(e);
-    return undefined;
-  }
-}
 
 function WorldTrackView(props: WorldTrackViewProps) {
   const draw = useCallback(
