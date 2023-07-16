@@ -4,12 +4,8 @@ import Vector2d from "./Vector2d";
 import DEBUG_VALUE from "./debug_value.json";
 
 class Project {
-    constructor(public vertexes: Vector2d[], public areas: AreaPolygon[], public tracks: NtracsTrack[], public addons: string[]) {
+    constructor(public vertexes: Map<number,Vector2d>, public areas: AreaPolygon[], public tracks: NtracsTrack[], public addons: string[]) {
 
-    }
-
-    getVertexId(vertex: Vector2d) {
-        return this.vertexes.findIndex((v) => v.x == vertex.x && v.z == vertex.z);
     }
 
     toJSON() {
@@ -23,9 +19,11 @@ class Project {
 
     static createTestData() {
         const t = DEBUG_VALUE;
+        const vertexesMap = new Map();
+        t.vertexes.forEach((v, i) => vertexesMap.set(i, new Vector2d(v.x, v.z)));
 
         return new Project(
-            t.vertexes.map((v) => new Vector2d(v.x, v.z)),
+            vertexesMap,
             t.areas.map((v) => new AreaPolygon(
                 v.name,
                 v.vertexId,

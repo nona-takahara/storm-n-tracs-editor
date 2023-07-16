@@ -4,7 +4,8 @@ import * as PIXI from 'pixi.js';
 import Project from '../data/Project';
 
 type AreaPolygonsViewProps = {
-  project: Project | undefined
+  project: Project | undefined;
+  nearestIndex: number | undefined;
 };
 
 function AreaPolygonsView(props: AreaPolygonsViewProps) {
@@ -22,14 +23,26 @@ function AreaPolygonsView(props: AreaPolygonsViewProps) {
           //} else {
           g.beginFill(0x0000ff, 0.3);
           //}
-          const p = new PIXI.Polygon(area.vertexes.map((v) => ({ x: pprj.vertexes[v].x, y: -pprj.vertexes[v].z } as PIXI.IPointData)));
+          
+          const p = new PIXI.Polygon(
+            area.vertexes.map((v) => {
+              const p = pprj.vertexes.get(v);
+              if (p) {
+                return new PIXI.Point(p.x, -p.z);
+              }
+            }).filter((v): v is Exclude<typeof v, undefined> => v !== undefined)
+          );
           g.drawPolygon(p);
           g.endFill();
         });
 
         g.lineStyle(0);
-        pprj.vertexes.forEach((v) => {
-          g.beginFill(0x0000ff, 1);
+        pprj.vertexes.forEach((v, k) => {
+          if (k === props.nearestIndex) {
+            g.beginFill(0xff0000, 1);
+          } else {
+            g.beginFill(0x0000ff, 1);
+          }
           g.drawCircle(v.x, -v.z, 0.4);
           g.endFill();
         });

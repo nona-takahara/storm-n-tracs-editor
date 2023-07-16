@@ -3,9 +3,11 @@ import { Graphics } from '@pixi/react';
 import * as PIXI from 'pixi.js';
 import Project from '../data/Project';
 import { invoke } from "@tauri-apps/api/tauri";
+import StormTracks from '../data/StormTracks';
 
 type WorldTrackViewProps = {
-  project: Project | undefined
+  project: Project | undefined;
+  tracks: StormTracks[];
 };
 
 function WorldTrackView(props: WorldTrackViewProps) {
@@ -20,37 +22,38 @@ function WorldTrackView(props: WorldTrackViewProps) {
         }
       }
     
-      //const res = readAndParseXML(DEBUG_VALUE.tile_dir + "mega_island_10_8.xml");
-      //res.then((v) => console.log(JSON.stringify(v)));
-      /*
+      const tile = props.tracks[0];
+
       g.lineStyle(4, 0xffd000, 1);
-      for (const key in prj.tracks) {
-        if (Object.prototype.hasOwnProperty.call(prj.tracks, key)) {
-          const i = prj.tracks[key];
+      for (const key in tile.tracks) {
+        if (Object.prototype.hasOwnProperty.call(tile.tracks, key)) {
+          const i = tile.tracks[key];
           for (const j of i.links) {
-            if (prj.tracks[j]?.x && prj.tracks[j]?.z) {
-              g.moveTo(i.x, i.z);
-              g.lineTo(prj.tracks[j].x, prj.tracks[j].z);
+            const rx = tile.tracks[j]?.x, rz = tile.tracks[j]?.z
+            if (rx && rz) {
+              g.moveTo(i.x + tile.offsetX, -i.z - tile.offsetZ);
+              g.lineTo(rx + tile.offsetX, -rz - tile.offsetZ);
             }
           }
         }
       }
       g.lineStyle(1, 0xff8000, 1);
-      for (const key in prj.tracks) {
-        if (Object.prototype.hasOwnProperty.call(prj.tracks, key)) {
-          const i = prj.tracks[key];
+      for (const key in tile.tracks) {
+        if (Object.prototype.hasOwnProperty.call(tile.tracks, key)) {
+          const i = tile.tracks[key];
           for (const j of i.links) {
-            if (prj.tracks[j]?.x && prj.tracks[j]?.z) {
-              g.moveTo(i.x, i.z);
-              g.lineTo(prj.tracks[j].x, prj.tracks[j].z);
+            const rx = tile.tracks[j]?.x, rz = tile.tracks[j]?.z
+            if (rx && rz) {
+              g.moveTo(i.x + tile.offsetX, -i.z - tile.offsetZ);
+              g.lineTo(rx + tile.offsetX, -rz - tile.offsetZ);
             }
           }
           if (i.links.length > 2) {
-            g.drawCircle(i.x, i.z, 1);
+            g.drawCircle(i.x - tile.offsetX, -i.z - tile.offsetZ, 1);
           }
         }
       }
-      */
+      
     },
     [props],
   );
