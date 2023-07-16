@@ -6,6 +6,9 @@ import AreaPolygonsView from "./ui/AreaPolygonsView";
 import Project from "./data/Project";
 import Vector2d from "./data/Vector2d";
 import WorldTrackView from "./ui/WorldTrackView";
+import StormTracks from "./data/StormTracks";
+import { XMLParser } from "fast-xml-parser";
+import DEBUG_VALUES from "./debug_value.json";
 
 const useWindowSize = (): number[] => {
   const [size, setSize] = useState([0, 0]);
@@ -22,6 +25,10 @@ const useWindowSize = (): number[] => {
   return size;
 };
 
+function read_file_command(filepath: string) {
+  return invoke("read_file_command", { path: filepath }) as Promise<string>;
+}
+
 function mousePos(e: React.MouseEvent, innerWidth: number, innerHeight: number, leftPos: number, topPos: number, scale: number): Vector2d {
   return new Vector2d(-((innerWidth / 2 - e.clientX) / scale + leftPos), (innerHeight / 2 - e.clientY) / scale + topPos);
 }
@@ -33,9 +40,24 @@ function App() {
   const [scale, setScale] = useState(1);
   const [project, setProject] = useState<Project | undefined>(undefined);
   const [mouseLeftButtonDown, setMouseLeftButtonDown] = useState(false);
+  const [mouseX, setMouseX] = useState(-100000);
+  const [mouseZ, setMouseZ] = useState(-100000);
+  const [tracks, setTracks] = useState<StormTracks[]>([]);
 
   if (project == undefined) {
     setProject(Project.createTestData())
+  }
+
+  if (tracks.length == 0) {
+    read_file_command(DEBUG_VALUES.tile_dir + "mega_island_11_1.xml").then(
+      (str) => {
+        const xmlParser = new XMLParser({
+          ignoreAttributes: false,
+          ignoreDeclaration: true
+        });
+        setTracks([StormTracks.loadFromXML(xmlParser.parse(str))]);
+      }
+    );
   }
 
   const wheelEvent = (e: React.WheelEvent<HTMLCanvasElement>) => {
@@ -51,10 +73,15 @@ function App() {
       setTopPos(topPos - Math.floor(e.deltaY / scale));
       setLeftPos(leftPos - Math.floor(e.deltaX / scale));
     }
+    const m = mousePos(e, width, height, leftPos, topPos, scale);
+    setMouseX(m.x);
+    setMouseZ(m.z);
   };
 
   const mouseMove = (e: React.MouseEvent<HTMLCanvasElement>) => {
     const m = mousePos(e, width, height, leftPos, topPos, scale);
+    setMouseX(m.x);
+    setMouseZ(m.z);
     //if (!mouseRdown) {
     //  lastMousePos = m;
     //  updateHud();
@@ -78,7 +105,7 @@ function App() {
   return (
     <>
       <Nav></Nav>
-      <div><br />{leftPos},{topPos},{scale} | {mouseLeftButtonDown.toString()}</div>
+      <div><br />{leftPos},{topPos},{scale} | {mouseLeftButtonDown.toString()}, {mouseX} {mouseZ} </div>
       <Stage
         width={width}
         height={height}
@@ -91,6 +118,7 @@ function App() {
         onMouseDown={() => setMouseLeftButtonDown(true)}
         onMouseUp={() => setMouseLeftButtonDown(false)}
         onMouseLeave={() => setMouseLeftButtonDown(false)}
+        onMouseMove={mouseMove}
       >
         <Container
           position={[
