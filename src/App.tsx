@@ -20,7 +20,6 @@ const useWindowSize = (): number[] => {
 };
 
 function App() {
-  const [view, setView] = useState("");
   const [width, height] = useWindowSize();
 
   return (
