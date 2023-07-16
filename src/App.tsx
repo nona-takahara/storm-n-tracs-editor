@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useState } from "react";
+import { useReducer, useLayoutEffect, useState } from "react";
 import { invoke } from "@tauri-apps/api/tauri";
 import Nav from "./ui/Nav";
 import { Stage, Container } from "@pixi/react";
@@ -9,7 +9,6 @@ import WorldTrackView from "./ui/WorldTrackView";
 import StormTracks from "./data/StormTracks";
 import { XMLParser } from "fast-xml-parser";
 import DEBUG_VALUES from "./debug_value.json";
-import { useImmerReducer } from 'use-immer';
 
 const useWindowSize = (): number[] => {
   const [size, setSize] = useState([0, 0]);
@@ -38,8 +37,14 @@ function len(x1: number, y1: number, x2: number, y2: number) {
   return Math.sqrt((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2));
 }
 
-function projectReducer(draft: Project, action: any) {
-
+function projectReducer(project: Project, action: any) {
+  if (action.type == 'move_vertex') {
+    const m = new Map([...project.vertexes]);
+    m.set(action.target, new Vector2d(action.x, action.z));
+    return Object.assign(project, {
+      vertexes: m
+    })
+  }
 }
 
 function App() {
@@ -48,7 +53,7 @@ function App() {
   const [topPos, setTopPos] = useState(-4000);
   const [scale, setScale] = useState(1);
   //const [project, setProject] = useState<Project | undefined>(undefined);
-  const [project, projectDispatch] = useImmerReducer<Project, any>(projectReducer, Project.createTestData());
+  const [project, projectDispatch] = useReducer<any>(projectReducer, Project.createTestData());
   const [mouseLeftButtonDown, setMouseLeftButtonDown] = useState(false);
   const [mouseX, setMouseX] = useState(-100000);
   const [mouseZ, setMouseZ] = useState(-100000);
@@ -104,6 +109,15 @@ function App() {
         setNearestVertex(rets);
       } else {
         setNearestVertex(undefined);
+      }
+    } else {
+      if (nearestVertex !== undefined) {
+        projectDispatch({
+          type: 'move_vertex',
+          x: m.x,
+          z: m.z,
+          target: nearestVertex
+        })
       }
     }
 
