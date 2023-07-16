@@ -22,7 +22,7 @@ function AreaPolygonsView(props: AreaPolygonsViewProps) {
           //} else {
           g.beginFill(0x0000ff, 0.3);
           //}
-          const p = new PIXI.Polygon(area.vertexes.map((v) => ({ x: v.x, y: -v.z } as PIXI.IPointData)));
+          const p = new PIXI.Polygon(area.vertexes.map((v) => ({ x: pprj.vertexes[v].x, y: -pprj.vertexes[v].z } as PIXI.IPointData)));
           g.drawPolygon(p);
           g.endFill();
         });

@@ -27,7 +27,7 @@ class Project {
             t.vertexes.map((v) => new Vector2d(v.x, v.z)),
             t.areas.map((v) => new AreaPolygon(
                 v.name,
-                v.vertexId.map((k) => t.vertexes[k]),
+                v.vertexId,
                 v.vertexId.indexOf(v.leftIndex),
                 [],
                 TrackFlag.none
