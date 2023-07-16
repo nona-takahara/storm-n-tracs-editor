@@ -9,6 +9,7 @@ import WorldTrackView from "./ui/WorldTrackView";
 import StormTracks from "./data/StormTracks";
 import { XMLParser } from "fast-xml-parser";
 import DEBUG_VALUES from "./debug_value.json";
+import { useImmerReducer } from 'use-immer';
 
 const useWindowSize = (): number[] => {
   const [size, setSize] = useState([0, 0]);
@@ -37,12 +38,17 @@ function len(x1: number, y1: number, x2: number, y2: number) {
   return Math.sqrt((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2));
 }
 
+function projectReducer(project: Project, action: any) {
+
+}
+
 function App() {
   const [width, height] = useWindowSize();
   const [leftPos, setLeftPos] = useState(-1500);
   const [topPos, setTopPos] = useState(-4000);
   const [scale, setScale] = useState(1);
-  const [project, setProject] = useState<Project | undefined>(undefined);
+  //const [project, setProject] = useState<Project | undefined>(undefined);
+  const [project, projectDispatch] = useImmerReducer<Project, any>(projectReducer, Project.createTestData());
   const [mouseLeftButtonDown, setMouseLeftButtonDown] = useState(false);
   const [mouseX, setMouseX] = useState(-100000);
   const [mouseZ, setMouseZ] = useState(-100000);
@@ -50,8 +56,6 @@ function App() {
   const [nearestVertex, setNearestVertex] = useState<number | undefined>(undefined);
 
   function reload() {
-    setProject(Project.createTestData());
-
     read_file_command(DEBUG_VALUES.tile_dir + "mega_island_9_8.xml").then(
       (str) => {
         const xmlParser = new XMLParser({
