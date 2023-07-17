@@ -30,13 +30,23 @@ class Project {
 
     isInArea(area: AreaPolygon, x: number, z: number) {
         let prod: Complex = { re: 1, im: 0 };
+        const v = area.vertexes.map(i => this.vertexes.get(i)).filter((v): v is Exclude<typeof v, undefined> => v !== undefined)
+        let minx = false, minz = false, maxx = false, maxz = false;
+        for (const k of v) {
+            minx ||= k.x < x;
+            minz ||= k.z < z;
+            maxx ||= k.x > x;
+            maxz ||= k.z > z;
+        }
+        
+        if (!(minx && minz && maxx && maxz)) {
+            return false;
+        }
 
         for (let i = 0; i < area.vertexes.length; i++) {
-            const v0 = this.vertexes.get(area.vertexes[(i) % area.vertexes.length]);
-            const v1 = this.vertexes.get(area.vertexes[(i + 1) % area.vertexes.length]);
+            const v0 = v[(i) % area.vertexes.length];
+            const v1 = v[(i + 1) % area.vertexes.length];
 
-            console.log(area.vertexes, area.vertexes[i], v0);
-            console.log(area.vertexes, area.vertexes[(i + 1) % area.vertexes.length], v1);
             if (v0 && v1) {
                 prod = cxmul(prod, cxhalfarg(cxmul({ re: v1.x - x, im: v1.z - z }, { re: v0.x - x, im: -v0.z + z })));
             }
