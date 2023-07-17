@@ -6,7 +6,7 @@ import AreaPolygon from '../data/AreaPolygon';
 
 type AreaPolygonsViewProps = {
   project: Project | undefined;
-  nearestIndex: number | undefined;
+  nearestIndex: string | undefined;
   selectedArea: AreaPolygon | undefined;
 };
 

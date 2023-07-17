@@ -3,7 +3,7 @@ import Project from "./Project";
 import Vector2d from "./Vector2d";
 
 class AreaPolygon {
-    constructor(public name: string, public vertexes: number[], public leftVertexInnerId: number, public related: AreaPolygon[], public trackFlag: TrackFlag) {}
+    constructor(public name: string, public vertexes: string[], public leftVertexInnerId: number, public related: AreaPolygon[], public trackFlag: TrackFlag) {}
 
     toProjectJSON(project: Project) {
         return {

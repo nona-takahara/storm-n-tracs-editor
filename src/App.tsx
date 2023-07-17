@@ -65,7 +65,7 @@ function App() {
 
   const [project, projectDispatch] = useReducer(projectReducer, Project.createTestData());
   const [tracks, setTracks] = useState<StormTracks[]>([]);
-  const [nearestVertex, setNearestVertex] = useState<number | undefined>(undefined);
+  const [nearestVertex, setNearestVertex] = useState<string | undefined>(undefined);
   const [selectedPolygon, setSelectedPolygon] = useState<AreaPolygon | undefined>(undefined);
 
   function reload() {
@@ -117,7 +117,7 @@ function App() {
 
     if (!mouseLeftButtonDown) {
       if (project) {
-        let rets: number | undefined = undefined;
+        let rets: string | undefined = undefined;
         let length = 1;
         for (const [k, v] of project.vertexes.entries()) {
           const len_to_vx = len(m.x, m.z, v.x, v.z);

@@ -24,7 +24,7 @@ function cxhalfarg(c: Complex): Complex {
 }
 
 class Project {
-    constructor(public vertexes: Map<number, Vector2d>, public areas: AreaPolygon[], public tracks: NtracsTrack[], public addons: string[]) {
+    constructor(public vertexes: Map<string, Vector2d>, public areas: AreaPolygon[], public tracks: NtracsTrack[], public addons: string[]) {
 
     }
 
@@ -66,13 +66,13 @@ class Project {
     static createTestData() {
         const t = DEBUG_VALUE;
         const vertexesMap = new Map();
-        t.vertexes.forEach((v, i) => vertexesMap.set(i, new Vector2d(v.x, v.z)));
+        t.vertexes.forEach((v, i) => vertexesMap.set("v"+i, new Vector2d(v.x, v.z)));
 
         return new Project(
             vertexesMap,
             t.areas.map((v) => new AreaPolygon(
                 v.name,
-                v.vertexId,
+                v.vertexId.map(k => "v"+k),
                 v.leftIndex,
                 [],
                 TrackFlag.none
