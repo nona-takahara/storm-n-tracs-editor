@@ -9,6 +9,7 @@ import WorldTrackView from "./ui/WorldTrackView";
 import StormTracks from "./data/StormTracks";
 import { XMLParser } from "fast-xml-parser";
 import DEBUG_VALUES from "./debug_value.json";
+import AreaPolygon from "./data/AreaPolygon";
 
 const useWindowSize = (): number[] => {
   const [size, setSize] = useState([0, 0]);
@@ -43,8 +44,11 @@ function projectReducer(project: Project, action: any) {
     m.set(action.target, new Vector2d(action.x, action.z));
     return Object.assign(project, {
       vertexes: m
-    })
+    }) as Project;
+  } else if (action.type == 'reload') {
+    return Project.createTestData();
   }
+  return project;
 }
 
 function App() {
@@ -52,15 +56,18 @@ function App() {
   const [leftPos, setLeftPos] = useState(-1500);
   const [topPos, setTopPos] = useState(-4000);
   const [scale, setScale] = useState(1);
-  //const [project, setProject] = useState<Project | undefined>(undefined);
-  const [project, projectDispatch] = useReducer<any>(projectReducer, Project.createTestData());
+
   const [mouseLeftButtonDown, setMouseLeftButtonDown] = useState(false);
   const [mouseX, setMouseX] = useState(-100000);
   const [mouseZ, setMouseZ] = useState(-100000);
+
+  const [project, projectDispatch] = useReducer(projectReducer, Project.createTestData());
   const [tracks, setTracks] = useState<StormTracks[]>([]);
   const [nearestVertex, setNearestVertex] = useState<number | undefined>(undefined);
+  const [selectedPolygon, setSelectedPolygon] = useState<AreaPolygon | undefined>(undefined);
 
   function reload() {
+    projectDispatch({ type: 'reload'})
     read_file_command(DEBUG_VALUES.tile_dir + "mega_island_9_8.xml").then(
       (str) => {
         const xmlParser = new XMLParser({
@@ -99,7 +106,7 @@ function App() {
       if (project) {
         let rets: number | undefined = undefined;
         let length = 1;
-        for (const [k, v] of project?.vertexes.entries()) {
+        for (const [k, v] of project.vertexes.entries()) {
           const len_to_vx = len(m.x, m.z, v.x, v.z);
           if (len_to_vx < length) {
             length = len_to_vx;
@@ -114,8 +121,9 @@ function App() {
       if (nearestVertex !== undefined) {
         projectDispatch({
           type: 'move_vertex',
-          x: m.x,
-          z: m.z,
+          with_join: true,
+          x: Math.floor(m.x * 10) / 10,
+          z: Math.floor(m.z * 10) / 10,
           target: nearestVertex
         })
       }
@@ -141,6 +149,31 @@ function App() {
     }*/
   }
 
+  const mouseDown = (e: React.MouseEvent) => {
+    const m = mousePos(e, width, height, leftPos, topPos, scale);
+    if (e.button == 0) {
+      setMouseLeftButtonDown(true);
+      if (project) {
+        for (const item of project.areas) {
+          if (project.isInArea(item, m.x, m.z)) {
+            setSelectedPolygon(item);
+            return;
+          }
+        }
+        setSelectedPolygon(undefined);
+      }
+    }
+  }
+
+  const mouseUp = (e: React.MouseEvent) => {
+    if (e.button == 0) {
+      setMouseLeftButtonDown(false);
+    }
+  }
+
+  const mouseLeave = (e: React.MouseEvent) => {
+    setMouseLeftButtonDown(false);
+  };
 
   return (
     <>
@@ -159,9 +192,9 @@ function App() {
         }}
         style={{ margin: 0 }}
         onWheel={wheelEvent}
-        onMouseDown={() => setMouseLeftButtonDown(true)}
-        onMouseUp={() => setMouseLeftButtonDown(false)}
-        onMouseLeave={() => setMouseLeftButtonDown(false)}
+        onMouseDown={mouseDown}
+        onMouseUp={mouseUp}
+        onMouseLeave={mouseLeave}
         onMouseMove={mouseMove}
       >
         <Container
@@ -171,7 +204,7 @@ function App() {
           scale={scale}
         >
           <WorldTrackView project={project} tracks={tracks} />
-          <AreaPolygonsView project={project} nearestIndex={nearestVertex} />
+          <AreaPolygonsView project={project} nearestIndex={nearestVertex} selectedArea={selectedPolygon} />
         </Container>
       </Stage>
     </>
