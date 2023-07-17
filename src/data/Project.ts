@@ -73,7 +73,7 @@ class Project {
             t.areas.map((v) => new AreaPolygon(
                 v.name,
                 v.vertexId,
-                v.vertexId.indexOf(v.leftIndex),
+                v.leftIndex,
                 [],
                 TrackFlag.none
             )), [], t.addons);
