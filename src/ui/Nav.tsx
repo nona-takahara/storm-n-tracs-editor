@@ -2,7 +2,7 @@ import { Alignment, Button, Navbar } from "@blueprintjs/core";
 
 function Nav() {
     return (
-        <Navbar fixedToTop={true} style={{background: 'rgba(255,255,255,0.85)', backdropFilter: 'blur(12px)'}}>
+        <Navbar fixedToTop={true} style={{background: 'rgba(255,255,255,0.85)', backdropFilter: 'blur(8px)'}}>
             <Navbar.Group align={Alignment.LEFT}>
                 <Navbar.Heading>N-TRACS</Navbar.Heading>
                 <Navbar.Divider />

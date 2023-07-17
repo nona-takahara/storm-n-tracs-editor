@@ -67,16 +67,27 @@ function App() {
   const [selectedPolygon, setSelectedPolygon] = useState<AreaPolygon | undefined>(undefined);
 
   function reload() {
-    projectDispatch({ type: 'reload'})
-    read_file_command(DEBUG_VALUES.tile_dir + "mega_island_9_8.xml").then(
-      (str) => {
-        const xmlParser = new XMLParser({
-          ignoreAttributes: false,
-          ignoreDeclaration: true
-        });
-        setTracks([StormTracks.loadFromXML(1000, -4000, xmlParser.parse(str))]);
+    console.clear();
+    projectDispatch({ type: 'reload'});
+    setTracks([]);
+    for (let x = 0; x <= 16; x++) {
+      for (let y = 1; y <= 9; y++) {
+        read_file_command(DEBUG_VALUES.tile_dir + `mega_island_${x}_${y}.xml`).then(
+          (str) => {
+            const xmlParser = new XMLParser({
+              ignoreAttributes: false,
+              ignoreDeclaration: true
+            });
+            setTracks((old) => {
+              const list = old.slice();
+              list[(x)*10+y] = StormTracks.loadFromXML((x-8)*1000, (y*1000)-12000, xmlParser.parse(str));
+              return list;
+            });
+          }
+        ).catch(() => console.log(x,y));
       }
-    );
+    }
+    
   }
 
   const wheelEvent = (e: React.WheelEvent<HTMLCanvasElement>) => {

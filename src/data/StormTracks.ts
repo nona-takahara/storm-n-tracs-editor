@@ -21,7 +21,7 @@ class StormTracks {
                         Number(i.transform["@_30"]),
                         Number(i.transform["@_32"]),
                         Array.isArray(links)
-                            ? links.map((v) => v["@_id"])
+                            ? links.map(v => v["@_id"])
                             : [links?.["@_id"] || ""]
                     );
                 }
