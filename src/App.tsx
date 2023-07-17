@@ -12,6 +12,7 @@ import DEBUG_VALUES from "./debug_value.json";
 import AreaPolygon from "./data/AreaPolygon";
 import DebugView from "./ui/DebugView";
 import { Button } from "@blueprintjs/core";
+import InfoView from "./ui/InfoView";
 
 const useWindowSize = (): number[] => {
   const [size, setSize] = useState([0, 0]);
@@ -175,6 +176,7 @@ function App() {
       <DebugView>
         {leftPos},{topPos},{scale} | {mouseLeftButtonDown.toString()}, {mouseX >> 1},{mouseZ >> 1} | {nearestVertex}<br /><Button onClick={reload}>Reload</Button>
       </DebugView>
+      <InfoView selectedArea={selectedPolygon}></InfoView>
       <Stage
         width={width}
         height={height}
