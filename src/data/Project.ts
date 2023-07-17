@@ -16,7 +16,7 @@ function cxmul(c1: Complex, c2: Complex): Complex {
 }
 
 function cxhalfarg(c: Complex): Complex {
-    const r = c.re * c.re + c.im * c.im;
+    const r = Math.sqrt(c.re * c.re + c.im * c.im);
     return {
         re: Math.sqrt((c.re + r) / 2),
         im: Math.sign(c.im) * Math.sqrt((-c.re + r) / 2)
@@ -32,11 +32,13 @@ class Project {
         let prod: Complex = { re: 1, im: 0 };
 
         for (let i = 0; i < area.vertexes.length; i++) {
-            const v0 = this.vertexes.get(area.vertexes[i]);
-            const v1 = this.vertexes.get((area.vertexes[i] + 1) % area.vertexes.length);
+            const v0 = this.vertexes.get(area.vertexes[(i) % area.vertexes.length]);
+            const v1 = this.vertexes.get(area.vertexes[(i + 1) % area.vertexes.length]);
+
+            console.log(area.vertexes, area.vertexes[i], v0);
+            console.log(area.vertexes, area.vertexes[(i + 1) % area.vertexes.length], v1);
             if (v0 && v1) {
-                prod = cxmul(prod, cxhalfarg(cxmul({ re: v1.x - x, im: v1.z - z }, { re: v0.x - x, im: -v0.z + z }))
-                );
+                prod = cxmul(prod, cxhalfarg(cxmul({ re: v1.x - x, im: v1.z - z }, { re: v0.x - x, im: -v0.z + z })));
             }
         }
         return prod.re < 0;
