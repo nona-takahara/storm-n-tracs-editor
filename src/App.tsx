@@ -180,7 +180,7 @@ function App() {
       <Nav></Nav>
       <div style={{
         position: "absolute",
-        top: "2em",
+        top: "56px",
         background: "rgba(255,255,255,0.9)"
       }}>{leftPos},{topPos},{scale} | {mouseLeftButtonDown.toString()}, {mouseX >> 1},{mouseZ >> 1} | {nearestVertex}<br /><button onClick={reload}>RELOAD</button></div>
       <Stage
