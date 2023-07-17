@@ -10,6 +10,8 @@ import StormTracks from "./data/StormTracks";
 import { XMLParser } from "fast-xml-parser";
 import DEBUG_VALUES from "./debug_value.json";
 import AreaPolygon from "./data/AreaPolygon";
+import DebugView from "./ui/DebugView";
+import { Button } from "@blueprintjs/core";
 
 const useWindowSize = (): number[] => {
   const [size, setSize] = useState([0, 0]);
@@ -71,7 +73,7 @@ function App() {
     projectDispatch({ type: 'reload'});
     setTracks([]);
     for (let x = 0; x <= 16; x++) {
-      for (let y = 1; y <= 9; y++) {
+      for (let y = 0; y <= 9; y++) {
         read_file_command(DEBUG_VALUES.tile_dir + `mega_island_${x}_${y}.xml`).then(
           (str) => {
             const xmlParser = new XMLParser({
@@ -139,25 +141,6 @@ function App() {
         })
       }
     }
-
-
-    //if (!mouseRdown) {
-    //  lastMousePos = m;
-    //  updateHud();
-    //}
-
-    /*if (!mouseLeftButtonDown) {
-      nearestVertex = prj?.searchNearestVertex(m.x, m.z, 8.0 / canvasMove.scale);
-    } else if (nearestVertex && mousedown) {
-      prj.vertex[nearestVertex].x = Math.floor(m.x * 10) / 10.0;
-      prj.vertex[nearestVertex].z = Math.floor(m.z * 10) / 10.0;
-      const ps = prj.vertex[nearestVertex].poly;
-      if (ps) {
-        for (const p of ps) {
-          p.createPolygon();
-        }
-      }
-    }*/
   }
 
   const mouseDown = (e: React.MouseEvent) => {
@@ -189,11 +172,9 @@ function App() {
   return (
     <>
       <Nav></Nav>
-      <div style={{
-        position: "absolute",
-        top: "56px",
-        background: "rgba(255,255,255,0.9)"
-      }}>{leftPos},{topPos},{scale} | {mouseLeftButtonDown.toString()}, {mouseX >> 1},{mouseZ >> 1} | {nearestVertex}<br /><button onClick={reload}>RELOAD</button></div>
+      <DebugView>
+        {leftPos},{topPos},{scale} | {mouseLeftButtonDown.toString()}, {mouseX >> 1},{mouseZ >> 1} | {nearestVertex}<br /><Button onClick={reload}>Reload</Button>
+      </DebugView>
       <Stage
         width={width}
         height={height}
