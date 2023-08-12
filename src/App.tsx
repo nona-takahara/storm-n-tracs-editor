@@ -176,7 +176,7 @@ function App() {
       <DebugView>
         {leftPos},{topPos},{scale} | {mouseLeftButtonDown.toString()}, {mouseX >> 1},{mouseZ >> 1} | {nearestVertex}<br /><Button onClick={reload}>Reload</Button>
       </DebugView>
-      <InfoView selectedArea={selectedPolygon}></InfoView>
+      <InfoView project={project} selectedArea={selectedPolygon}></InfoView>
       <Stage
         width={width}
         height={height}
