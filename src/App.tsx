@@ -206,7 +206,7 @@ function App() {
             text={nearestVertex}
             anchor={0.5}
             x={nv.x}
-            y={-nv.z-2}
+            y={-nv.z-(20/scale)}
             scale={
               {x: 0.8 / scale, y: 0.8 / scale}
             }
