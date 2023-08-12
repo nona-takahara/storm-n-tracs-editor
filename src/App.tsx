@@ -1,7 +1,7 @@
 import { useReducer, useLayoutEffect, useState } from "react";
 import { invoke } from "@tauri-apps/api/tauri";
 import Nav from "./ui/Nav";
-import { Stage, Container } from "@pixi/react";
+import { Stage, Container, Text } from "@pixi/react";
 import AreaPolygonsView from "./ui/AreaPolygonsView";
 import Project from "./data/Project";
 import Vector2d from "./data/Vector2d";
@@ -13,6 +13,7 @@ import AreaPolygon from "./data/AreaPolygon";
 import DebugView from "./ui/DebugView";
 import { Button } from "@blueprintjs/core";
 import InfoView from "./ui/InfoView";
+import { TextStyle } from "pixi.js";
 
 const useWindowSize = (): number[] => {
   const [size, setSize] = useState([0, 0]);
@@ -170,6 +171,8 @@ function App() {
     setMouseLeftButtonDown(false);
   };
 
+  const nv = nearestVertex && project.vertexes.get(nearestVertex);
+
   return (
     <>
       <Nav></Nav>
@@ -199,6 +202,21 @@ function App() {
         >
           <WorldTrackView project={project} tracks={tracks} />
           <AreaPolygonsView project={project} nearestIndex={nearestVertex} selectedArea={selectedPolygon} />
+          {nv && <Text
+            text={nearestVertex}
+            anchor={0.5}
+            x={nv.x}
+            y={-nv.z-2}
+            scale={
+              {x: 0.8 / scale, y: 0.8 / scale}
+            }
+            style={new TextStyle(
+              {
+                fontFamily: "Consolas, monospace",
+                fontSize: 20 * devicePixelRatio
+              }
+            )}
+          />}
         </Container>
       </Stage>
     </>
