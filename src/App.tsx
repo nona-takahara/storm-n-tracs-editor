@@ -51,6 +51,8 @@ function projectReducer(project: Project, action: any) {
     }) as Project;
   } else if (action.type == 'reload') {
     return Project.createTestData();
+  } else if (action.type == 'change_left_vertex') {
+    //
   }
   return project;
 }

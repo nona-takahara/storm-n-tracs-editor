@@ -1,4 +1,4 @@
-import { Card } from "@blueprintjs/core";
+import { Card, Radio, RadioGroup } from "@blueprintjs/core";
 import AreaPolygon from "../data/AreaPolygon";
 import Project from "../data/Project";
 
@@ -15,19 +15,21 @@ function InfoView(props: InfoViewProps) {
         right: "10px",
         background: 'rgba(250,250,250,0.85)', backdropFilter: 'blur(8px)'}}>
         <b>{props.selectedArea?.name}</b>
-        <ul>
+        <RadioGroup onChange={()=>{
+            
+        }} selectedValue={props.selectedArea?.vertexes[props.selectedArea?.leftVertexInnerId]}>
         {props.selectedArea?.vertexes.map((v) => {
             const vx = props.project.vertexes.get(v)
                 
             if (vx) {
                 return (
-                    <li>{v}: {vx.x}, {vx.z}</li>
+                    <Radio label={`${v}: ${vx.x}, ${vx.z}`} value={v}/>
                 )
             } else {
                 return undefined;
             }
         })}
-        </ul>
+        </RadioGroup>
     </Card>);
 }
 
