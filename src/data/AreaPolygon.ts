@@ -1,18 +1,53 @@
-import { TrackFlag } from "./NtracsTrack";
-import Project from "./Project";
 import Vector2d from "./Vector2d";
 
-class AreaPolygon {
-    constructor(public name: string, public vertexes: string[], public leftVertexInnerId: number, public related: AreaPolygon[], public trackFlag: TrackFlag) {}
+type Complex = {
+    re: number;
+    im: number;
+}
 
-    toProjectJSON(project: Project) {
-        return {
-            name: this.name,
-            vertexId: this.vertexes,
-            leftVertexId: this.vertexes[this.leftVertexInnerId],
-            related: this.related.map((v)=>v.name),
-            trackFlag: this.trackFlag
+function cxmul(c1: Complex, c2: Complex): Complex {
+    return {
+        re: c1.re * c2.re - c1.im * c2.im,
+        im: c1.re * c2.im + c1.im * c2.re
+    };
+}
+
+function cxhalfarg(c: Complex): Complex {
+    const r = Math.sqrt(c.re * c.re + c.im * c.im);
+    return {
+        re: Math.sqrt((c.re + r) / 2),
+        im: Math.sign(c.im) * Math.sqrt((-c.re + r) / 2)
+    }
+}
+
+class AreaPolygon {
+    constructor(public vertexes: string[], public leftVertexInnerId: number) {}
+
+    isInArea(vertexes: Map<string, Vector2d>, x: number, z: number) {
+        console.log(vertexes);
+        let prod: Complex = { re: 1, im: 0 };
+        const v = this.vertexes.map(i => vertexes.get(i)).filter((v): v is Exclude<typeof v, undefined> => v !== undefined)
+        let minx = false, minz = false, maxx = false, maxz = false;
+        for (const k of v) {
+            minx ||= k.x < x;
+            minz ||= k.z < z;
+            maxx ||= k.x > x;
+            maxz ||= k.z > z;
         }
+        
+        if (!(minx && minz && maxx && maxz)) {
+            return false;
+        }
+
+        for (let i = 0; i < this.vertexes.length; i++) {
+            const v0 = v[(i) % this.vertexes.length];
+            const v1 = v[(i + 1) % this.vertexes.length];
+
+            if (v0 && v1) {
+                prod = cxmul(prod, cxhalfarg(cxmul({ re: v1.x - x, im: v1.z - z }, { re: v0.x - x, im: -v0.z + z })));
+            }
+        }
+        return prod.re < 0;
     }
 }
 

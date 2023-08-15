@@ -1,12 +1,11 @@
 import React, { useCallback } from 'react';
 import { Graphics } from '@pixi/react';
 import * as PIXI from 'pixi.js';
-import Project from '../data/Project';
+import Project from '../../data/Project';
 import { invoke } from "@tauri-apps/api/tauri";
-import StormTracks from '../data/StormTracks';
+import StormTracks from '../../data/StormTracks';
 
 type WorldTrackViewProps = {
-  project: Project | undefined;
   tracks: StormTracks[];
 };
 
