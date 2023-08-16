@@ -29,11 +29,6 @@ function EditArea(props: EditAreaProps) {
       while (props.vertexes.has(`v${i}`)) i++;
 
       props.updateVertexes((draft) => {
-        const ssarea = props.areas.get(props.selectedArea) || {
-          name: "",
-          vertexes: [],
-          leftVertexInnerId: 0,
-        };
         const v1 = props.vertexes.get(ssarea.vertexes[index]);
         const v2 = props.vertexes.get(
           ssarea.vertexes[(index + 1) % ssarea.vertexes.length]
@@ -46,31 +41,31 @@ function EditArea(props: EditAreaProps) {
         }
       });
       props.updateAreas((draft) => {
-        const ssarea = props.areas.get(props.selectedArea) || {
+        const ssarea = draft.get(props.selectedArea) || {
           name: "",
           vertexes: [],
           leftVertexInnerId: 0,
         };
+        const carray = [...ssarea.vertexes];
+        carray.splice(index + 1, 0, `v${i}`);
         draft.set(
           props.selectedArea,
-          new AreaPolygon(
-            ssarea.vertexes
-              .slice(0, index + 1)
-              .concat(`v${i}`, ssarea.vertexes.slice(index + 1)),
-            ssarea.leftVertexInnerId
-          )
+          new AreaPolygon(carray, ssarea.leftVertexInnerId)
         );
       });
     };
 
   const delButton = (index: number) => () => {
     props.updateAreas((draft) => {
+      const ssarea = draft.get(props.selectedArea) || {
+        name: "",
+        vertexes: [],
+        leftVertexInnerId: 0,
+      };
       draft.set(
         props.selectedArea,
         new AreaPolygon(
-          ssarea.vertexes
-            .slice(0, index)
-            .concat(ssarea.vertexes.slice(index + 1)),
+          ssarea.vertexes.filter((v, i) => i !== index),
           ssarea.leftVertexInnerId
         )
       );

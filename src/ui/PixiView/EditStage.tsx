@@ -182,6 +182,7 @@ function EditStage(props: EditStageProps) {
     const nearV = nearVk !== undefined ? props.vertexes.get(nearVk) : undefined;
     if (e.ctrlKey && nearVk && nearV) {
       let nnearVk: string = nearVk;
+      let merge = false;
       if (props.vertexes) {
         let length = 1;
         for (const [k, v] of props.vertexes.entries()) {
@@ -191,9 +192,13 @@ function EditStage(props: EditStageProps) {
             nnearVk = k;
           }
         }
-        props.setNearestVertex(nnearVk);
+        if (length < 1) {
+          merge = true;
+        }
+        if (merge) props.setNearestVertex(nnearVk);
       }
 
+      if (!merge) return;
       props.updateAreas((draft) => {
         draft.forEach((v, k) => {
           if (v.vertexes.indexOf(nearVk)) {
