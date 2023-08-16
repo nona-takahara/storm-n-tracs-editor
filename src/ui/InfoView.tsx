@@ -1,4 +1,4 @@
-import { Card, Radio, RadioGroup } from "@blueprintjs/core";
+import { Button, Card, Radio, RadioGroup } from "@blueprintjs/core";
 import { Updater } from "use-immer";
 import AreaPolygon from "../data/AreaPolygon";
 import Project from "../data/Project";
@@ -9,6 +9,7 @@ type InfoViewProps = {
   vertexes: Map<string, Vector2d>;
   areas: Map<string, AreaPolygon>;
   updateAreas: Updater<Map<string, AreaPolygon>>;
+  updateVertexes: Updater<Map<string, Vector2d>>;
 };
 
 function InfoView(props: InfoViewProps) {
@@ -18,6 +19,39 @@ function InfoView(props: InfoViewProps) {
     vertexes: [],
     leftVertexInnerId: 0,
   };
+
+  const addButton =
+    (index: number) => (evt: React.MouseEvent<HTMLElement, MouseEvent>) => {
+      let i = props.vertexes.size;
+      while (props.vertexes.has(`v${i}`)) i++;
+
+      props.updateVertexes((draft) => {
+        const v1 = props.vertexes.get(ssarea.vertexes[index]);
+        const v2 = props.vertexes.get(
+          ssarea.vertexes[(index + 1) % ssarea.vertexes.length]
+        );
+        if (v1 && v2) {
+          draft.set(
+            `v${i}`,
+            new Vector2d((v1.x + v2.x) / 2, (v1.z + v2.z) / 2)
+          );
+        }
+      });
+      props.updateAreas((draft) => {
+        if (props.selectedArea) {
+          draft.set(
+            props.selectedArea,
+            new AreaPolygon(
+              ssarea.vertexes
+                .slice(0, index + 1)
+                .concat(`v${i}`, ssarea.vertexes.slice(index + 1)),
+              ssarea.leftVertexInnerId
+            )
+          );
+        }
+      });
+    };
+
   return (
     <Card
       elevation={1}
@@ -70,7 +104,9 @@ function InfoView(props: InfoViewProps) {
                 )} (${l?.toFixed(2)})`}
                 value={v}
                 key={v}
-              />
+              >
+                <Button onClick={addButton(i)}>+</Button>
+              </Radio>
             );
           } else {
             return undefined;

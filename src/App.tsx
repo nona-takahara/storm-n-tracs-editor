@@ -83,6 +83,7 @@ function App() {
       </DebugView>
       <InfoView
         vertexes={vertexes}
+        updateVertexes={updateVertexes}
         areas={areas}
         selectedArea={selectedPolygon}
         updateAreas={updateAreas}
