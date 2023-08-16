@@ -195,15 +195,16 @@ function EditStage(props: EditStageProps) {
       }
 
       props.updateAreas((draft) => {
-        draft.forEach((v) => {
+        draft.forEach((v, k) => {
           if (v.vertexes.indexOf(nearVk)) {
-            v.vertexes = v.vertexes.map((vv) => {
+            const vs = v.vertexes.map((vv) => {
               if (vv !== nearVk) {
                 return vv;
               } else {
                 return nnearVk;
               }
             });
+            draft.set(k, new AreaPolygon(vs, v.leftVertexInnerId));
           }
         });
       });
