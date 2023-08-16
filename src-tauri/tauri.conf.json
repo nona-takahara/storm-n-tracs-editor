@@ -12,23 +12,16 @@
   },
   "tauri": {
     "allowlist": {
-      "all": false,
       "fs":{
-        "all": false,
-        "copyFile": false,
-        "createDir": false,
-        "exists": false,
-        "readDir": false,
         "readFile": true,
-        "removeDir": false,
-        "removeFile": false,
-        "renameFile": false,
-        "scope": [],
         "writeFile": true
       },
       "shell": {
-        "all": false,
         "open": true
+      },
+      "dialog": {
+        "open": true,
+        "save": true
       }
     },
     "bundle": {
