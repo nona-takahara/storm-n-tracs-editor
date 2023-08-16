@@ -131,6 +131,41 @@ function EditStage(props: EditStageProps) {
     if (e.button == 0) {
       setMouseLeftButtonDown(false);
     }
+
+    const nearVk = props.nearestVertex;
+    const nearV = nearVk !== undefined ? props.vertexes.get(nearVk) : undefined;
+    if (e.ctrlKey && nearVk && nearV) {
+      let nnearVk: string = nearVk;
+      if (props.vertexes) {
+        let length = 1;
+        for (const [k, v] of props.vertexes.entries()) {
+          const len_to_vx = len(nearV.x, nearV.z, v.x, v.z);
+          if (len_to_vx !== 0 && len_to_vx < length) {
+            length = len_to_vx;
+            nnearVk = k;
+          }
+        }
+        props.setNearestVertex(nnearVk);
+      }
+
+      props.updateAreas((draft) => {
+        draft.forEach((v) => {
+          if (v.vertexes.indexOf(nearVk)) {
+            v.vertexes = v.vertexes.map((vv) => {
+              if (vv !== nearVk) {
+                return vv;
+              } else {
+                return nnearVk;
+              }
+            });
+          }
+        });
+      });
+
+      props.updateVertexes((draft) => {
+        draft.delete(nearVk);
+      });
+    }
   };
 
   const mouseLeave = (e: React.MouseEvent) => {
