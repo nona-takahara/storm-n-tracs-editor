@@ -7,7 +7,6 @@ import {
 } from "@blueprintjs/core";
 import { Updater } from "use-immer";
 import AreaPolygon from "../data/AreaPolygon";
-import Project from "../data/Project";
 import Vector2d from "../data/Vector2d";
 
 type InfoViewProps = {
@@ -58,22 +57,29 @@ function InfoView(props: InfoViewProps) {
       });
     };
 
-  const delButton =
-    (index: number) => (evt: React.MouseEvent<HTMLElement, MouseEvent>) => {
-      props.updateAreas((draft) => {
-        if (props.selectedArea) {
-          draft.set(
-            props.selectedArea,
-            new AreaPolygon(
-              ssarea.vertexes
-                .slice(0, index)
-                .concat(ssarea.vertexes.slice(index + 1)),
-              ssarea.leftVertexInnerId
-            )
-          );
-        }
-      });
-    };
+  const delButton = (index: number) => () => {
+    props.updateAreas((draft) => {
+      if (props.selectedArea) {
+        draft.set(
+          props.selectedArea,
+          new AreaPolygon(
+            ssarea.vertexes
+              .slice(0, index)
+              .concat(ssarea.vertexes.slice(index + 1)),
+            ssarea.leftVertexInnerId
+          )
+        );
+      }
+    });
+  };
+
+  const delAreaButton = () => {
+    props.updateAreas((draft) => {
+      if (props.selectedArea) {
+        draft.delete(props.selectedArea);
+      }
+    });
+  };
 
   return (
     <Card
@@ -87,7 +93,10 @@ function InfoView(props: InfoViewProps) {
         backdropFilter: "blur(8px)",
       }}
     >
-      <b>{props.selectedArea}</b>
+      <div>
+        <b>{props.selectedArea}</b>
+        {props.selectedArea && <Button onClick={delAreaButton}>DEL</Button>}
+      </div>
       <RadioGroup
         onChange={(evt) => {
           props.updateAreas((draft) => {
