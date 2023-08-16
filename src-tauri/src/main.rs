@@ -53,7 +53,11 @@ fn save_file_command(data: String) -> Result<(), String> {
 
 fn main() {
     tauri::Builder::default()
-        .invoke_handler(tauri::generate_handler![read_file_command])
+        .invoke_handler(tauri::generate_handler![
+            read_file_command,
+            open_file_command,
+            save_file_command
+        ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

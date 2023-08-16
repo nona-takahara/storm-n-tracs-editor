@@ -3,8 +3,6 @@ import { invoke } from "@tauri-apps/api/tauri";
 import Nav from "./ui/Nav";
 import Vector2d from "./data/Vector2d";
 import StormTracks from "./data/StormTracks";
-import { XMLParser } from "fast-xml-parser";
-import { Button } from "@blueprintjs/core";
 import InfoView from "./ui/InfoView";
 import EditStage from "./ui/PixiView/EditStage";
 import { useImmer } from "use-immer";
