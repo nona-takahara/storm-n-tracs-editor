@@ -104,7 +104,15 @@ function EditStage(props: EditStageProps) {
     const m = mousePos(e, props.width, props.height, leftPos, topPos, scale);
     if (e.button == 0) {
       setMouseLeftButtonDown(true);
-      if (props.areas) {
+      const selpolreal =
+        props.selectedPolygon !== undefined
+          ? props.areas.get(props.selectedPolygon)
+          : undefined;
+      if (
+        props.nearestVertex !== undefined
+          ? selpolreal?.vertexes.indexOf(props.nearestVertex) === -1
+          : true
+      ) {
         for (const key of props.areas.keys()) {
           const item = props.areas.get(key);
           if (item && item.isInArea(props.vertexes, m.x, m.z)) {
@@ -112,7 +120,9 @@ function EditStage(props: EditStageProps) {
             return;
           }
         }
-        props.setSelectedPolygon(undefined);
+        if (props.nearestVertex === undefined) {
+          props.setSelectedPolygon(undefined);
+        }
       }
     }
   };
