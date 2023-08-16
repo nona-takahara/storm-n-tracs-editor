@@ -4,6 +4,7 @@ import AreaPolygon from "../data/AreaPolygon";
 import Vector2d from "../data/Vector2d";
 import AreaMain from "./InfoViewes/AreaMain";
 import EditArea from "./InfoViewes/EditArea";
+import * as EditMode from "../EditMode";
 
 type InfoViewProps = {
   selectedArea: string | undefined;
@@ -12,6 +13,8 @@ type InfoViewProps = {
   updateAreas: Updater<Map<string, AreaPolygon>>;
   updateVertexes: Updater<Map<string, Vector2d>>;
   setSelectedArea: React.Dispatch<React.SetStateAction<string | undefined>>;
+  editMode: EditMode.EditMode;
+  setEditMode: React.Dispatch<EditMode.EditMode>;
 };
 
 function InfoView(props: InfoViewProps) {

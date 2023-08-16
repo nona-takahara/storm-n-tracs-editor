@@ -1,20 +1,33 @@
-import { Button, ButtonGroup, Radio, RadioGroup } from "@blueprintjs/core";
+import { Button, ButtonGroup } from "@blueprintjs/core";
 import { Updater } from "use-immer";
 import AreaPolygon from "../../data/AreaPolygon";
-import Vector2d from "../../data/Vector2d";
+import * as EditMode from "../../EditMode";
 
 type EditAreaProps = {
-  vertexes: Map<string, Vector2d>;
   areas: Map<string, AreaPolygon>;
   updateAreas: Updater<Map<string, AreaPolygon>>;
-  updateVertexes: Updater<Map<string, Vector2d>>;
   setSelectedArea: React.Dispatch<React.SetStateAction<string | undefined>>;
+  setEditMode: React.Dispatch<EditMode.EditMode>;
 };
 
 function AreaMain(props: EditAreaProps) {
   return (
     <ButtonGroup>
-      <Button>Add Area</Button>
+      <Button
+        onClick={() => {
+          props.setEditMode(EditMode.AddArea);
+
+          let i = props.areas.size;
+          while (props.areas.has(`Area_${i}`)) i++;
+
+          props.updateAreas((draft) => {
+            draft.set(`Area_${i}`, new AreaPolygon([], 0));
+          });
+          props.setSelectedArea(`Area_${i}`);
+        }}
+      >
+        Add Area
+      </Button>
     </ButtonGroup>
   );
 }

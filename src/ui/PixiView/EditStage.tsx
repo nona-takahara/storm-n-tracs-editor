@@ -5,6 +5,7 @@ import { Updater } from "use-immer";
 import AreaPolygon from "../../data/AreaPolygon";
 import StormTracks from "../../data/StormTracks";
 import Vector2d from "../../data/Vector2d";
+import * as EditMode from "../../EditMode";
 import AreaPolygonsView from "./AreaPolygonsView";
 import WorldTrackView from "./WorldTrackView";
 
@@ -38,6 +39,8 @@ type EditStageProps = {
   setSelectedArea: React.Dispatch<React.SetStateAction<string | undefined>>;
   selectedArea: string | undefined;
   tracks: StormTracks[];
+  editMode: EditMode.EditMode;
+  setEditMode: React.Dispatch<EditMode.EditMode>;
 };
 
 function EditStage(props: EditStageProps) {
@@ -104,25 +107,68 @@ function EditStage(props: EditStageProps) {
     const m = mousePos(e, props.width, props.height, leftPos, topPos, scale);
     if (e.button == 0) {
       setMouseLeftButtonDown(true);
-      const selpolreal =
-        props.selectedArea !== undefined
-          ? props.areas.get(props.selectedArea)
-          : undefined;
-      if (
-        props.nearestVertex !== undefined
-          ? selpolreal?.vertexes.indexOf(props.nearestVertex) === -1
-          : true
-      ) {
-        for (const key of props.areas.keys()) {
-          const item = props.areas.get(key);
-          if (item && item.isInArea(props.vertexes, m.x, m.z)) {
-            props.setSelectedArea(key);
-            return;
+      if (props.editMode == EditMode.AddArea) {
+        if (props.nearestVertex === undefined || e.shiftKey) {
+          props.updateAreas((draft) => {
+            const sl =
+              props.selectedArea !== undefined && draft.get(props.selectedArea);
+            if (sl && props.selectedArea) {
+              let i = props.vertexes.size;
+              props.updateVertexes((draft) => {
+                while (props.vertexes.has(`v${i}`)) i++;
+
+                draft.set(`v${i}`, new Vector2d(m.x, m.z));
+              });
+              draft.set(
+                props.selectedArea,
+                new AreaPolygon(
+                  sl.vertexes.concat(`v${i}`),
+                  sl.leftVertexInnerId
+                )
+              );
+            }
+          });
+        } else if (props.nearestVertex !== undefined) {
+          const nv = props.nearestVertex;
+          props.updateAreas((draft) => {
+            const sl =
+              props.selectedArea !== undefined && draft.get(props.selectedArea);
+            if (sl && props.selectedArea) {
+              if (nv === sl.vertexes?.[0]) {
+                return;
+              }
+              draft.set(
+                props.selectedArea,
+                new AreaPolygon(sl.vertexes.concat(nv), sl.leftVertexInnerId)
+              );
+            }
+          });
+        }
+      } else if (props.editMode == EditMode.EditArea) {
+        const selpolreal =
+          props.selectedArea !== undefined
+            ? props.areas.get(props.selectedArea)
+            : undefined;
+        if (
+          props.nearestVertex !== undefined
+            ? selpolreal?.vertexes.indexOf(props.nearestVertex) === -1
+            : true
+        ) {
+          for (const key of props.areas.keys()) {
+            const item = props.areas.get(key);
+            if (item && item.isInArea(props.vertexes, m.x, m.z)) {
+              props.setSelectedArea(key);
+              return;
+            }
+          }
+          if (props.nearestVertex === undefined) {
+            props.setSelectedArea(undefined);
           }
         }
-        if (props.nearestVertex === undefined) {
-          props.setSelectedArea(undefined);
-        }
+      }
+    } else if (e.button == 2) {
+      if (props.editMode == EditMode.AddArea) {
+        props.setEditMode(EditMode.EditArea);
       }
     }
   };

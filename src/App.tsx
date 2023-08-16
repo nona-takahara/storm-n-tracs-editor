@@ -12,6 +12,7 @@ import InfoView from "./ui/InfoView";
 import EditStage from "./ui/PixiView/EditStage";
 import { useImmer } from "use-immer";
 import AreaPolygon from "./data/AreaPolygon";
+import * as EditMode from "./EditMode";
 
 const useWindowSize = (): number[] => {
   const [size, setSize] = useState([0, 0]);
@@ -44,6 +45,10 @@ function App() {
   );
   const [selectedArea, setSelectedArea] = useState<string | undefined>(
     undefined
+  );
+
+  const [editMode, setEditMode] = useState<EditMode.EditMode>(
+    EditMode.EditArea
   );
 
   function reload() {
@@ -88,6 +93,8 @@ function App() {
         selectedArea={selectedArea}
         updateAreas={updateAreas}
         setSelectedArea={setSelectedArea}
+        editMode={editMode}
+        setEditMode={setEditMode}
       ></InfoView>
       <EditStage
         width={width}
@@ -101,6 +108,8 @@ function App() {
         updateVertexes={updateVertexes}
         setNearestVertex={setNearestVertex}
         setSelectedArea={setSelectedArea}
+        editMode={editMode}
+        setEditMode={setEditMode}
       />
     </>
   );

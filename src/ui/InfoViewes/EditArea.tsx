@@ -2,6 +2,7 @@ import { Button, ButtonGroup, Radio, RadioGroup } from "@blueprintjs/core";
 import { Updater } from "use-immer";
 import AreaPolygon from "../../data/AreaPolygon";
 import Vector2d from "../../data/Vector2d";
+import * as EditMode from "../../EditMode";
 
 type EditAreaProps = {
   selectedArea: string;
@@ -10,6 +11,7 @@ type EditAreaProps = {
   updateAreas: Updater<Map<string, AreaPolygon>>;
   updateVertexes: Updater<Map<string, Vector2d>>;
   setSelectedArea: React.Dispatch<React.SetStateAction<string | undefined>>;
+  editMode: EditMode.EditMode;
 };
 
 function EditArea(props: EditAreaProps) {
@@ -27,6 +29,11 @@ function EditArea(props: EditAreaProps) {
       while (props.vertexes.has(`v${i}`)) i++;
 
       props.updateVertexes((draft) => {
+        const ssarea = props.areas.get(props.selectedArea) || {
+          name: "",
+          vertexes: [],
+          leftVertexInnerId: 0,
+        };
         const v1 = props.vertexes.get(ssarea.vertexes[index]);
         const v2 = props.vertexes.get(
           ssarea.vertexes[(index + 1) % ssarea.vertexes.length]
@@ -39,6 +46,11 @@ function EditArea(props: EditAreaProps) {
         }
       });
       props.updateAreas((draft) => {
+        const ssarea = props.areas.get(props.selectedArea) || {
+          name: "",
+          vertexes: [],
+          leftVertexInnerId: 0,
+        };
         draft.set(
           props.selectedArea,
           new AreaPolygon(
