@@ -1,7 +1,7 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
-use std::{self, path::PathBuf};
+use std::{self, fs::File, io::Write, path::PathBuf};
 use tauri::api::dialog::blocking::FileDialogBuilder;
 
 // Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
@@ -25,6 +25,27 @@ fn open_file_command() -> Result<String, String> {
                 Err(e) => return Err(e.to_string()),
             };
             return Ok(content);
+        }
+        None => return Err("File select canceld.".to_string()),
+    };
+}
+
+#[tauri::command]
+fn save_file_command(data: String) -> Result<(), String> {
+    let path: Option<PathBuf> = FileDialogBuilder::new().save_file();
+    match path {
+        Some(filepath) => {
+            let file = File::create(filepath);
+            match file {
+                Ok(mut fs) => {
+                    let write = fs.write_all(data.as_bytes());
+                    match write {
+                        Ok(_) => return Ok(()),
+                        Err(e) => return Err(e.to_string()),
+                    }
+                }
+                Err(e) => return Err(e.to_string()),
+            }
         }
         None => return Err("File select canceld.".to_string()),
     };
