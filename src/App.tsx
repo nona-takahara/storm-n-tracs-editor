@@ -34,9 +34,9 @@ function read_file_command(filepath: string) {
 
 function App() {
   const [width, height] = useWindowSize();
-  
-  const [vertexes, updateVertexes] = useImmer(new Map<string, Vector2d>);
-  const [areas, updateAreas] = useImmer(new Map<string, AreaPolygon>);
+
+  const [vertexes, updateVertexes] = useImmer(new Map<string, Vector2d>());
+  const [areas, updateAreas] = useImmer(new Map<string, AreaPolygon>());
 
   const [tracks, setTracks] = useState<StormTracks[]>([]);
   const [nearestVertex, setNearestVertex] = useState<string | undefined>(

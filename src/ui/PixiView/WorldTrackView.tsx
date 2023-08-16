@@ -1,9 +1,9 @@
-import React, { useCallback } from 'react';
-import { Graphics } from '@pixi/react';
-import * as PIXI from 'pixi.js';
-import Project from '../../data/Project';
+import React, { useCallback } from "react";
+import { Graphics } from "@pixi/react";
+import * as PIXI from "pixi.js";
+import Project from "../../data/Project";
 import { invoke } from "@tauri-apps/api/tauri";
-import StormTracks from '../../data/StormTracks';
+import StormTracks from "../../data/StormTracks";
 
 type WorldTrackViewProps = {
   tracks: StormTracks[];
@@ -28,7 +28,8 @@ function WorldTrackView(props: WorldTrackViewProps) {
           if (Object.prototype.hasOwnProperty.call(tile.tracks, key)) {
             const i = tile.tracks[key];
             for (const j of i.links) {
-              const rx = tile.tracks[j]?.x, rz = tile.tracks[j]?.z
+              const rx = tile.tracks[j]?.x,
+                rz = tile.tracks[j]?.z;
               if (rx && rz) {
                 g.moveTo(i.x + tile.offsetX, -i.z - tile.offsetZ);
                 g.lineTo(rx + tile.offsetX, -rz - tile.offsetZ);
@@ -41,7 +42,8 @@ function WorldTrackView(props: WorldTrackViewProps) {
           if (Object.prototype.hasOwnProperty.call(tile.tracks, key)) {
             const i = tile.tracks[key];
             for (const j of i.links) {
-              const rx = tile.tracks[j]?.x, rz = tile.tracks[j]?.z
+              const rx = tile.tracks[j]?.x,
+                rz = tile.tracks[j]?.z;
               if (rx && rz) {
                 g.moveTo(i.x + tile.offsetX, -i.z - tile.offsetZ);
                 g.lineTo(rx + tile.offsetX, -rz - tile.offsetZ);
@@ -53,9 +55,8 @@ function WorldTrackView(props: WorldTrackViewProps) {
           }
         }
       }
-
     },
-    [props],
+    [props]
   );
 
   return <Graphics draw={draw} />;
