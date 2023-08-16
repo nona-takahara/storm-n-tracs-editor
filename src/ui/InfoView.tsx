@@ -1,4 +1,10 @@
-import { Button, Card, Radio, RadioGroup } from "@blueprintjs/core";
+import {
+  Button,
+  ButtonGroup,
+  Card,
+  Radio,
+  RadioGroup,
+} from "@blueprintjs/core";
 import { Updater } from "use-immer";
 import AreaPolygon from "../data/AreaPolygon";
 import Project from "../data/Project";
@@ -45,6 +51,23 @@ function InfoView(props: InfoViewProps) {
               ssarea.vertexes
                 .slice(0, index + 1)
                 .concat(`v${i}`, ssarea.vertexes.slice(index + 1)),
+              ssarea.leftVertexInnerId
+            )
+          );
+        }
+      });
+    };
+
+  const delButton =
+    (index: number) => (evt: React.MouseEvent<HTMLElement, MouseEvent>) => {
+      props.updateAreas((draft) => {
+        if (props.selectedArea) {
+          draft.set(
+            props.selectedArea,
+            new AreaPolygon(
+              ssarea.vertexes
+                .slice(0, index)
+                .concat(ssarea.vertexes.slice(index + 1)),
               ssarea.leftVertexInnerId
             )
           );
@@ -99,13 +122,25 @@ function InfoView(props: InfoViewProps) {
           if (vx) {
             return (
               <Radio
-                label={`${v}: ${vx.x.toFixed(1)}, ${vx.z.toFixed(
-                  1
-                )} (${l?.toFixed(2)})`}
+                label={`${v}: ${vx.x.toFixed(1)}, ${vx.z.toFixed(1)}`}
                 value={v}
                 key={v}
               >
-                <Button onClick={addButton(i)}>+</Button>
+                <ButtonGroup>
+                  <Button onClick={addButton(i)} small={true}>
+                    +
+                  </Button>
+                  <Button
+                    onClick={
+                      ssarea.vertexes.length <= 3 ? () => {} : delButton(i)
+                    }
+                    small={true}
+                    disabled={ssarea.vertexes.length <= 3}
+                  >
+                    -
+                  </Button>
+                </ButtonGroup>
+                {l?.toFixed(2)}
               </Radio>
             );
           } else {
