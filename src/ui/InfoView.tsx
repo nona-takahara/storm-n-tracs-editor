@@ -10,6 +10,7 @@ type InfoViewProps = {
   areas: Map<string, AreaPolygon>;
   updateAreas: Updater<Map<string, AreaPolygon>>;
   updateVertexes: Updater<Map<string, Vector2d>>;
+  setSelectedArea: React.Dispatch<React.SetStateAction<string | undefined>>;
 };
 
 function InfoView(props: InfoViewProps) {

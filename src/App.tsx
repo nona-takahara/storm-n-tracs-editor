@@ -42,7 +42,7 @@ function App() {
   const [nearestVertex, setNearestVertex] = useState<string | undefined>(
     undefined
   );
-  const [selectedPolygon, setSelectedPolygon] = useState<string | undefined>(
+  const [selectedArea, setSelectedArea] = useState<string | undefined>(
     undefined
   );
 
@@ -85,8 +85,9 @@ function App() {
         vertexes={vertexes}
         updateVertexes={updateVertexes}
         areas={areas}
-        selectedArea={selectedPolygon}
+        selectedArea={selectedArea}
         updateAreas={updateAreas}
+        setSelectedArea={setSelectedArea}
       ></InfoView>
       <EditStage
         width={width}
@@ -95,11 +96,11 @@ function App() {
         areas={areas}
         updateAreas={updateAreas}
         nearestVertex={nearestVertex}
-        selectedPolygon={selectedPolygon}
+        selectedArea={selectedArea}
         vertexes={vertexes}
         updateVertexes={updateVertexes}
         setNearestVertex={setNearestVertex}
-        setSelectedPolygon={setSelectedPolygon}
+        setSelectedArea={setSelectedArea}
       />
     </>
   );

@@ -9,6 +9,7 @@ type EditAreaProps = {
   areas: Map<string, AreaPolygon>;
   updateAreas: Updater<Map<string, AreaPolygon>>;
   updateVertexes: Updater<Map<string, Vector2d>>;
+  setSelectedArea: React.Dispatch<React.SetStateAction<string | undefined>>;
 };
 
 function EditArea(props: EditAreaProps) {
@@ -68,6 +69,7 @@ function EditArea(props: EditAreaProps) {
     props.updateAreas((draft) => {
       draft.delete(props.selectedArea);
     });
+    props.setSelectedArea(undefined);
   };
 
   return (

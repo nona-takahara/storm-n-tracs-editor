@@ -35,8 +35,8 @@ type EditStageProps = {
   updateAreas: Updater<Map<string, AreaPolygon>>;
   setNearestVertex: React.Dispatch<React.SetStateAction<string | undefined>>;
   nearestVertex: string | undefined;
-  setSelectedPolygon: React.Dispatch<React.SetStateAction<string | undefined>>;
-  selectedPolygon: string | undefined;
+  setSelectedArea: React.Dispatch<React.SetStateAction<string | undefined>>;
+  selectedArea: string | undefined;
   tracks: StormTracks[];
 };
 
@@ -105,8 +105,8 @@ function EditStage(props: EditStageProps) {
     if (e.button == 0) {
       setMouseLeftButtonDown(true);
       const selpolreal =
-        props.selectedPolygon !== undefined
-          ? props.areas.get(props.selectedPolygon)
+        props.selectedArea !== undefined
+          ? props.areas.get(props.selectedArea)
           : undefined;
       if (
         props.nearestVertex !== undefined
@@ -116,12 +116,12 @@ function EditStage(props: EditStageProps) {
         for (const key of props.areas.keys()) {
           const item = props.areas.get(key);
           if (item && item.isInArea(props.vertexes, m.x, m.z)) {
-            props.setSelectedPolygon(key);
+            props.setSelectedArea(key);
             return;
           }
         }
         if (props.nearestVertex === undefined) {
-          props.setSelectedPolygon(undefined);
+          props.setSelectedArea(undefined);
         }
       }
     }
@@ -201,7 +201,7 @@ function EditStage(props: EditStageProps) {
           vertexes={props.vertexes}
           areas={props.areas}
           nearestIndex={props.nearestVertex}
-          selectedArea={props.selectedPolygon}
+          selectedArea={props.selectedArea}
         />
         {nv && (
           <Text
