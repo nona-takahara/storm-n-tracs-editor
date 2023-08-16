@@ -31,10 +31,12 @@ function InfoView(props: InfoViewProps) {
         }} selectedValue={ssarea?.vertexes[ssarea?.leftVertexInnerId]}>
         {ssarea?.vertexes.map((v, i) => {
             const vx = props.vertexes.get(v)
-                
+            const v1 = ssarea.vertexes[(i + 1)%ssarea.vertexes.length];
+            const vx1 = props.vertexes.get(v1);
+            const l = vx && vx1 && Math.sqrt((vx.x - vx1.x)*(vx.x - vx1.x) + (vx.z - vx1.z)*(vx.z - vx1.z));
             if (vx) {
                 return (
-                    <Radio label={`${v}: ${vx.x}, ${vx.z}`} value={v} key={v}/>
+                    <Radio label={`${v}: ${vx.x.toFixed(1)}, ${vx.z.toFixed(1)} (${l?.toFixed(2)})`} value={v} key={v}/>
                 )
             } else {
                 return undefined;
