@@ -135,6 +135,7 @@ function EditStage(props: EditStageProps) {
               props.selectedArea !== undefined && draft.get(props.selectedArea);
             if (sl && props.selectedArea) {
               if (nv === sl.vertexes?.[0]) {
+                props.setEditMode(EditMode.EditArea);
                 return;
               }
               draft.set(
@@ -240,6 +241,7 @@ function EditStage(props: EditStageProps) {
       onMouseUp={mouseUp}
       onMouseLeave={mouseLeave}
       onMouseMove={mouseMove}
+      onContextMenu={(e) => e.preventDefault()}
     >
       <Container
         position={[

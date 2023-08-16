@@ -83,7 +83,10 @@ function EditArea(props: EditAreaProps) {
     <>
       <div>
         <b>{props.selectedArea}</b>
-        <Button onClick={delAreaButton}>DEL</Button>
+        {props.editMode == EditMode.EditArea && (
+          <Button onClick={delAreaButton}>DEL</Button>
+        )}
+        {props.editMode == EditMode.AddArea && "Add Area Mode"}
       </div>
       <RadioGroup
         onChange={(evt) => {
