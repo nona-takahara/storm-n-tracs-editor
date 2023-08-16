@@ -85,6 +85,7 @@ function App() {
         vertexes={vertexes}
         areas={areas}
         selectedArea={selectedPolygon}
+        updateAreas={updateAreas}
       ></InfoView>
       <EditStage
         width={width}
