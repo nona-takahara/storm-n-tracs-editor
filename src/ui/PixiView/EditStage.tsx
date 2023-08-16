@@ -1,6 +1,7 @@
 import { Container, Stage, Text } from "@pixi/react";
 import { TextStyle } from "pixi.js";
 import React, { useState } from "react";
+import { Updater } from "use-immer";
 import AreaPolygon from "../../data/AreaPolygon";
 import StormTracks from "../../data/StormTracks";
 import Vector2d from "../../data/Vector2d";
@@ -29,10 +30,11 @@ type EditStageProps = {
     width: number;
     height: number;
     vertexes: Map<string, Vector2d>;
+    updateVertexes: Updater<Map<string, Vector2d>>;
     areas: Map<string, AreaPolygon>;
+    updateAreas: Updater<Map<string, AreaPolygon>>;
     setNearestVertex: React.Dispatch<React.SetStateAction<string | undefined>>;
     nearestVertex: string | undefined;
-    projectDispatch: React.Dispatch<any>;
     setSelectedPolygon: React.Dispatch<React.SetStateAction<string | undefined>>;
     selectedPolygon: string | undefined;
     tracks: StormTracks[];
@@ -86,13 +88,13 @@ function EditStage(props: EditStageProps) {
         props.setNearestVertex(undefined);
       }
     } else {
-      if (props.nearestVertex !== undefined) {
-        props.projectDispatch({
-          type: "move_vertex",
-          with_join: true,
-          x: Math.floor(m.x * 10) / 10,
-          z: Math.floor(m.z * 10) / 10,
-          target: props.nearestVertex,
+      const p = props.nearestVertex;
+      if (p !== undefined) {
+        props.updateVertexes(draft => {
+          draft.set(p, new Vector2d(
+            Math.floor(m.x * 10) / 10,
+            Math.floor(m.z * 10) / 10,
+          ))
         });
       }
     }

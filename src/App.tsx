@@ -1,4 +1,4 @@
-import { useReducer, useLayoutEffect, useState } from "react";
+import { useLayoutEffect, useState } from "react";
 import { invoke } from "@tauri-apps/api/tauri";
 import Nav from "./ui/Nav";
 import Project from "./data/Project";
@@ -36,7 +36,7 @@ function App() {
   const [width, height] = useWindowSize();
   
   const [vertexes, updateVertexes] = useImmer(new Map<string, Vector2d>);
-  const [areas, updateArea] = useImmer(new Map<string, AreaPolygon>);
+  const [areas, updateAreas] = useImmer(new Map<string, AreaPolygon>);
 
   const [tracks, setTracks] = useState<StormTracks[]>([]);
   const [nearestVertex, setNearestVertex] = useState<string | undefined>(
@@ -50,7 +50,7 @@ function App() {
     console.clear();
     const test = Project.createTestData();
     updateVertexes(test.vertexes);
-    updateArea(test.areas);
+    updateAreas(test.areas);
     setTracks([]);
     for (let x = 0; x <= 16; x++) {
       for (let y = 0; y <= 9; y++) {
@@ -91,9 +91,11 @@ function App() {
         height={height}
         tracks={tracks}
         areas={areas}
+        updateAreas={updateAreas}
         nearestVertex={nearestVertex}
         selectedPolygon={selectedPolygon}
         vertexes={vertexes}
+        updateVertexes={updateVertexes}
         setNearestVertex={setNearestVertex}
         setSelectedPolygon={setSelectedPolygon}
       />
