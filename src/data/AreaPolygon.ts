@@ -24,7 +24,6 @@ class AreaPolygon {
     constructor(public vertexes: string[], public leftVertexInnerId: number) {}
 
     isInArea(vertexes: Map<string, Vector2d>, x: number, z: number) {
-        console.log(vertexes);
         let prod: Complex = { re: 1, im: 0 };
         const v = this.vertexes.map(i => vertexes.get(i)).filter((v): v is Exclude<typeof v, undefined> => v !== undefined)
         let minx = false, minz = false, maxx = false, maxz = false;

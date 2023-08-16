@@ -27,18 +27,18 @@ function len(x1: number, y1: number, x2: number, y2: number) {
 }
 
 type EditStageProps = {
-    width: number;
-    height: number;
-    vertexes: Map<string, Vector2d>;
-    updateVertexes: Updater<Map<string, Vector2d>>;
-    areas: Map<string, AreaPolygon>;
-    updateAreas: Updater<Map<string, AreaPolygon>>;
-    setNearestVertex: React.Dispatch<React.SetStateAction<string | undefined>>;
-    nearestVertex: string | undefined;
-    setSelectedPolygon: React.Dispatch<React.SetStateAction<string | undefined>>;
-    selectedPolygon: string | undefined;
-    tracks: StormTracks[];
-}
+  width: number;
+  height: number;
+  vertexes: Map<string, Vector2d>;
+  updateVertexes: Updater<Map<string, Vector2d>>;
+  areas: Map<string, AreaPolygon>;
+  updateAreas: Updater<Map<string, AreaPolygon>>;
+  setNearestVertex: React.Dispatch<React.SetStateAction<string | undefined>>;
+  nearestVertex: string | undefined;
+  setSelectedPolygon: React.Dispatch<React.SetStateAction<string | undefined>>;
+  selectedPolygon: string | undefined;
+  tracks: StormTracks[];
+};
 
 function EditStage(props: EditStageProps) {
   const [leftPos, setLeftPos] = useState(-1500);
@@ -90,11 +90,11 @@ function EditStage(props: EditStageProps) {
     } else {
       const p = props.nearestVertex;
       if (p !== undefined) {
-        props.updateVertexes(draft => {
-          draft.set(p, new Vector2d(
-            Math.floor(m.x * 10) / 10,
-            Math.floor(m.z * 10) / 10,
-          ))
+        props.updateVertexes((draft) => {
+          draft.set(
+            p,
+            new Vector2d(Math.floor(m.x * 10) / 10, Math.floor(m.z * 10) / 10)
+          );
         });
       }
     }
@@ -105,19 +105,16 @@ function EditStage(props: EditStageProps) {
     if (e.button == 0) {
       setMouseLeftButtonDown(true);
       if (props.areas) {
-        for (const key in props.areas) {
-            if (Object.prototype.hasOwnProperty.call(props.areas, key)) {
-                const item = props.areas.get(key);
-                
-                if (item && item.isInArea(props.vertexes, m.x, m.z)) {
-                    props.setSelectedPolygon(key);
-                    return;
-                }
-            }
-            props.setSelectedPolygon(undefined);
+        for (const key of props.areas.keys()) {
+          const item = props.areas.get(key);
+          if (item && item.isInArea(props.vertexes, m.x, m.z)) {
+            props.setSelectedPolygon(key);
+            return;
+          }
         }
+        props.setSelectedPolygon(undefined);
+      }
     }
-}
   };
 
   const mouseUp = (e: React.MouseEvent) => {
@@ -180,6 +177,5 @@ function EditStage(props: EditStageProps) {
     </Stage>
   );
 }
-
 
 export default EditStage;
