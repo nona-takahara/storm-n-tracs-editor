@@ -28,6 +28,7 @@ function AreaMain(props: EditAreaProps) {
       >
         Add Area
       </Button>
+      <Button>Clean up Vertexes(WIP)</Button>
     </ButtonGroup>
   );
 }
