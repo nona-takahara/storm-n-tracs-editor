@@ -1,7 +1,7 @@
 import { Button, ButtonGroup, Radio, RadioGroup } from "@blueprintjs/core";
 import { Updater } from "use-immer";
-import AreaPolygon from "../data/AreaPolygon";
-import Vector2d from "../data/Vector2d";
+import AreaPolygon from "../../data/AreaPolygon";
+import Vector2d from "../../data/Vector2d";
 
 type EditAreaProps = {
   selectedArea: string;

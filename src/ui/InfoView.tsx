@@ -2,7 +2,8 @@ import { Card } from "@blueprintjs/core";
 import { Updater } from "use-immer";
 import AreaPolygon from "../data/AreaPolygon";
 import Vector2d from "../data/Vector2d";
-import EditArea from "./EditArea";
+import AreaMain from "./InfoViewes/AreaMain";
+import EditArea from "./InfoViewes/EditArea";
 
 type InfoViewProps = {
   selectedArea: string | undefined;
@@ -28,7 +29,9 @@ function InfoView(props: InfoViewProps) {
     >
       {props.selectedArea !== undefined ? (
         <EditArea {...props} selectedArea={props.selectedArea} />
-      ) : undefined}
+      ) : (
+        <AreaMain {...props} />
+      )}
     </Card>
   );
 }
