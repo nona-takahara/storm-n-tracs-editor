@@ -1,18 +1,46 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
+use serde_derive::{Deserialize, Serialize};
 use std::{self, fs::File, io::Write, path::PathBuf};
 use tauri::api::dialog::blocking::FileDialogBuilder;
 
+#[derive(Serialize, Deserialize, Debug)]
+struct PathConfig {
+    sw_tile_path: String,
+    addon_path: String,
+}
+impl Default for PathConfig {
+    fn default() -> Self {
+        Self {
+            sw_tile_path:
+                "C:\\Program Files (x86)\\Steam\\steamapps\\common\\Stormworks\\rom\\data\\tiles\\"
+                    .to_string(),
+            addon_path: "C:\\".to_string(),
+        }
+    }
+}
 // Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
 #[tauri::command]
-fn read_file_command(path: String) -> Result<String, String> {
-    let filepath = std::path::Path::new(&path);
-    let content = match std::fs::read_to_string(filepath) {
-        Ok(content) => content,
+fn read_tile_file_command(filename: String) -> Result<String, String> {
+    let cfg = confy::load::<PathConfig>("storm-n-tracs-editor");
+    match cfg {
+        Ok(cfg) => {
+            let dir = std::path::Path::new(&cfg.sw_tile_path);
+            let filename = std::path::Path::new(&filename).file_name();
+            match filename {
+                Some(filename) => {
+                    let content = match std::fs::read_to_string(dir.join(filename)) {
+                        Ok(content) => content,
+                        Err(e) => return Err(e.to_string()),
+                    };
+                    return Ok(content);
+                }
+                None => Err("Cannot get settings".to_string()),
+            }
+        }
         Err(e) => return Err(e.to_string()),
-    };
-    Ok(content)
+    }
 }
 
 #[tauri::command]
@@ -59,7 +87,7 @@ fn main() {
     tauri::Builder::default()
         .invoke_handler(tauri::generate_handler![
             save_file_command,
-            read_file_command,
+            read_tile_file_command,
             open_file_command
         ])
         .run(tauri::generate_context!())

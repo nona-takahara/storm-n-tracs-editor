@@ -25,10 +25,6 @@ const useWindowSize = (): number[] => {
   return size;
 };
 
-function read_file_command(filepath: string) {
-  return invoke("read_file_command", { path: filepath }) as Promise<string>;
-}
-
 function open_file_command() {
   return invoke("open_file_command", {}) as Promise<string>;
 }
@@ -54,7 +50,7 @@ function App() {
 
   const loadFile = () => {
     open_file_command().then((v) => {
-      CreateObject(JSON.parse(v), updateVertexes, updateAreas);
+      CreateObject(JSON.parse(v), updateVertexes, updateAreas, setSwTracks);
     });
   };
 
