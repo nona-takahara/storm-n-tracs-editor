@@ -3,24 +3,18 @@ import AreaPolygon from "./AreaPolygon";
 import Vector2d from "./Vector2d";
 
 export function CreateObject(obj: any, vupdater: Updater<Map<string, Vector2d>>, aupdater: Updater<Map<string, AreaPolygon>>) {
-  const vmap = new Map<string, Vector2d>();
-  for (const key in obj?.vertexes) {
-    if (Object.prototype.hasOwnProperty.call(obj?.vertexes, key)) {
-      const elm = obj?.vertexes[key];
-      vmap.set(key, new Vector2d(elm.x, elm.z))
+  function makeMap<V>(obj: any, target: string, cstr: (v: any) => V) {
+    const mmap = new Map<string, V>();
+    for (const key in obj?.[target]) {
+      if (Object.prototype.hasOwnProperty.call(obj?.[target], key)) {
+        mmap.set(key, cstr(obj?.[target][key]))
+      }
     }
+    return mmap;
   }
-  console.log(vmap);
-  vupdater(vmap);
 
-  const amap = new Map<string, AreaPolygon>();
-  for (const key in obj?.areas) {
-    if (Object.prototype.hasOwnProperty.call(obj?.areas, key)) {
-      const elm = obj?.areas[key];
-      amap.set(key, new AreaPolygon(elm.vertexes, elm.leftVertexInnerId))
-    }
-  }
-  aupdater(amap);
+  vupdater(makeMap(obj, "vertexes", elm => new Vector2d(elm.x, elm.z)));
+  aupdater(makeMap(obj, "areas", elm => new AreaPolygon(elm.vertexes, elm.leftVertexInnerId)));
 }
 
 export function CreateSaveObject(vertexes: Map<string, Vector2d>, areas: Map<string, AreaPolygon>) {
