@@ -6,6 +6,7 @@ import AreaPolygon from "../../data/AreaPolygon";
 import StormTracks from "../../data/StormTracks";
 import Vector2d from "../../data/Vector2d";
 import * as EditMode from "../../EditMode";
+import AddonsView from "./AddonsView";
 import AreaPolygonsView from "./AreaPolygonsView";
 import WorldTrackView from "./WorldTrackView";
 
@@ -252,6 +253,7 @@ function EditStage(props: EditStageProps) {
         scale={scale}
       >
         <WorldTrackView tracks={props.tracks} />
+        <AddonsView vehicles={[]}/>
         <AreaPolygonsView
           vertexes={props.vertexes}
           areas={props.areas}
