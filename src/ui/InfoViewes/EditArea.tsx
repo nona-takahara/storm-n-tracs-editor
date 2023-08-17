@@ -1,4 +1,4 @@
-import { Button, ButtonGroup, Radio, RadioGroup } from "@blueprintjs/core";
+import { Button, ButtonGroup, Divider, Radio, RadioGroup } from "@blueprintjs/core";
 import { Updater } from "use-immer";
 import AreaPolygon from "../../data/AreaPolygon";
 import Vector2d from "../../data/Vector2d";
@@ -19,6 +19,7 @@ function EditArea(props: EditAreaProps) {
     name: "",
     vertexes: [],
     leftVertexInnerId: 0,
+    axleMode: "none",
   };
 
   const canDeleteVertex = ssarea.vertexes.length > 3;
@@ -45,12 +46,13 @@ function EditArea(props: EditAreaProps) {
           name: "",
           vertexes: [],
           leftVertexInnerId: 0,
+          axleMode: "none",
         };
         const carray = [...ssarea.vertexes];
         carray.splice(index + 1, 0, `v${i}`);
         draft.set(
           props.selectedArea,
-          new AreaPolygon(carray, ssarea.leftVertexInnerId)
+          new AreaPolygon(carray, ssarea.leftVertexInnerId, ssarea.axleMode)
         );
       });
     };
@@ -61,12 +63,14 @@ function EditArea(props: EditAreaProps) {
         name: "",
         vertexes: [],
         leftVertexInnerId: 0,
+        axleMode: "none",
       };
       draft.set(
         props.selectedArea,
         new AreaPolygon(
           ssarea.vertexes.filter((v, i) => i !== index),
-          ssarea.leftVertexInnerId
+          ssarea.leftVertexInnerId,
+          ssarea.axleMode
         )
       );
     });
@@ -82,13 +86,39 @@ function EditArea(props: EditAreaProps) {
   return (
     <>
       <div>
-        <b>{props.selectedArea}</b>
+        <b>{props.selectedArea}</b> 
         {props.editMode == EditMode.EditArea && (
           <Button onClick={delAreaButton}>DEL</Button>
         )}
         {props.editMode == EditMode.AddArea && "Add Area Mode"}
       </div>
+      <Divider />
       <RadioGroup
+        inline={true}
+        selectedValue={ssarea.axleMode}
+        onChange={(evt) => {
+          props.updateAreas((draft) => {
+            const area = props.areas.get(props.selectedArea);
+            const value = evt.currentTarget?.value;
+            if (
+              area &&
+              (value === "upbound" || value === "downbound" || value === "none")
+            ) {
+              draft.set(
+                props.selectedArea,
+                new AreaPolygon(area.vertexes, area.leftVertexInnerId, value)
+              );
+            }
+          });
+        }}
+      >
+        <Radio label="指定なし" value="none" />
+        <Radio label="上" value="upbound" />
+        <Radio label="下" value="downbound" />
+      </RadioGroup>
+      <Divider />
+      <RadioGroup
+        selectedValue={ssarea.vertexes[ssarea.leftVertexInnerId]}
         onChange={(evt) => {
           props.updateAreas((draft) => {
             const area = props.areas.get(props.selectedArea);
@@ -96,12 +126,15 @@ function EditArea(props: EditAreaProps) {
             if (value && area && area.vertexes.indexOf(value)) {
               draft.set(
                 props.selectedArea,
-                new AreaPolygon(area.vertexes, area.vertexes.indexOf(value))
+                new AreaPolygon(
+                  area.vertexes,
+                  area.vertexes.indexOf(value),
+                  area.axleMode
+                )
               );
             }
           });
         }}
-        selectedValue={ssarea.vertexes[ssarea.leftVertexInnerId]}
       >
         {ssarea.vertexes.map((v, i) => {
           const vx = props.vertexes.get(v);

@@ -2,6 +2,7 @@ import { invoke } from "@tauri-apps/api";
 import { XMLParser } from "fast-xml-parser";
 import { Updater } from "use-immer";
 import AreaPolygon from "./AreaPolygon";
+import * as AxleMode from "./AxleMode";
 import StormTracks from "./StormTracks";
 import Vector2d from "./Vector2d";
 
@@ -31,7 +32,7 @@ export function CreateObject(
     makeMap(
       obj,
       "areas",
-      (elm) => new AreaPolygon(elm.vertexes, elm.leftVertexInnerId)
+      (elm) => new AreaPolygon(elm.vertexes, elm.leftVertexInnerId, AxleMode.modeFromStr(elm.axleMode))
     )
   );
 
@@ -92,6 +93,7 @@ export function CreateSaveObject(
             return pv;
           }, new Set<string>())
         ).filter((vv) => vv !== k),
+        axleMode: v.axleMode
       };
     }),
   };
