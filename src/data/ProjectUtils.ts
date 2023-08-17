@@ -3,25 +3,24 @@ import AreaPolygon from "./AreaPolygon";
 import Vector2d from "./Vector2d";
 
 export function CreateObject(obj: any, vupdater: Updater<Map<string, Vector2d>>, aupdater: Updater<Map<string, AreaPolygon>>) {
-  vupdater(draft => {
-    draft.clear();
-    for (const key in obj?.vertexes) {
-      if (Object.prototype.hasOwnProperty.call(obj?.vertexes, key)) {
-        const elm = obj?.vertexes[key];
-        draft.set(key, new Vector2d(elm.x, elm.z))
-      }
+  const vmap = new Map<string, Vector2d>();
+  for (const key in obj?.vertexes) {
+    if (Object.prototype.hasOwnProperty.call(obj?.vertexes, key)) {
+      const elm = obj?.vertexes[key];
+      vmap.set(key, new Vector2d(elm.x, elm.z))
     }
-  });
+  }
+  console.log(vmap);
+  vupdater(vmap);
 
-  aupdater(draft => {
-    draft.clear();
-    for (const key in obj?.vertexes) {
-      if (Object.prototype.hasOwnProperty.call(obj?.vertexes, key)) {
-        const elm = obj?.vertexes[key];
-        draft.set(key, new AreaPolygon(elm.vertexes, elm.leftVertexInnerId))
-      }
+  const amap = new Map<string, AreaPolygon>();
+  for (const key in obj?.areas) {
+    if (Object.prototype.hasOwnProperty.call(obj?.areas, key)) {
+      const elm = obj?.areas[key];
+      amap.set(key, new AreaPolygon(elm.vertexes, elm.leftVertexInnerId))
     }
-  })
+  }
+  aupdater(amap);
 }
 
 export function CreateSaveObject(vertexes: Map<string, Vector2d>, areas: Map<string, AreaPolygon>) {

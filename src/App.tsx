@@ -52,6 +52,9 @@ function App() {
     EditMode.EditArea
   );
 
+  console.log(vertexes);
+  console.log(areas);
+
   const loadFile = () => {
     open_file_command().then((v) => {
       CreateObject(JSON.parse(v), updateVertexes, updateAreas);

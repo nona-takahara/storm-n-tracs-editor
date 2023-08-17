@@ -1,7 +1,6 @@
 import React, { useCallback } from "react";
 import { Graphics } from "@pixi/react";
 import * as PIXI from "pixi.js";
-import Project from "../../data/Project";
 import AreaPolygon from "../../data/AreaPolygon";
 import Vector2d from "../../data/Vector2d";
 
