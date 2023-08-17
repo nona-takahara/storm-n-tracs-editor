@@ -8,6 +8,7 @@ import EditStage from "./ui/PixiView/EditStage";
 import { useImmer } from "use-immer";
 import AreaPolygon from "./data/AreaPolygon";
 import * as EditMode from "./EditMode";
+import { CreateObject, CreateSaveObject } from "./data/ProjectUtils";
 
 const useWindowSize = (): number[] => {
   const [size, setSize] = useState([0, 0]);
@@ -28,6 +29,14 @@ function read_file_command(filepath: string) {
   return invoke("read_file_command", { path: filepath }) as Promise<string>;
 }
 
+function open_file_command() {
+  return invoke("open_file_command", {}) as Promise<string>;
+}
+
+function save_file_command(data: string) {
+  return invoke("save_file_command", { saveValue: data });
+}
+
 function App() {
   const [width, height] = useWindowSize();
   const [vertexes, updateVertexes] = useImmer(new Map<string, Vector2d>());
@@ -43,9 +52,20 @@ function App() {
     EditMode.EditArea
   );
 
+  const loadFile = () => {
+    open_file_command().then((v) => {
+      CreateObject(JSON.parse(v), updateVertexes, updateAreas);
+    });
+  };
+
+  const saveFile = () => {
+    const saveValue = JSON.stringify(CreateSaveObject(vertexes, areas));
+    save_file_command(saveValue || "").catch((e) => console.error(e));
+  };
+
   return (
     <>
-      <Nav />
+      <Nav onLoadButtonClick={loadFile} onSaveButtonClick={saveFile} />
       <InfoView
         vertexes={vertexes}
         updateVertexes={updateVertexes}
