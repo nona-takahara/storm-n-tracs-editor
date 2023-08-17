@@ -37,6 +37,7 @@ function App() {
   const [width, height] = useWindowSize();
   const [vertexes, updateVertexes] = useImmer(new Map<string, Vector2d>());
   const [areas, updateAreas] = useImmer(new Map<string, AreaPolygon>());
+  const [tileAssign, updateTileAssign] = useImmer(new Map<string, Vector2d>());
   const [swtracks, setSwTracks] = useState<StormTracks[]>([]);
   const [nearestVertex, setNearestVertex] = useState<string | undefined>(
     undefined
@@ -50,12 +51,12 @@ function App() {
 
   const loadFile = () => {
     open_file_command().then((v) => {
-      CreateObject(JSON.parse(v), updateVertexes, updateAreas, setSwTracks);
+      CreateObject(JSON.parse(v), updateVertexes, updateAreas, updateTileAssign, setSwTracks);
     });
   };
 
   const saveFile = () => {
-    const saveValue = JSON.stringify(CreateSaveObject(vertexes, areas));
+    const saveValue = JSON.stringify(CreateSaveObject(vertexes, areas, tileAssign));
     save_file_command(saveValue || "").catch((e) => console.error(e));
   };
 
