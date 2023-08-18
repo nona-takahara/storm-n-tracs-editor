@@ -1,8 +1,6 @@
-import React, { useCallback } from "react";
+import { useCallback } from "react";
 import { Graphics } from "@pixi/react";
 import * as PIXI from "pixi.js";
-import Project from "../../data/Project";
-import { invoke } from "@tauri-apps/api/tauri";
 import StormTracks from "../../data/StormTracks";
 
 type WorldTrackViewProps = {

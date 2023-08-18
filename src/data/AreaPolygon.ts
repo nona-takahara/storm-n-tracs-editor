@@ -1,3 +1,4 @@
+import AxleMode from "./AxleMode";
 import Vector2d from "./Vector2d";
 
 type Complex = {
@@ -21,7 +22,7 @@ function cxhalfarg(c: Complex): Complex {
 }
 
 class AreaPolygon {
-  constructor(public vertexes: string[], public leftVertexInnerId: number) { }
+  constructor(public vertexes: string[], public leftVertexInnerId: number, public axleMode: AxleMode) { }
 
   isInArea(vertexes: Map<string, Vector2d>, x: number, z: number) {
     let prod: Complex = { re: 1, im: 0 };

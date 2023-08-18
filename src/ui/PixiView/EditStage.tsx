@@ -2,10 +2,12 @@ import { Container, Stage, Text } from "@pixi/react";
 import { TextStyle } from "pixi.js";
 import React, { useState } from "react";
 import { Updater } from "use-immer";
+import AddonVehicle from "../../data/AddonVehicle";
 import AreaPolygon from "../../data/AreaPolygon";
 import StormTracks from "../../data/StormTracks";
 import Vector2d from "../../data/Vector2d";
 import * as EditMode from "../../EditMode";
+import AddonsView from "./AddonsView";
 import AreaPolygonsView from "./AreaPolygonsView";
 import WorldTrackView from "./WorldTrackView";
 
@@ -41,6 +43,7 @@ type EditStageProps = {
   tracks: StormTracks[];
   editMode: EditMode.EditMode;
   setEditMode: React.Dispatch<EditMode.EditMode>;
+  vehicles: AddonVehicle[];
 };
 
 function EditStage(props: EditStageProps) {
@@ -123,7 +126,8 @@ function EditStage(props: EditStageProps) {
                 props.selectedArea,
                 new AreaPolygon(
                   sl.vertexes.concat(`v${i}`),
-                  sl.leftVertexInnerId
+                  sl.leftVertexInnerId,
+                  sl.axleMode
                 )
               );
             }
@@ -140,7 +144,7 @@ function EditStage(props: EditStageProps) {
               }
               draft.set(
                 props.selectedArea,
-                new AreaPolygon(sl.vertexes.concat(nv), sl.leftVertexInnerId)
+                new AreaPolygon(sl.vertexes.concat(nv), sl.leftVertexInnerId, sl.axleMode)
               );
             }
           });
@@ -210,7 +214,7 @@ function EditStage(props: EditStageProps) {
                 return nnearVk;
               }
             });
-            draft.set(k, new AreaPolygon(vs, v.leftVertexInnerId));
+            draft.set(k, new AreaPolygon(vs, v.leftVertexInnerId, v.axleMode));
           }
         });
       });
@@ -251,6 +255,7 @@ function EditStage(props: EditStageProps) {
         scale={scale}
       >
         <WorldTrackView tracks={props.tracks} />
+        <AddonsView vehicles={props.vehicles} scale={scale} />
         <AreaPolygonsView
           vertexes={props.vertexes}
           areas={props.areas}

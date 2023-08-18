@@ -20,7 +20,7 @@ impl Default for PathConfig {
         }
     }
 }
-// Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
+
 #[tauri::command]
 fn read_tile_file_command(filename: String) -> Result<String, String> {
     let cfg = confy::load::<PathConfig>("storm-n-tracs-editor");
@@ -31,6 +31,28 @@ fn read_tile_file_command(filename: String) -> Result<String, String> {
             match filename {
                 Some(filename) => {
                     let content = match std::fs::read_to_string(dir.join(filename)) {
+                        Ok(content) => content,
+                        Err(e) => return Err(e.to_string()),
+                    };
+                    return Ok(content);
+                }
+                None => Err("Cannot get settings".to_string()),
+            }
+        }
+        Err(e) => return Err(e.to_string()),
+    }
+}
+
+#[tauri::command]
+fn read_addon_command(foldername: String) -> Result<String, String> {
+    let cfg = confy::load::<PathConfig>("storm-n-tracs-editor");
+    match cfg {
+        Ok(cfg) => {
+            let dir = std::path::Path::new(&cfg.addon_path);
+            let filename = std::path::Path::new(&foldername).file_stem();
+            match filename {
+                Some(filename) => {
+                    let content = match std::fs::read_to_string(dir.join(filename).join("playlist.xml")) {
                         Ok(content) => content,
                         Err(e) => return Err(e.to_string()),
                     };
@@ -87,6 +109,7 @@ fn main() {
     tauri::Builder::default()
         .invoke_handler(tauri::generate_handler![
             save_file_command,
+            read_addon_command,
             read_tile_file_command,
             open_file_command
         ])

@@ -9,6 +9,7 @@ import { useImmer } from "use-immer";
 import AreaPolygon from "./data/AreaPolygon";
 import * as EditMode from "./EditMode";
 import { CreateObject, CreateSaveObject } from "./data/ProjectUtils";
+import AddonVehicle from "./data/AddonVehicle";
 
 const useWindowSize = (): number[] => {
   const [size, setSize] = useState([0, 0]);
@@ -37,6 +38,9 @@ function App() {
   const [width, height] = useWindowSize();
   const [vertexes, updateVertexes] = useImmer(new Map<string, Vector2d>());
   const [areas, updateAreas] = useImmer(new Map<string, AreaPolygon>());
+  const [tileAssign, updateTileAssign] = useImmer(new Map<string, Vector2d>());
+  const [addonList, setAddonList] = useState<string[]>([]);
+  const [vehicles, setVehicles] = useState<AddonVehicle[]>([]);
   const [swtracks, setSwTracks] = useState<StormTracks[]>([]);
   const [nearestVertex, setNearestVertex] = useState<string | undefined>(
     undefined
@@ -50,12 +54,12 @@ function App() {
 
   const loadFile = () => {
     open_file_command().then((v) => {
-      CreateObject(JSON.parse(v), updateVertexes, updateAreas, setSwTracks);
+      CreateObject(JSON.parse(v), updateVertexes, updateAreas, updateTileAssign, setAddonList, setVehicles, setSwTracks);
     });
   };
 
   const saveFile = () => {
-    const saveValue = JSON.stringify(CreateSaveObject(vertexes, areas));
+    const saveValue = JSON.stringify(CreateSaveObject(vertexes, areas, addonList, tileAssign));
     save_file_command(saveValue || "").catch((e) => console.error(e));
   };
 
@@ -86,6 +90,7 @@ function App() {
         setSelectedArea={setSelectedArea}
         editMode={editMode}
         setEditMode={setEditMode}
+        vehicles={vehicles}
       />
     </>
   );
