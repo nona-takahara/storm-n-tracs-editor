@@ -43,10 +43,8 @@ export function CreateObject(
 ) {
   function makeMap<V>(obj: any, target: string, cstr: (v: any) => V) {
     const mmap = new Map<string, V>();
-    for (const key in obj?.[target]) {
-      if (Object.prototype.hasOwnProperty.call(obj?.[target], key)) {
-        mmap.set(key, cstr(obj?.[target][key]));
-      }
+    for (const iterator of obj?.[target]) {
+      mmap.set(iterator.name, cstr(iterator));
     }
     return mmap;
   }
@@ -59,7 +57,7 @@ export function CreateObject(
       (elm) =>
         new AreaPolygon(
           elm.vertexes,
-          elm.left_vertex_inner_id,
+          elm.left_vertex_inner_id || 0,
           AxleMode.modeFromStr(elm.axle_mode)
         )
     )
@@ -134,9 +132,9 @@ export function CreateObject(
                   Number(c.spawn_transform["@_30"]) + offset.x,
                   Number(c.spawn_transform["@_32"]) + offset.z,
                   Number(c.spawn_bounds.max["@_x"]) -
-                    Number(c.spawn_bounds.min["@_x"]),
+                  Number(c.spawn_bounds.min["@_x"]),
                   Number(c.spawn_bounds.min["@_z"]) -
-                    Number(c.spawn_bounds.max["@_z"]),
+                  Number(c.spawn_bounds.max["@_z"]),
                   Number(c.spawn_transform["@_00"]),
                   Number(c.spawn_transform["@_02"]),
                   Number(c.spawn_transform["@_20"]),
@@ -172,22 +170,21 @@ export function CreateSaveObject(
   function mapMap<V1, V2>(
     map: Map<string, V1>,
     fn: (val: V1, key: string) => V2
-  ): { [index: string]: V2 } {
-    return [...map].reduce(
-      (l, [k, v]) => Object.assign(l, { [k]: fn(v, k) }),
-      {}
-    );
+  ): V2[] {
+    return [...map].map((v) => fn(v[1], v[0]))
   }
 
   let returns = {
-    vertexes: mapMap(vertexes, (v) => {
+    vertexes: mapMap(vertexes, (v, k) => {
       return {
+        name: k,
         x: v.x,
         z: v.z,
       };
     }),
     areas: mapMap(areas, (v, k) => {
       return {
+        name: k,
         vertexes: v.vertexes,
         left_vertex_inner_id: v.leftVertexInnerId,
         related: Array.from(
@@ -201,6 +198,7 @@ export function CreateSaveObject(
     }),
     addons: addons,
     tiles: mapMap(tileAssign, (v, k) => ({
+      path: k,
       x_offset: v.x,
       z_offset: v.z,
     })),
