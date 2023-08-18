@@ -2,6 +2,7 @@ import { Container, Stage, Text } from "@pixi/react";
 import { TextStyle } from "pixi.js";
 import React, { useState } from "react";
 import { Updater } from "use-immer";
+import AddonVehicle from "../../data/AddonVehicle";
 import AreaPolygon from "../../data/AreaPolygon";
 import StormTracks from "../../data/StormTracks";
 import Vector2d from "../../data/Vector2d";
@@ -42,6 +43,7 @@ type EditStageProps = {
   tracks: StormTracks[];
   editMode: EditMode.EditMode;
   setEditMode: React.Dispatch<EditMode.EditMode>;
+  vehicles: AddonVehicle[];
 };
 
 function EditStage(props: EditStageProps) {
@@ -253,7 +255,7 @@ function EditStage(props: EditStageProps) {
         scale={scale}
       >
         <WorldTrackView tracks={props.tracks} />
-        <AddonsView vehicles={[]}/>
+        <AddonsView vehicles={props.vehicles} scale={scale} />
         <AreaPolygonsView
           vertexes={props.vertexes}
           areas={props.areas}

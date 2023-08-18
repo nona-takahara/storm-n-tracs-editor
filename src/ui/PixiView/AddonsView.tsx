@@ -12,6 +12,7 @@ function rotate(c: AddonVehicle, x: number, z: number) {
 
 type AddonsViewProps = {
   vehicles: AddonVehicle[];
+  scale: number;
 };
 
 function AddonsView(props: AddonsViewProps) {
@@ -27,26 +28,26 @@ function AddonsView(props: AddonsViewProps) {
           rotate(c, c.size_x / 2, c.size_z / 2),
         ];
         g.beginFill(0xff3000, 0.4);
-        g.moveTo(c.x + m[0].x, c.z + m[0].z);
-        g.lineTo(c.x + m[1].x, c.z + m[1].z);
-        g.lineTo(c.x + m[2].x, c.z + m[2].z);
-        g.lineTo(c.x + m[3].x, c.z + m[3].z);
+        g.moveTo(c.x + m[0].x, -c.z - m[0].z);
+        g.lineTo(c.x + m[1].x, -c.z - m[1].z);
+        g.lineTo(c.x + m[2].x, -c.z - m[2].z);
+        g.lineTo(c.x + m[3].x, -c.z - m[3].z);
         g.closePath();
-        g.drawCircle(c.x, c.z, 0.5);
+        g.drawCircle(c.x, -c.z, 0.5);
         g.endFill();
       }
     },
     [props]
   );
 
-  const texts = props.vehicles.map(v => {
-    return <Text text={v.tag || ""} x={v.x + 0.8} y={v.z + 0.8} />
-  })
+  const texts = props.vehicles.map((v) => {
+    return <Text text={v.tag || ""} x={v.x + 0.8} y={-v.z - 0.8} scale={Math.min(0.5/props.scale, 0.5)}/>;
+  });
 
   return (
     <>
-      {texts}
       <Graphics draw={draw} />
+      {texts}
     </>
   );
 }
