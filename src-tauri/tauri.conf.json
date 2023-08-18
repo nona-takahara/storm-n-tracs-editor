@@ -8,16 +8,13 @@
   },
   "package": {
     "productName": "storm-n-tracs-editor",
-    "version": "0.0.0"
+    "version": "0.0.1"
   },
   "tauri": {
     "allowlist": {
       "fs":{
         "readFile": true,
         "writeFile": true
-      },
-      "shell": {
-        "open": true
       },
       "dialog": {
         "open": true,
