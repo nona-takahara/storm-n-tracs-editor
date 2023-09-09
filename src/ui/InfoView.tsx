@@ -6,14 +6,18 @@ import AreaMain from "./InfoViewes/AreaMain";
 import EditArea from "./InfoViewes/EditArea";
 import EditTrack from "./InfoViewes/EditTrack";
 import * as EditMode from "../EditMode";
+import NtracsTrack from "../data/NtracsTrack";
 
 type InfoViewProps = {
   selectedArea: string | undefined;
+  selectedTrack: string | undefined;
   vertexes: Map<string, Vector2d>;
   areas: Map<string, AreaPolygon>;
+  tracks: Map<string, NtracsTrack>;
   updateAreas: Updater<Map<string, AreaPolygon>>;
   updateVertexes: Updater<Map<string, Vector2d>>;
   setSelectedArea: React.Dispatch<React.SetStateAction<string | undefined>>;
+  setSelectedTrack: React.Dispatch<React.SetStateAction<string | undefined>>;
   editMode: EditMode.EditMode;
   setEditMode: React.Dispatch<EditMode.EditMode>;
 };

@@ -1,11 +1,11 @@
 import AreaPolygon from "./AreaPolygon";
 
 class NtracsTrack {
-  constructor(public name: string, public areas: AreaCollection[]) { }
+  constructor(public areas: AreaCollection[]) { }
 }
 
 export class AreaCollection {
-  constructor(public area: AreaPolygon, public trackFlag: TrackFlag) { }
+  constructor(public areaName: string, public trackFlag: TrackFlag) { }
 }
 
 export enum TrackFlag {

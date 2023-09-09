@@ -1,8 +1,11 @@
 import { Button, MenuItem } from "@blueprintjs/core";
 import { ItemPredicate, ItemRenderer, Select } from "@blueprintjs/select";
+import NtracsTrack from "../../data/NtracsTrack";
 
 type EditTrackProps = {
   selectedArea: string | undefined;
+  tracks: Map<string, NtracsTrack>;
+  setSelectedTrack: React.Dispatch<React.SetStateAction<string | undefined>>;
 };
 
 function EditArea(props: EditTrackProps) {
@@ -45,12 +48,12 @@ function EditArea(props: EditTrackProps) {
               onClick={handleClick}
               shouldDismissPopover={false}
             />)}
-          items={["1", "2"]}
+          items={Array.from(props.tracks.keys())}
           itemRenderer={itemRender}
           itemPredicate={filterItem}
-          onItemSelect={() => { }}
+          onItemSelect={(item: string) => props.setSelectedTrack(item)}
           popoverProps={{ minimal: true }}
-
+          
           fill={true}
           noResults={<MenuItem disabled={true} text="No results." roleStructure="listoption" />}
         >
