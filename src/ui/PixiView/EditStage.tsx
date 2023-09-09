@@ -10,6 +10,7 @@ import * as EditMode from "../../EditMode";
 import AddonsView from "./AddonsView";
 import AreaPolygonsView from "./AreaPolygonsView";
 import WorldTrackView from "./WorldTrackView";
+import NtracsTrack from "../../data/NtracsTrack";
 
 function mousePos(
   e: React.MouseEvent,
@@ -44,6 +45,9 @@ type EditStageProps = {
   editMode: EditMode.EditMode;
   setEditMode: React.Dispatch<EditMode.EditMode>;
   vehicles: AddonVehicle[];
+  
+  nttracks: Map<string, NtracsTrack>;
+  selectedTrack: string | undefined;
 };
 
 function EditStage(props: EditStageProps) {
@@ -127,7 +131,8 @@ function EditStage(props: EditStageProps) {
                 new AreaPolygon(
                   sl.vertexes.concat(`v${i}`),
                   sl.leftVertexInnerId,
-                  sl.axleMode
+                  sl.axleMode,
+                  sl.callback
                 )
               );
             }
@@ -144,12 +149,12 @@ function EditStage(props: EditStageProps) {
               }
               draft.set(
                 props.selectedArea,
-                new AreaPolygon(sl.vertexes.concat(nv), sl.leftVertexInnerId, sl.axleMode)
+                new AreaPolygon(sl.vertexes.concat(nv), sl.leftVertexInnerId, sl.axleMode, sl.callback)
               );
             }
           });
         }
-      } else if (props.editMode == EditMode.EditArea) {
+      } else if (props.editMode == EditMode.EditArea || props.editMode == EditMode.EditTrack) {
         const selpolreal =
           props.selectedArea !== undefined
             ? props.areas.get(props.selectedArea)
@@ -214,7 +219,7 @@ function EditStage(props: EditStageProps) {
                 return nnearVk;
               }
             });
-            draft.set(k, new AreaPolygon(vs, v.leftVertexInnerId, v.axleMode));
+            draft.set(k, new AreaPolygon(vs, v.leftVertexInnerId, v.axleMode, v.callback));
           }
         });
       });
@@ -257,10 +262,13 @@ function EditStage(props: EditStageProps) {
         <WorldTrackView tracks={props.tracks} />
         <AddonsView vehicles={props.vehicles} scale={scale} />
         <AreaPolygonsView
+          editMode={props.editMode}
           vertexes={props.vertexes}
           areas={props.areas}
+          tracks={props.nttracks}
           nearestIndex={props.nearestVertex}
           selectedArea={props.selectedArea}
+          selectedTrack={props.selectedTrack}
         />
         {nv && (
           <Text

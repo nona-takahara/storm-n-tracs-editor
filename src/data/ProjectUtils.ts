@@ -6,6 +6,7 @@ import AreaPolygon from "./AreaPolygon";
 import * as AxleMode from "./AxleMode";
 import StormTracks from "./StormTracks";
 import Vector2d from "./Vector2d";
+import NtracsTrack, { AreaCollection, TrackFlag } from "./NtracsTrack";
 
 const xmlParserOption = {
   ignoreAttributes: false,
@@ -39,7 +40,8 @@ export function CreateObject(
   tlupdater: Updater<Map<string, Vector2d>>,
   dupdater: React.Dispatch<string[]>,
   mupdater: React.Dispatch<AddonVehicle[]>,
-  swtrack: React.Dispatch<React.SetStateAction<StormTracks[]>>
+  swtrack: React.Dispatch<React.SetStateAction<StormTracks[]>>,
+  nttrackupdater: Updater<Map<string, NtracsTrack>>
 ) {
   function makeMap<V>(obj: any, target: string, cstr: (v: any) => V) {
     const mmap = new Map<string, V>();
@@ -58,7 +60,8 @@ export function CreateObject(
         new AreaPolygon(
           elm.vertexes,
           elm.left_vertex_inner_id || 0,
-          AxleMode.modeFromStr(elm.axle_mode)
+          AxleMode.modeFromStr(elm.axle_mode),
+          elm.callback || ""
         )
     )
   );
@@ -128,6 +131,7 @@ export function CreateObject(
             const components = itr(l.components.c);
             if (offset && components.length >= 1) {
               for (const c of components) {
+                if (c?.spawn_transform) {
                 const item = new AddonVehicle(
                   Number(c.spawn_transform["@_30"]) + offset.x,
                   Number(c.spawn_transform["@_32"]) + offset.z,
@@ -142,6 +146,7 @@ export function CreateObject(
                   c["@_name"]
                 );
                 vehicles.push(item);
+                }
               }
             }
           }
@@ -152,13 +157,24 @@ export function CreateObject(
       mupdater(vehicles);
     }
   );
+
+
+  const nttrackAssign = new Map<string, NtracsTrack>();
+  makeMap(obj, "tracks", (elm) => {
+    nttrackAssign.set(elm.name, new NtracsTrack(elm.areas.map((v: any) => {
+      return new AreaCollection(v.name, v.trackFlag)
+    }
+    )));
+  })
+  nttrackupdater(nttrackAssign);
 }
 
 export function CreateSaveObject(
   vertexes: Map<string, Vector2d>,
   areas: Map<string, AreaPolygon>,
   addons: string[],
-  tileAssign: Map<string, Vector2d>
+  tileAssign: Map<string, Vector2d>,
+  nttrack: Map<string, NtracsTrack>
 ) {
   const relatedMap = new Map<string, string[]>();
   for (const [key, val] of areas) {
@@ -194,9 +210,21 @@ export function CreateSaveObject(
           }, new Set<string>())
         ).filter((vv) => vv !== k),
         axle_mode: v.axleMode,
+        callback: v.callback
       };
     }),
     addons: addons,
+    tracks: mapMap(nttrack, (v, k) => {
+      return {
+        name: k,
+        areas: v.areas.map((j) => {
+          return {
+            name: j.areaName,
+            trackFlag: j.trackFlag
+          }
+        })
+      }
+    }),
     tiles: mapMap(tileAssign, (v, k) => ({
       path: k,
       x_offset: v.x,

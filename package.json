@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@blueprintjs/core": "^5.1.1",
+    "@blueprintjs/select": "^5.0.10",
     "@pixi/react": "^7.1.0",
     "@tauri-apps/api": "^1.4.0",
     "fast-xml-parser": "^4.2.5",

@@ -10,6 +10,8 @@ import AreaPolygon from "./data/AreaPolygon";
 import * as EditMode from "./EditMode";
 import { CreateObject, CreateSaveObject } from "./data/ProjectUtils";
 import AddonVehicle from "./data/AddonVehicle";
+import { TabId } from "@blueprintjs/core";
+import NtracsTrack from "./data/NtracsTrack";
 
 const useWindowSize = (): number[] => {
   const [size, setSize] = useState([0, 0]);
@@ -42,10 +44,14 @@ function App() {
   const [addonList, setAddonList] = useState<string[]>([]);
   const [vehicles, setVehicles] = useState<AddonVehicle[]>([]);
   const [swtracks, setSwTracks] = useState<StormTracks[]>([]);
+  const [nttracks, updateNtTracks] = useImmer(new Map<string, NtracsTrack>());
   const [nearestVertex, setNearestVertex] = useState<string | undefined>(
     undefined
   );
   const [selectedArea, setSelectedArea] = useState<string | undefined>(
+    undefined
+  );
+  const [selectedTrack, setSelectedTrack] = useState<string | undefined>(
     undefined
   );
   const [editMode, setEditMode] = useState<EditMode.EditMode>(
@@ -54,18 +60,22 @@ function App() {
 
   const loadFile = () => {
     open_file_command().then((v) => {
-      CreateObject(JSON.parse(v), updateVertexes, updateAreas, updateTileAssign, setAddonList, setVehicles, setSwTracks);
+      CreateObject(JSON.parse(v), updateVertexes, updateAreas, updateTileAssign, setAddonList, setVehicles, setSwTracks, updateNtTracks);
     });
   };
 
   const saveFile = () => {
-    const saveValue = JSON.stringify(CreateSaveObject(vertexes, areas, addonList, tileAssign));
+    const saveValue = JSON.stringify(CreateSaveObject(vertexes, areas, addonList, tileAssign, nttracks));
     save_file_command(saveValue || "").catch((e) => console.error(e));
   };
 
+  const handleChangeEditMode = (e: TabId) => {
+
+  }
+
   return (
     <>
-      <Nav onLoadButtonClick={loadFile} onSaveButtonClick={saveFile} />
+      <Nav onLoadButtonClick={loadFile} onSaveButtonClick={saveFile} setEditMode={setEditMode} />
       <InfoView
         vertexes={vertexes}
         updateVertexes={updateVertexes}
@@ -73,6 +83,10 @@ function App() {
         selectedArea={selectedArea}
         updateAreas={updateAreas}
         setSelectedArea={setSelectedArea}
+        tracks={nttracks}
+        selectedTrack={selectedTrack}
+        updateTracks={updateNtTracks}
+        setSelectedTrack={setSelectedTrack}
         editMode={editMode}
         setEditMode={setEditMode}
       ></InfoView>
@@ -91,6 +105,8 @@ function App() {
         editMode={editMode}
         setEditMode={setEditMode}
         vehicles={vehicles}
+        nttracks={nttracks}
+        selectedTrack={selectedTrack}
       />
     </>
   );

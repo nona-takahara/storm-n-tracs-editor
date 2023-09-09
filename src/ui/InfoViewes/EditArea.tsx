@@ -1,8 +1,11 @@
-import { Button, ButtonGroup, Divider, Radio, RadioGroup } from "@blueprintjs/core";
+import { Button, ButtonGroup, Divider, Intent, Radio, RadioGroup } from "@blueprintjs/core";
 import { Updater } from "use-immer";
 import AreaPolygon from "../../data/AreaPolygon";
 import Vector2d from "../../data/Vector2d";
 import * as EditMode from "../../EditMode";
+import { Code, Trash } from "@blueprintjs/icons";
+import { useState } from "react";
+import EditLua from "./EditLua";
 
 type EditAreaProps = {
   selectedArea: string;
@@ -15,11 +18,14 @@ type EditAreaProps = {
 };
 
 function EditArea(props: EditAreaProps) {
+  const [luadiag, setLuaDiag] = useState(false);
+
   const ssarea = props.areas.get(props.selectedArea) || {
     name: "",
     vertexes: [],
     leftVertexInnerId: 0,
     axleMode: "none",
+    callback: ""
   };
 
   const canDeleteVertex = ssarea.vertexes.length > 3;
@@ -47,12 +53,13 @@ function EditArea(props: EditAreaProps) {
           vertexes: [],
           leftVertexInnerId: 0,
           axleMode: "none",
+          callback: ""
         };
         const carray = [...ssarea.vertexes];
         carray.splice(index + 1, 0, `v${i}`);
         draft.set(
           props.selectedArea,
-          new AreaPolygon(carray, ssarea.leftVertexInnerId, ssarea.axleMode)
+          new AreaPolygon(carray, ssarea.leftVertexInnerId, ssarea.axleMode, ssarea.callback)
         );
       });
     };
@@ -64,13 +71,15 @@ function EditArea(props: EditAreaProps) {
         vertexes: [],
         leftVertexInnerId: 0,
         axleMode: "none",
+        callback: ""
       };
       draft.set(
         props.selectedArea,
         new AreaPolygon(
           ssarea.vertexes.filter((v, i) => i !== index),
           ssarea.leftVertexInnerId,
-          ssarea.axleMode
+          ssarea.axleMode,
+          ssarea.callback
         )
       );
     });
@@ -83,15 +92,38 @@ function EditArea(props: EditAreaProps) {
     props.setSelectedArea(undefined);
   };
 
+  const openEditLuaButton = () => {
+    setLuaDiag(true);
+  };
+
+  const updateLuaCode = (list: string) => {
+    props.updateAreas((draft) => {
+      const ssarea = draft.get(props.selectedArea);
+      if (ssarea) {
+        draft.set(props.selectedArea, new AreaPolygon(
+          ssarea.vertexes,
+          ssarea.leftVertexInnerId,
+          ssarea.axleMode,
+          list
+        ));
+      }      
+    })
+  }
+
   return (
     <>
-      <div>
-        <b>{props.selectedArea}</b> 
+      {luadiag && <EditLua close={() => setLuaDiag(false)} updateLuaCode={updateLuaCode} luaCode={ssarea.callback} selectedArea={props.selectedArea} />}
+      <ButtonGroup>
+        <b>{props.selectedArea}</b>
+        <Divider />
         {props.editMode == EditMode.EditArea && (
-          <Button onClick={delAreaButton}>DEL</Button>
+          <>
+            <Button onClick={openEditLuaButton} icon={<Code />}>Lua</Button>
+            <Button onClick={delAreaButton} icon={<Trash />} intent={Intent.DANGER}>DEL</Button>
+          </>
         )}
         {props.editMode == EditMode.AddArea && "Add Area Mode"}
-      </div>
+      </ButtonGroup>
       <Divider />
       <RadioGroup
         inline={true}
@@ -106,7 +138,7 @@ function EditArea(props: EditAreaProps) {
             ) {
               draft.set(
                 props.selectedArea,
-                new AreaPolygon(area.vertexes, area.leftVertexInnerId, value)
+                new AreaPolygon(area.vertexes, area.leftVertexInnerId, value, area.callback)
               );
             }
           });
@@ -129,7 +161,8 @@ function EditArea(props: EditAreaProps) {
                 new AreaPolygon(
                   area.vertexes,
                   area.vertexes.indexOf(value),
-                  area.axleMode
+                  area.axleMode,
+                  area.callback
                 )
               );
             }
