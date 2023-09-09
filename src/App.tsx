@@ -10,6 +10,7 @@ import AreaPolygon from "./data/AreaPolygon";
 import * as EditMode from "./EditMode";
 import { CreateObject, CreateSaveObject } from "./data/ProjectUtils";
 import AddonVehicle from "./data/AddonVehicle";
+import { TabId } from "@blueprintjs/core";
 
 const useWindowSize = (): number[] => {
   const [size, setSize] = useState([0, 0]);
@@ -63,9 +64,13 @@ function App() {
     save_file_command(saveValue || "").catch((e) => console.error(e));
   };
 
+  const handleChangeEditMode = (e: TabId) => {
+    
+  }
+
   return (
     <>
-      <Nav onLoadButtonClick={loadFile} onSaveButtonClick={saveFile} />
+      <Nav onLoadButtonClick={loadFile} onSaveButtonClick={saveFile} setEditMode={setEditMode}/>
       <InfoView
         vertexes={vertexes}
         updateVertexes={updateVertexes}

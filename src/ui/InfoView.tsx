@@ -18,6 +18,16 @@ type InfoViewProps = {
 };
 
 function InfoView(props: InfoViewProps) {
+  const select = () => {
+    if (props.editMode == EditMode.AddArea || props.editMode == EditMode.EditArea) {
+      if (props.selectedArea !== undefined) {
+        return <EditArea {...props} selectedArea={props.selectedArea} />;
+      } else {
+        return <AreaMain {...props} />;
+      }
+    }
+  }
+
   return (
     <Card
       elevation={1}
@@ -30,11 +40,7 @@ function InfoView(props: InfoViewProps) {
         backdropFilter: "blur(8px)",
       }}
     >
-      {props.selectedArea !== undefined ? (
-        <EditArea {...props} selectedArea={props.selectedArea} />
-      ) : (
-        <AreaMain {...props} />
-      )}
+      {select()}
     </Card>
   );
 }

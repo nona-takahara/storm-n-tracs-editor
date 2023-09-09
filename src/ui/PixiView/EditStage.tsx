@@ -149,7 +149,7 @@ function EditStage(props: EditStageProps) {
             }
           });
         }
-      } else if (props.editMode == EditMode.EditArea) {
+      } else if (props.editMode == EditMode.EditArea || props.editMode == EditMode.EditTrack) {
         const selpolreal =
           props.selectedArea !== undefined
             ? props.areas.get(props.selectedArea)
