@@ -20,7 +20,7 @@ function EditLua(props: EditLuaProps) {
   return (
     <Dialog isOpen={true} onClose={props.close} title={title} canOutsideClickClose={false} canEscapeKeyClose={false} isCloseButtonShown={false}>
       <DialogBody>
-        <TextArea autoResize={true} fill={true} onChange={updateText} value={text} />
+        <TextArea autoResize={true} fill={true} onChange={updateText} value={text} style={{fontFamily: "'Consolas', monospace"}}/>
       </DialogBody>
       <DialogFooter actions={<>
         <Button onClick={() => { props.close(); }} intent={Intent.DANGER}>Close without Save</Button>
