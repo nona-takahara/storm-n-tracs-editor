@@ -131,6 +131,7 @@ export function CreateObject(
             const components = itr(l.components.c);
             if (offset && components.length >= 1) {
               for (const c of components) {
+                if (c?.spawn_transform) {
                 const item = new AddonVehicle(
                   Number(c.spawn_transform["@_30"]) + offset.x,
                   Number(c.spawn_transform["@_32"]) + offset.z,
@@ -145,6 +146,7 @@ export function CreateObject(
                   c["@_name"]
                 );
                 vehicles.push(item);
+                }
               }
             }
           }
