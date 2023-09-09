@@ -22,11 +22,11 @@ function InfoView(props: InfoViewProps) {
   const select = () => {
     if (props.editMode == EditMode.AddArea || props.editMode == EditMode.EditArea) {
       if (props.selectedArea !== undefined) {
-        return <EditArea {...props} selectedArea={props.selectedArea}/>;
+        return <EditArea {...props} selectedArea={props.selectedArea} />;
       } else {
         return <AreaMain {...props} />;
       }
-    } else if(props.editMode == EditMode.EditTrack) {
+    } else if (props.editMode == EditMode.EditTrack) {
       return <EditTrack {...props} />
     }
   }

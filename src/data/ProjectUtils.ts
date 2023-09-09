@@ -58,7 +58,8 @@ export function CreateObject(
         new AreaPolygon(
           elm.vertexes,
           elm.left_vertex_inner_id || 0,
-          AxleMode.modeFromStr(elm.axle_mode)
+          AxleMode.modeFromStr(elm.axle_mode),
+          elm.callback || ""
         )
     )
   );
