@@ -262,6 +262,7 @@ function EditStage(props: EditStageProps) {
         <WorldTrackView tracks={props.tracks} />
         <AddonsView vehicles={props.vehicles} scale={scale} />
         <AreaPolygonsView
+          editMode={props.editMode}
           vertexes={props.vertexes}
           areas={props.areas}
           tracks={props.nttracks}
