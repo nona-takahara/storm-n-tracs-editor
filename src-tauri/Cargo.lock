@@ -2470,7 +2470,7 @@ dependencies = [
 
 [[package]]
 name = "storm-n-tracs-editor"
-version = "0.0.0"
+version = "0.1.0"
 dependencies = [
  "confy",
  "serde",

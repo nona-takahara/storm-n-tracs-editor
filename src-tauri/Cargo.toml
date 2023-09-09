@@ -1,9 +1,9 @@
 [package]
 name = "storm-n-tracs-editor"
-version = "0.0.0"
+version = "0.1.0"
 description = "A Tauri App"
-authors = ["you"]
-license = ""
+authors = ["Nona Takahara"]
+license = "MIT"
 repository = ""
 edition = "2021"
 
