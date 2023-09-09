@@ -28,16 +28,14 @@ function AreaPolygonsView(props: AreaPolygonsViewProps) {
             g.drawCircle(p.x, -p.z, 1.5);
           }
           if (props.selectedTrack && props.tracks.get(props.selectedTrack)?.areas?.find(v => v.areaName == key)) {
-            g.beginFill(0xff80ff, 0.3);
+            g.beginFill(0xa0ffa0, 0.3);
           } else {
             g.beginFill(0x8080ff, 0.3);
           }
         } else {
-          if (props.selectedTrack && props.tracks.get(props.selectedTrack)?.areas?.find(v => {
-            console.log(key, v.areaName)
-            return v.areaName == key
-          })) {
-            g.beginFill(0xff00ff, 0.3);
+          if (props.selectedTrack && props.tracks.get(props.selectedTrack)?.areas?.find(v => v.areaName == key
+          )) {
+            g.beginFill(0x00c000, 0.3);
           } else {
             g.beginFill(0x0000ff, 0.3);
           }

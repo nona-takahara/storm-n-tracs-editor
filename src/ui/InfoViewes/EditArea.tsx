@@ -4,7 +4,6 @@ import AreaPolygon from "../../data/AreaPolygon";
 import Vector2d from "../../data/Vector2d";
 import * as EditMode from "../../EditMode";
 import { Code, Trash } from "@blueprintjs/icons";
-import { C } from "@tauri-apps/api/event-41a9edf5";
 import { useState } from "react";
 import EditLua from "./EditLua";
 
