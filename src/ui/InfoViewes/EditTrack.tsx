@@ -1,10 +1,13 @@
-import { Button, MenuItem } from "@blueprintjs/core";
+import { Button, ControlGroup, Divider, MenuItem } from "@blueprintjs/core";
 import { ItemPredicate, ItemRenderer, Select } from "@blueprintjs/select";
 import NtracsTrack from "../../data/NtracsTrack";
+import { Updater } from "use-immer";
 
 type EditTrackProps = {
   selectedArea: string | undefined;
+  selectedTrack: string | undefined;
   tracks: Map<string, NtracsTrack>;
+  updateTracks: Updater<Map<string, NtracsTrack>>;
   setSelectedTrack: React.Dispatch<React.SetStateAction<string | undefined>>;
 };
 
@@ -33,6 +36,7 @@ function EditArea(props: EditTrackProps) {
   return (
     <>
       <div>
+        <ControlGroup>
         <Select<string>
           createNewItemFromQuery={(str) => str}
           createNewItemRenderer={(
@@ -45,7 +49,14 @@ function EditArea(props: EditTrackProps) {
               text={`Create "${query}"`}
               roleStructure="listoption"
               active={active}
-              onClick={handleClick}
+              onClick={(e) => {
+                props.updateTracks((draft) => {
+                  if (!draft.get(query)) {
+                    draft.set(query, new NtracsTrack([]));
+                  }
+                })
+                handleClick(e)
+              }}
               shouldDismissPopover={false}
             />)}
           items={Array.from(props.tracks.keys())}
@@ -53,12 +64,12 @@ function EditArea(props: EditTrackProps) {
           itemPredicate={filterItem}
           onItemSelect={(item: string) => props.setSelectedTrack(item)}
           popoverProps={{ minimal: true }}
-          
-          fill={true}
           noResults={<MenuItem disabled={true} text="No results." roleStructure="listoption" />}
         >
-          <Button rightIcon="double-caret-vertical" />
+          <Button text={props.selectedTrack} rightIcon="double-caret-vertical" />
         </Select>
+        <Divider />
+        </ControlGroup>
       </div>
     </>
   );

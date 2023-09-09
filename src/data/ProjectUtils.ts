@@ -6,7 +6,7 @@ import AreaPolygon from "./AreaPolygon";
 import * as AxleMode from "./AxleMode";
 import StormTracks from "./StormTracks";
 import Vector2d from "./Vector2d";
-import NtracsTrack from "./NtracsTrack";
+import NtracsTrack, { AreaCollection, TrackFlag } from "./NtracsTrack";
 
 const xmlParserOption = {
   ignoreAttributes: false,
@@ -155,6 +155,15 @@ export function CreateObject(
       mupdater(vehicles);
     }
   );
+
+  /*nttrackupdater(makeMap(obj, "tracks", (elm) => new NtracsTrack(elm.map(
+    (v: any) => new AreaCollection(v.name, v.trackFlag)
+  ))));*/
+
+  const k = new Map<string, NtracsTrack>();
+  k.set("NHB1", new NtracsTrack([new AreaCollection("Area_5", TrackFlag.none), new AreaCollection("Area_6", TrackFlag.none)]))
+  nttrackupdater(k);
+
 }
 
 export function CreateSaveObject(

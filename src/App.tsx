@@ -70,21 +70,22 @@ function App() {
   };
 
   const handleChangeEditMode = (e: TabId) => {
-    
+
   }
 
   return (
     <>
-      <Nav onLoadButtonClick={loadFile} onSaveButtonClick={saveFile} setEditMode={setEditMode}/>
+      <Nav onLoadButtonClick={loadFile} onSaveButtonClick={saveFile} setEditMode={setEditMode} />
       <InfoView
         vertexes={vertexes}
         updateVertexes={updateVertexes}
         areas={areas}
         selectedArea={selectedArea}
-        tracks={nttracks}
-        selectedTrack={selectedTrack}
         updateAreas={updateAreas}
         setSelectedArea={setSelectedArea}
+        tracks={nttracks}
+        selectedTrack={selectedTrack}
+        updateTracks={updateNtTracks}
         setSelectedTrack={setSelectedTrack}
         editMode={editMode}
         setEditMode={setEditMode}

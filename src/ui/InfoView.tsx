@@ -16,6 +16,7 @@ type InfoViewProps = {
   tracks: Map<string, NtracsTrack>;
   updateAreas: Updater<Map<string, AreaPolygon>>;
   updateVertexes: Updater<Map<string, Vector2d>>;
+  updateTracks: Updater<Map<string, NtracsTrack>>;
   setSelectedArea: React.Dispatch<React.SetStateAction<string | undefined>>;
   setSelectedTrack: React.Dispatch<React.SetStateAction<string | undefined>>;
   editMode: EditMode.EditMode;
