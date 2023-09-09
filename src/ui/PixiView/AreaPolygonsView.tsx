@@ -85,7 +85,7 @@ function AreaPolygonsView(props: AreaPolygonsViewProps) {
               const p1p2l = Math.sqrt(p1p2.x * p1p2.x + p1p2.z * p1p2.z) / 4;
               const p1p2n = {x: p1p2.x / p1p2l, z: p1p2.z / p1p2l}
               const pp = new PIXI.Polygon(
-                [new PIXI.Point(p1.x / p1.cnt - p1p2n.z, - p1.z / p1.cnt - p1p2n.x), new PIXI.Point(p2.x / p2.cnt, -p2.z / p2.cnt), new PIXI.Point(p1.x / p1.cnt - p1p2n.z,- p1.z / p1.cnt + p1p2n.x)]
+                [new PIXI.Point(p1.x / p1.cnt - p1p2n.z, - p1.z / p1.cnt - p1p2n.x), new PIXI.Point(p2.x / p2.cnt, -p2.z / p2.cnt), new PIXI.Point(p1.x / p1.cnt + p1p2n.z,- p1.z / p1.cnt + p1p2n.x)]
               )
               g.beginFill(0x00a0ff, 0.6);
               g.drawPolygon(pp);

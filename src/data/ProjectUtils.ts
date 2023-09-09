@@ -156,9 +156,15 @@ export function CreateObject(
     }
   );
 
-  nttrackupdater(makeMap(obj, "tracks", (elm) => new NtracsTrack(elm.map(
-    (v: any) => new AreaCollection(v.name, v.trackFlag)
-  ))));
+
+  const nttrackAssign = new Map<string, NtracsTrack>();
+  makeMap(obj, "tracks", (elm) => {
+    nttrackAssign.set(elm.name, new NtracsTrack(elm.areas.map((v: any) => {
+      return new AreaCollection(v.name, v.trackFlag)
+    }
+    )));
+  })
+  nttrackupdater(nttrackAssign);
 }
 
 export function CreateSaveObject(
