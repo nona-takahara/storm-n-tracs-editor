@@ -10,6 +10,7 @@ import * as EditMode from "../../EditMode";
 import AddonsView from "./AddonsView";
 import AreaPolygonsView from "./AreaPolygonsView";
 import WorldTrackView from "./WorldTrackView";
+import NtracsTrack from "../../data/NtracsTrack";
 
 function mousePos(
   e: React.MouseEvent,
@@ -44,6 +45,9 @@ type EditStageProps = {
   editMode: EditMode.EditMode;
   setEditMode: React.Dispatch<EditMode.EditMode>;
   vehicles: AddonVehicle[];
+  
+  nttracks: Map<string, NtracsTrack>;
+  selectedTrack: string | undefined;
 };
 
 function EditStage(props: EditStageProps) {
@@ -260,8 +264,10 @@ function EditStage(props: EditStageProps) {
         <AreaPolygonsView
           vertexes={props.vertexes}
           areas={props.areas}
+          tracks={props.nttracks}
           nearestIndex={props.nearestVertex}
           selectedArea={props.selectedArea}
+          selectedTrack={props.selectedTrack}
         />
         {nv && (
           <Text

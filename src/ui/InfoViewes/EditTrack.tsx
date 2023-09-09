@@ -1,4 +1,4 @@
-import { Button, ControlGroup, Divider, MenuItem } from "@blueprintjs/core";
+import { Button, ControlGroup, Divider, MenuItem, OL } from "@blueprintjs/core";
 import { ItemPredicate, ItemRenderer, Select } from "@blueprintjs/select";
 import NtracsTrack from "../../data/NtracsTrack";
 import { Updater } from "use-immer";
@@ -70,6 +70,13 @@ function EditArea(props: EditTrackProps) {
         </Select>
         <Divider />
         </ControlGroup>
+        <OL>
+          {props.selectedTrack && props.tracks.get(props.selectedTrack)?.areas.map(v => {
+            return (
+              <li><b>{v.areaName}</b> {v.trackFlag}</li>
+            )
+          })}
+        </OL>
       </div>
     </>
   );

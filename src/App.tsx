@@ -105,6 +105,8 @@ function App() {
         editMode={editMode}
         setEditMode={setEditMode}
         vehicles={vehicles}
+        nttracks={nttracks}
+        selectedTrack={selectedTrack}
       />
     </>
   );

@@ -3,12 +3,15 @@ import { Graphics } from "@pixi/react";
 import * as PIXI from "pixi.js";
 import AreaPolygon from "../../data/AreaPolygon";
 import Vector2d from "../../data/Vector2d";
+import NtracsTrack from "../../data/NtracsTrack";
 
 type AreaPolygonsViewProps = {
   vertexes: Map<string, Vector2d>;
   areas: Map<string, AreaPolygon>;
+  tracks: Map<string, NtracsTrack>;
   nearestIndex: string | undefined;
   selectedArea: string | undefined;
+  selectedTrack: string | undefined;
 };
 
 function AreaPolygonsView(props: AreaPolygonsViewProps) {
@@ -24,9 +27,20 @@ function AreaPolygonsView(props: AreaPolygonsViewProps) {
             g.lineStyle(1, 0x0000ff, 0.7);
             g.drawCircle(p.x, -p.z, 1.5);
           }
-          g.beginFill(0x8080ff, 0.3);
+          if (props.selectedTrack && props.tracks.get(props.selectedTrack)?.areas?.find(v => v.areaName == key)) {
+            g.beginFill(0xff80ff, 0.3);
+          } else {
+            g.beginFill(0x8080ff, 0.3);
+          }
         } else {
-          g.beginFill(0x0000ff, 0.3);
+          if (props.selectedTrack && props.tracks.get(props.selectedTrack)?.areas?.find(v => {
+            console.log(key, v.areaName)
+            return v.areaName == key
+          })) {
+            g.beginFill(0xff00ff, 0.3);
+          } else {
+            g.beginFill(0x0000ff, 0.3);
+          }
         }
 
         g.lineStyle(0.2, 0x0000ff, 1);
