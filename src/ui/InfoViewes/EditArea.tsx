@@ -25,6 +25,7 @@ function EditArea(props: EditAreaProps) {
     vertexes: [],
     leftVertexInnerId: 0,
     axleMode: "none",
+    callback: ""
   };
 
   const canDeleteVertex = ssarea.vertexes.length > 3;
@@ -95,9 +96,23 @@ function EditArea(props: EditAreaProps) {
     setLuaDiag(true);
   };
 
+  const updateLuaCode = (list: string) => {
+    props.updateAreas((draft) => {
+      const ssarea = draft.get(props.selectedArea);
+      if (ssarea) {
+        draft.set(props.selectedArea, new AreaPolygon(
+          ssarea.vertexes,
+          ssarea.leftVertexInnerId,
+          ssarea.axleMode,
+          list
+        ));
+      }      
+    })
+  }
+
   return (
     <>
-      {luadiag && <EditLua close={() => setLuaDiag(false)} />}
+      {luadiag && <EditLua close={() => setLuaDiag(false)} updateLuaCode={updateLuaCode} luaCode={ssarea.callback} selectedArea={props.selectedArea} />}
       <ButtonGroup>
         <b>{props.selectedArea}</b>
         <Divider />
