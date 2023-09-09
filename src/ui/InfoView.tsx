@@ -4,6 +4,7 @@ import AreaPolygon from "../data/AreaPolygon";
 import Vector2d from "../data/Vector2d";
 import AreaMain from "./InfoViewes/AreaMain";
 import EditArea from "./InfoViewes/EditArea";
+import EditTrack from "./InfoViewes/EditTrack";
 import * as EditMode from "../EditMode";
 
 type InfoViewProps = {
@@ -21,10 +22,12 @@ function InfoView(props: InfoViewProps) {
   const select = () => {
     if (props.editMode == EditMode.AddArea || props.editMode == EditMode.EditArea) {
       if (props.selectedArea !== undefined) {
-        return <EditArea {...props} selectedArea={props.selectedArea} />;
+        return <EditArea {...props} selectedArea={props.selectedArea}/>;
       } else {
         return <AreaMain {...props} />;
       }
+    } else if(props.editMode == EditMode.EditTrack) {
+      return <EditTrack {...props} />
     }
   }
 
