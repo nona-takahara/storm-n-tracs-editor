@@ -31,7 +31,7 @@ function EditArea(props: EditTrackProps) {
   };
 
   const filterItem: ItemPredicate<string> = (query, film, _index, exactMatch) => {
-    return true;
+    return film.startsWith(query);
   }
 
   const delTrackButton = () => {
