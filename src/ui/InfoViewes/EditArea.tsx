@@ -1,10 +1,10 @@
-import { Button, ButtonGroup, Divider, Intent, Radio, RadioGroup } from "@blueprintjs/core";
+import { Button, ButtonGroup, Checkbox, Divider, Intent, Radio, RadioGroup } from "@blueprintjs/core";
 import { Updater } from "use-immer";
 import AreaPolygon from "../../data/AreaPolygon";
 import Vector2d from "../../data/Vector2d";
 import * as EditMode from "../../EditMode";
 import { Code, Trash } from "@blueprintjs/icons";
-import { useState } from "react";
+import { ChangeEvent, useState } from "react";
 import EditLua from "./EditLua";
 
 type EditAreaProps = {
@@ -19,6 +19,7 @@ type EditAreaProps = {
 
 function EditArea(props: EditAreaProps) {
   const [luadiag, setLuaDiag] = useState(false);
+  const [innerCord, setInnerCord] = useState(false);
 
   const ssarea = props.areas.get(props.selectedArea) || {
     name: "",
@@ -106,7 +107,7 @@ function EditArea(props: EditAreaProps) {
           ssarea.axleMode,
           list
         ));
-      }      
+      }
     })
   }
 
@@ -124,6 +125,8 @@ function EditArea(props: EditAreaProps) {
         )}
         {props.editMode == EditMode.AddArea && "Add Area Mode"}
       </ButtonGroup>
+      <Divider />
+      <Checkbox label="ロケーション内部座標表示" checked={innerCord} onChange={(e:ChangeEvent<HTMLInputElement>) => setInnerCord(e.target.checked)} />
       <Divider />
       <RadioGroup
         inline={true}
@@ -155,7 +158,7 @@ function EditArea(props: EditAreaProps) {
           props.updateAreas((draft) => {
             const area = props.areas.get(props.selectedArea);
             const value = evt.currentTarget?.value;
-            if (value && area && area.vertexes.indexOf(value)) {
+            if (value && area && area.vertexes.indexOf(value) !== -1) {
               draft.set(
                 props.selectedArea,
                 new AreaPolygon(
@@ -180,12 +183,18 @@ function EditArea(props: EditAreaProps) {
               (vx.x - vx1.x) * (vx.x - vx1.x) + (vx.z - vx1.z) * (vx.z - vx1.z)
             );
           if (vx) {
+            let vvx = vx;
+            if (innerCord) {
+              vvx = new Vector2d(((vx.x + 500) % 1000 + 1000) % 1000 - 500
+                , ((vx.z + 500) % 1000 + 1000) % 1000 - 500);
+            }
             return (
               <Radio
-                label={`${v}: ${vx.x.toFixed(1)}, ${vx.z.toFixed(1)}`}
                 value={v}
                 key={v}
               >
+                {v}({vvx.x.toFixed(1)}, {vvx.z.toFixed(1)})(
+                {l?.toFixed(2)})
                 <ButtonGroup>
                   <Button onClick={addButton(i)} small={true}>
                     +
@@ -198,7 +207,6 @@ function EditArea(props: EditAreaProps) {
                     -
                   </Button>
                 </ButtonGroup>
-                {l?.toFixed(2)}
               </Radio>
             );
           } else {
