@@ -72,14 +72,9 @@ export function CreateObject(
   }
   dupdater(addons);
 
-  const tileAssign = new Map<string, Vector2d>();
-  for (let x = 0; x <= 16; x++) {
-    for (let y = 0; y <= 9; y++) {
-      tileAssign.set(
-        `data/tiles/mega_island_${x}_${y}.xml`,
-        new Vector2d((x - 8) * 1000, y * 1000 - 12000)
-      );
-    }
+  const tileAssign = new Map<string,Vector2d>();
+  for (const itr of obj?.tiles) {
+    tileAssign.set(itr.path, new Vector2d(itr.x_offset, itr.z_offset));
   }
   tlupdater(tileAssign);
 
