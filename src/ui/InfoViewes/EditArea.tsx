@@ -155,7 +155,7 @@ function EditArea(props: EditAreaProps) {
           props.updateAreas((draft) => {
             const area = props.areas.get(props.selectedArea);
             const value = evt.currentTarget?.value;
-            if (value && area && area.vertexes.indexOf(value)) {
+            if (value && area && area.vertexes.indexOf(value) !== -1) {
               draft.set(
                 props.selectedArea,
                 new AreaPolygon(
