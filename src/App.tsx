@@ -23,13 +23,13 @@ const useWindowSize = (): number[] => {
     window.addEventListener("resize", updateSize);
     updateSize();
 
-    return () => window.removeEventListener("resize", updateSize);
+    return () => { window.removeEventListener("resize", updateSize); };
   }, []);
   return size;
 };
 
 function open_file_command() {
-  return invoke("open_file_command", {}) as Promise<string>;
+  return invoke("open_file_command", {});
 }
 
 function save_file_command(data: string) {
@@ -59,16 +59,18 @@ function App() {
   );
 
   const loadFile = () => {
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
     open_file_command().then((v) => {
-      CreateObject(JSON.parse(v), updateVertexes, updateAreas, updateTileAssign, setAddonList, setVehicles, setSwTracks, updateNtTracks);
+      CreateObject(JSON.parse(v as string), updateVertexes, updateAreas, updateTileAssign, setAddonList, setVehicles, setSwTracks, updateNtTracks);
     });
   };
 
   const saveFile = () => {
     const saveValue = JSON.stringify(CreateSaveObject(vertexes, areas, addonList, tileAssign, nttracks));
-    save_file_command(saveValue || "").catch((e) => console.error(e));
+    save_file_command(saveValue || "").catch((e: unknown) => { console.error(e); });
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars, @typescript-eslint/no-empty-function
   const handleChangeEditMode = (e: TabId) => {
 
   }

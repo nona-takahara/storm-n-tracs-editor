@@ -8,7 +8,7 @@ import EditTrack from "./InfoViewes/EditTrack";
 import * as EditMode from "../EditMode";
 import NtracsTrack from "../data/NtracsTrack";
 
-type InfoViewProps = {
+interface InfoViewProps {
   selectedArea: string | undefined;
   selectedTrack: string | undefined;
   vertexes: Map<string, Vector2d>;
@@ -21,7 +21,7 @@ type InfoViewProps = {
   setSelectedTrack: React.Dispatch<React.SetStateAction<string | undefined>>;
   editMode: EditMode.EditMode;
   setEditMode: React.Dispatch<EditMode.EditMode>;
-};
+}
 
 function InfoView(props: InfoViewProps) {
   const select = () => {

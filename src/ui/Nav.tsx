@@ -3,11 +3,11 @@ import { Alignment, Button, Divider, Navbar, Tab, TabId, Tabs } from "@blueprint
 import { FloppyDisk, Flows, FolderOpen, PolygonFilter } from "@blueprintjs/icons";
 import * as EditMode from "../EditMode";
 
-type NavProps = {
+interface NavProps {
   onLoadButtonClick: React.MouseEventHandler;
   onSaveButtonClick: React.MouseEventHandler;
   setEditMode: React.Dispatch<EditMode.EditMode>;
-};
+}
 
 function Nav(props: NavProps) {
   const changeTab = (tab: TabId) => {

@@ -1,5 +1,3 @@
-import AreaPolygon from "./AreaPolygon";
-
 class NtracsTrack {
   constructor(public areas: AreaCollection[]) { }
 }

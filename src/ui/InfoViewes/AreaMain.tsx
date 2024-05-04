@@ -3,12 +3,12 @@ import { Updater } from "use-immer";
 import AreaPolygon from "../../data/AreaPolygon";
 import * as EditMode from "../../EditMode";
 
-type EditAreaProps = {
+interface EditAreaProps {
   areas: Map<string, AreaPolygon>;
   updateAreas: Updater<Map<string, AreaPolygon>>;
   setSelectedArea: React.Dispatch<React.SetStateAction<string | undefined>>;
   setEditMode: React.Dispatch<EditMode.EditMode>;
-};
+}
 
 function AreaMain(props: EditAreaProps) {
   return (
@@ -18,12 +18,12 @@ function AreaMain(props: EditAreaProps) {
           props.setEditMode(EditMode.AddArea);
 
           let i = props.areas.size;
-          while (props.areas.has(`Area_${i}`)) i++;
+          while (props.areas.has(`Area_${i.toString()}`)) i++;
 
           props.updateAreas((draft) => {
-            draft.set(`Area_${i}`, new AreaPolygon([], 0, "none", ""));
+            draft.set(`Area_${i.toString()}`, new AreaPolygon([], 0, "none", ""));
           });
-          props.setSelectedArea(`Area_${i}`);
+          props.setSelectedArea(`Area_${i.toString()}`);
         }}
       >
         Add Area
