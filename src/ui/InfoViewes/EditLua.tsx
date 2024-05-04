@@ -1,12 +1,12 @@
-import { Button, Dialog, DialogBody, DialogFooter, Divider, Intent, TextArea } from "@blueprintjs/core";
+import { Button, Dialog, DialogBody, DialogFooter, Intent, TextArea } from "@blueprintjs/core";
 import { useState } from "react";
 
-type EditLuaProps = {
+interface EditLuaProps {
   close: () => void;
   updateLuaCode: (list: string) => void;
   luaCode: string;
   selectedArea: string;
-};
+}
 
 function EditLua(props: EditLuaProps) {
   const [text, setText] = useState(props.luaCode);

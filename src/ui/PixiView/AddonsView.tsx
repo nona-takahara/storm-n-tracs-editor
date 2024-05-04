@@ -10,10 +10,10 @@ function rotate(c: AddonVehicle, x: number, z: number) {
   };
 }
 
-type AddonsViewProps = {
+interface AddonsViewProps {
   vehicles: AddonVehicle[];
   scale: number;
-};
+}
 
 function AddonsView(props: AddonsViewProps) {
   const draw = useCallback(

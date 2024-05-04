@@ -4,16 +4,16 @@ import NtracsTrack, { AreaCollection, TrackFlag } from "../../data/NtracsTrack";
 import { Updater } from "use-immer";
 import { Clean, Trash, Add } from "@blueprintjs/icons";
 
-type EditTrackProps = {
+interface EditTrackProps {
   selectedArea: string | undefined;
   selectedTrack: string | undefined;
   tracks: Map<string, NtracsTrack>;
   updateTracks: Updater<Map<string, NtracsTrack>>;
   setSelectedTrack: React.Dispatch<React.SetStateAction<string | undefined>>;
-};
+}
 
 function EditArea(props: EditTrackProps) {
-  const itemRender: ItemRenderer<string> = (item, { handleClick, handleFocus, modifiers, query }) => {
+  const itemRender: ItemRenderer<string> = (item, { handleClick, handleFocus, modifiers }) => {
     if (!modifiers.matchesPredicate) {
       return null;
     }
@@ -30,7 +30,7 @@ function EditArea(props: EditTrackProps) {
     );
   };
 
-  const filterItem: ItemPredicate<string> = (query, film, _index, exactMatch) => {
+  const filterItem: ItemPredicate<string> = (query, film) => {
     return film.startsWith(query);
   }
 
@@ -124,7 +124,7 @@ function EditArea(props: EditTrackProps) {
             items={Array.from(props.tracks.keys())}
             itemRenderer={itemRender}
             itemPredicate={filterItem}
-            onItemSelect={(item: string) => props.setSelectedTrack(item)}
+            onItemSelect={(item: string) => { props.setSelectedTrack(item); }}
             popoverProps={{ minimal: true }}
             noResults={<MenuItem disabled={true} text="No results." roleStructure="listoption" />}
           >
