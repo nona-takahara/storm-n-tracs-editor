@@ -13,9 +13,8 @@ struct PathConfig {
 impl Default for PathConfig {
     fn default() -> Self {
         Self {
-            sw_tile_path:
-                "C:\\Program Files (x86)\\Steam\\steamapps\\common\\Stormworks\\rom\\data\\tiles\\"
-                    .to_string(),
+            sw_tile_path: "C:\\Program Files (x86)\\Steam\\steamapps\\common\\Stormworks\\rom"
+                .to_string(),
             addon_path: "C:\\".to_string(),
         }
     }
@@ -27,17 +26,12 @@ fn read_tile_file_command(filename: String) -> Result<String, String> {
     match cfg {
         Ok(cfg) => {
             let dir = std::path::Path::new(&cfg.sw_tile_path);
-            let filename = std::path::Path::new(&filename).file_name();
-            match filename {
-                Some(filename) => {
-                    let content = match std::fs::read_to_string(dir.join(filename)) {
-                        Ok(content) => content,
-                        Err(e) => return Err(e.to_string()),
-                    };
-                    return Ok(content);
-                }
-                None => Err("Cannot get settings".to_string()),
-            }
+            let filename = std::path::Path::new(&filename);
+            let content = match std::fs::read_to_string(dir.join(filename)) {
+                Ok(content) => content,
+                Err(e) => return Err(e.to_string()),
+            };
+            return Ok(content);
         }
         Err(e) => return Err(e.to_string()),
     }
@@ -52,10 +46,11 @@ fn read_addon_command(foldername: String) -> Result<String, String> {
             let filename = std::path::Path::new(&foldername).file_stem();
             match filename {
                 Some(filename) => {
-                    let content = match std::fs::read_to_string(dir.join(filename).join("playlist.xml")) {
-                        Ok(content) => content,
-                        Err(e) => return Err(e.to_string()),
-                    };
+                    let content =
+                        match std::fs::read_to_string(dir.join(filename).join("playlist.xml")) {
+                            Ok(content) => content,
+                            Err(e) => return Err(e.to_string()),
+                        };
                     return Ok(content);
                 }
                 None => Err("Cannot get settings".to_string()),
