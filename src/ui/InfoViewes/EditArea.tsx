@@ -163,11 +163,11 @@ function EditArea(props: EditAreaProps) {
           >
             <Button text={subselect} rightIcon="double-caret-vertical" />
           </Select>
-        <Button onClick={(evt) => {
+        <Button onClick={() => {
           props.updateAreas((draft) => {
             const area = props.areas.get(props.selectedArea);
-            if (area && props.areas.keys().find((v) => v == subselect)) {
-              const uparea = area.uparea || [];
+            if (area && props.areas.has(subselect)) {
+              const uparea = area.uparea;
               uparea.push(subselect);
               draft.set(
                 props.selectedArea,
@@ -184,13 +184,13 @@ function EditArea(props: EditAreaProps) {
           })
         }}>上り側追加</Button>
       </ButtonGroup>
-      <UL>{(ssarea.uparea || []).map((v) => <li id={props.selectedArea+"*"+v}><ControlGroup>{v}<Divider />
+      <UL>{ssarea.uparea.map((v) => <li id={props.selectedArea+"*"+v}><ControlGroup>{v}<Divider />
       <ButtonGroup><Button onClick={
-        (evt) => {
+        () => {
           props.updateAreas((draft) => {
             const area = props.areas.get(props.selectedArea);
             if (area) {
-              const uparea = (area.uparea || []).filter((k) => k != v);
+              const uparea = area.uparea.filter((k) => k != v);
               draft.set(
                 props.selectedArea,
                 new AreaPolygon(
