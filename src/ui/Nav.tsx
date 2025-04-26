@@ -27,7 +27,7 @@ function Nav(props: NavProps) {
       }}
     >
         <Navbar.Group>
-          <Navbar.Heading>N-TRACS<small>v0.1.2</small></Navbar.Heading>
+          <Navbar.Heading>N-TRACS Editor <small>v0.1.2</small></Navbar.Heading>
           <Navbar.Divider />
           <Button
             icon={<FolderOpen />}

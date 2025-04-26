@@ -132,7 +132,8 @@ function EditStage(props: EditStageProps) {
                   sl.vertexes.concat(`v${i}`),
                   sl.leftVertexInnerId,
                   sl.axleMode,
-                  sl.callback
+                  sl.callback,
+                  []
                 )
               );
             }
@@ -149,7 +150,7 @@ function EditStage(props: EditStageProps) {
               }
               draft.set(
                 props.selectedArea,
-                new AreaPolygon(sl.vertexes.concat(nv), sl.leftVertexInnerId, sl.axleMode, sl.callback)
+                new AreaPolygon(sl.vertexes.concat(nv), sl.leftVertexInnerId, sl.axleMode, sl.callback, [])
               );
             }
           });
@@ -219,7 +220,7 @@ function EditStage(props: EditStageProps) {
                 return nnearVk;
               }
             });
-            draft.set(k, new AreaPolygon(vs, v.leftVertexInnerId, v.axleMode, v.callback));
+            draft.set(k, new AreaPolygon(vs, v.leftVertexInnerId, v.axleMode, v.callback, []));
           }
         });
       });

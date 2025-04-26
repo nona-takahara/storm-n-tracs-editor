@@ -22,7 +22,7 @@ function cxhalfarg(c: Complex): Complex {
 }
 
 class AreaPolygon {
-  constructor(public vertexes: string[], public leftVertexInnerId: number, public axleMode: AxleMode, public callback: string) { }
+  constructor(public vertexes: string[], public leftVertexInnerId: number, public axleMode: AxleMode, public callback: string, public uparea: string[]) { }
 
   isInArea(vertexes: Map<string, Vector2d>, x: number, z: number) {
     let prod: Complex = { re: 1, im: 0 };

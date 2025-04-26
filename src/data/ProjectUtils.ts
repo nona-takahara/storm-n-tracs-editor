@@ -71,7 +71,8 @@ export function CreateObject(
           elm.vertexes,
           elm.left_vertex_inner_id || 0,
           AxleMode.modeFromStr(elm.axle_mode),
-          elm.callback || ""
+          elm.callback || "",
+          elm.uparea || []
         )
     )
   );
@@ -215,7 +216,8 @@ export function CreateSaveObject(
           }, new Set<string>())
         ).filter((vv) => vv !== k),
         axle_mode: v.axleMode,
-        callback: v.callback
+        callback: v.callback,
+        uparea: v.uparea
       };
     }),
     addons: addons,
