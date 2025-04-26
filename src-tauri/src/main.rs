@@ -14,7 +14,7 @@ impl Default for PathConfig {
     fn default() -> Self {
         Self {
             sw_tile_path:
-                "C:\\Program Files (x86)\\Steam\\steamapps\\common\\Stormworks\\rom\\data\\tiles\\"
+                "C:\\Program Files (x86)\\Steam\\steamapps\\common\\Stormworks\\rom"
                     .to_string(),
             addon_path: "C:\\".to_string(),
         }
