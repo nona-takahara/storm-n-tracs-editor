@@ -21,7 +21,7 @@ function AreaMain(props: EditAreaProps) {
           while (props.areas.has(`Area_${i.toString()}`)) i++;
 
           props.updateAreas((draft) => {
-            draft.set(`Area_${i.toString()}`, new AreaPolygon([], 0, "none", ""));
+            draft.set(`Area_${i.toString()}`, new AreaPolygon([], 0, "none", "", []));
           });
           props.setSelectedArea(`Area_${i.toString()}`);
         }}
