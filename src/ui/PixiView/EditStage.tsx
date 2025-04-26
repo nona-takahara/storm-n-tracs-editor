@@ -30,7 +30,7 @@ function len(x1: number, y1: number, x2: number, y2: number) {
   return Math.sqrt((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2));
 }
 
-type EditStageProps = {
+interface EditStageProps {
   width: number;
   height: number;
   vertexes: Map<string, Vector2d>;
@@ -48,7 +48,7 @@ type EditStageProps = {
   
   nttracks: Map<string, NtracsTrack>;
   selectedTrack: string | undefined;
-};
+}
 
 function EditStage(props: EditStageProps) {
   const [leftPos, setLeftPos] = useState(-1500);
@@ -132,7 +132,8 @@ function EditStage(props: EditStageProps) {
                   sl.vertexes.concat(`v${i}`),
                   sl.leftVertexInnerId,
                   sl.axleMode,
-                  sl.callback
+                  sl.callback,
+                  []
                 )
               );
             }
@@ -143,13 +144,13 @@ function EditStage(props: EditStageProps) {
             const sl =
               props.selectedArea !== undefined && draft.get(props.selectedArea);
             if (sl && props.selectedArea) {
-              if (nv === sl.vertexes?.[0]) {
+              if (nv === sl.vertexes[0]) {
                 props.setEditMode(EditMode.EditArea);
                 return;
               }
               draft.set(
                 props.selectedArea,
-                new AreaPolygon(sl.vertexes.concat(nv), sl.leftVertexInnerId, sl.axleMode, sl.callback)
+                new AreaPolygon(sl.vertexes.concat(nv), sl.leftVertexInnerId, sl.axleMode, sl.callback, [])
               );
             }
           });
@@ -219,7 +220,7 @@ function EditStage(props: EditStageProps) {
                 return nnearVk;
               }
             });
-            draft.set(k, new AreaPolygon(vs, v.leftVertexInnerId, v.axleMode, v.callback));
+            draft.set(k, new AreaPolygon(vs, v.leftVertexInnerId, v.axleMode, v.callback, []));
           }
         });
       });
@@ -250,7 +251,7 @@ function EditStage(props: EditStageProps) {
       onMouseUp={mouseUp}
       onMouseLeave={mouseLeave}
       onMouseMove={mouseMove}
-      onContextMenu={(e) => e.preventDefault()}
+      onContextMenu={(e) => { e.preventDefault(); }}
     >
       <Container
         position={[

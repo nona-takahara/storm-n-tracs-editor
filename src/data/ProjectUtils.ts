@@ -1,3 +1,13 @@
+/* eslint-disable @typescript-eslint/no-unsafe-call */
+/* eslint-disable @typescript-eslint/use-unknown-in-catch-callback-variable */
+/* eslint-disable @typescript-eslint/prefer-promise-reject-errors */
+/* eslint-disable @typescript-eslint/no-floating-promises */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
+/* eslint-disable no-unsafe-optional-chaining */
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-unsafe-argument */
 import { invoke } from "@tauri-apps/api";
 import { XMLParser } from "fast-xml-parser";
 import { Updater } from "use-immer";
@@ -16,13 +26,13 @@ const xmlParserOption = {
 function read_tile_file_command(filename: string) {
   return invoke("read_tile_file_command", {
     filename: filename,
-  }) as Promise<string>;
+  });
 }
 
 function read_addon_command(foldername: string) {
   return invoke("read_addon_command", {
     foldername: foldername,
-  }) as Promise<string>;
+  });
 }
 
 function itr<T>(item: T[] | T): T[] {
@@ -61,7 +71,8 @@ export function CreateObject(
           elm.vertexes,
           elm.left_vertex_inner_id || 0,
           AxleMode.modeFromStr(elm.axle_mode),
-          elm.callback || ""
+          elm.callback || "",
+          elm.uparea || []
         )
     )
   );
@@ -78,14 +89,14 @@ export function CreateObject(
   }
   tlupdater(tileAssign);
 
-  type TilePromise = { str: string; pos: Vector2d };
+  interface TilePromise { str: string; pos: Vector2d }
   const tileload: Promise<TilePromise>[] = [];
   for (const [tilename, pos] of tileAssign) {
     tileload.push(
       new Promise((resolve, rejected) => {
         read_tile_file_command(tilename)
           .then((v) => {
-            resolve({ str: v, pos: pos });
+            resolve({ str: v as any, pos: pos });
           })
           .catch((e) => {
             rejected(e);
@@ -119,7 +130,7 @@ export function CreateObject(
       a.forEach((k) => {
         if (k.status == "fulfilled") {
           const v = k.value;
-          const obj = new XMLParser(xmlParserOption).parse(v);
+          const obj = new XMLParser(xmlParserOption).parse(v as any);
           const locations = itr(obj?.playlist?.locations?.locations?.l);
           for (const l of locations) {
             const offset = tileAssign.get(l["@_tile"]);
@@ -185,7 +196,7 @@ export function CreateSaveObject(
     return [...map].map((v) => fn(v[1], v[0]))
   }
 
-  let returns = {
+  const returns = {
     vertexes: mapMap(vertexes, (v, k) => {
       return {
         name: k,
@@ -205,7 +216,8 @@ export function CreateSaveObject(
           }, new Set<string>())
         ).filter((vv) => vv !== k),
         axle_mode: v.axleMode,
-        callback: v.callback
+        callback: v.callback,
+        uparea: v.uparea
       };
     }),
     addons: addons,

@@ -3,11 +3,11 @@ import { Alignment, Button, Divider, Navbar, Tab, TabId, Tabs } from "@blueprint
 import { FloppyDisk, Flows, FolderOpen, PolygonFilter } from "@blueprintjs/icons";
 import * as EditMode from "../EditMode";
 
-type NavProps = {
+interface NavProps {
   onLoadButtonClick: React.MouseEventHandler;
   onSaveButtonClick: React.MouseEventHandler;
   setEditMode: React.Dispatch<EditMode.EditMode>;
-};
+}
 
 function Nav(props: NavProps) {
   const changeTab = (tab: TabId) => {
@@ -27,7 +27,7 @@ function Nav(props: NavProps) {
       }}
     >
         <Navbar.Group>
-          <Navbar.Heading>N-TRACS<small>v0.1.2</small></Navbar.Heading>
+          <Navbar.Heading>N-TRACS Editor <small>v0.2.0</small></Navbar.Heading>
           <Navbar.Divider />
           <Button
             icon={<FolderOpen />}

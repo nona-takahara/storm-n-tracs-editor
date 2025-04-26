@@ -1,4 +1,5 @@
-import { Button, ButtonGroup, Checkbox, Divider, Intent, Radio, RadioGroup } from "@blueprintjs/core";
+import { Button, ButtonGroup, Checkbox, ControlGroup, Divider, Intent, MenuItem, Radio, RadioGroup, UL } from "@blueprintjs/core";
+import { ItemPredicate, ItemRenderer, Select } from "@blueprintjs/select";
 import { Updater } from "use-immer";
 import AreaPolygon from "../../data/AreaPolygon";
 import Vector2d from "../../data/Vector2d";
@@ -7,7 +8,7 @@ import { Code, Trash } from "@blueprintjs/icons";
 import { ChangeEvent, useState } from "react";
 import EditLua from "./EditLua";
 
-type EditAreaProps = {
+interface EditAreaProps {
   selectedArea: string;
   vertexes: Map<string, Vector2d>;
   areas: Map<string, AreaPolygon>;
@@ -15,26 +16,28 @@ type EditAreaProps = {
   updateVertexes: Updater<Map<string, Vector2d>>;
   setSelectedArea: React.Dispatch<React.SetStateAction<string | undefined>>;
   editMode: EditMode.EditMode;
-};
+}
 
 function EditArea(props: EditAreaProps) {
   const [luadiag, setLuaDiag] = useState(false);
   const [innerCord, setInnerCord] = useState(false);
+  const [subselect, setSubselect] = useState("");
 
   const ssarea = props.areas.get(props.selectedArea) || {
     name: "",
     vertexes: [],
     leftVertexInnerId: 0,
     axleMode: "none",
-    callback: ""
+    callback: "",
+    uparea: []
   };
 
   const canDeleteVertex = ssarea.vertexes.length > 3;
 
   const addButton =
-    (index: number) => (evt: React.MouseEvent<HTMLElement, MouseEvent>) => {
+    (index: number) => () => {
       let i = props.vertexes.size;
-      while (props.vertexes.has(`v${i}`)) i++;
+      while (props.vertexes.has(`v${i.toString()}`)) i++;
 
       props.updateVertexes((draft) => {
         const v1 = props.vertexes.get(ssarea.vertexes[index]);
@@ -43,7 +46,7 @@ function EditArea(props: EditAreaProps) {
         );
         if (v1 && v2) {
           draft.set(
-            `v${i}`,
+            `v${i.toString()}`,
             new Vector2d((v1.x + v2.x) / 2, (v1.z + v2.z) / 2)
           );
         }
@@ -57,10 +60,10 @@ function EditArea(props: EditAreaProps) {
           callback: ""
         };
         const carray = [...ssarea.vertexes];
-        carray.splice(index + 1, 0, `v${i}`);
+        carray.splice(index + 1, 0, `v${i.toString()}`);
         draft.set(
           props.selectedArea,
-          new AreaPolygon(carray, ssarea.leftVertexInnerId, ssarea.axleMode, ssarea.callback)
+          new AreaPolygon(carray, ssarea.leftVertexInnerId, ssarea.axleMode, ssarea.callback, [])
         );
       });
     };
@@ -80,7 +83,8 @@ function EditArea(props: EditAreaProps) {
           ssarea.vertexes.filter((v, i) => i !== index),
           ssarea.leftVertexInnerId,
           ssarea.axleMode,
-          ssarea.callback
+          ssarea.callback,
+          []
         )
       );
     });
@@ -105,15 +109,37 @@ function EditArea(props: EditAreaProps) {
           ssarea.vertexes,
           ssarea.leftVertexInnerId,
           ssarea.axleMode,
-          list
+          list,
+          []
         ));
       }
     })
   }
 
+  const itemRender: ItemRenderer<string> = (item, { handleClick, handleFocus, modifiers }) => {
+    if (!modifiers.matchesPredicate) {
+      return null;
+    }
+    return (
+      <MenuItem
+        active={modifiers.active}
+        disabled={modifiers.disabled}
+        key={item}
+        onClick={handleClick}
+        onFocus={handleFocus}
+        roleStructure="listoption"
+        text={item}
+      />
+    );
+  };
+
+  const filterItem: ItemPredicate<string> = (query, film) => {
+    return film.search(query) != -1;
+  };
+
   return (
     <>
-      {luadiag && <EditLua close={() => setLuaDiag(false)} updateLuaCode={updateLuaCode} luaCode={ssarea.callback} selectedArea={props.selectedArea} />}
+      {luadiag && <EditLua close={() => { setLuaDiag(false); }} updateLuaCode={updateLuaCode} luaCode={ssarea.callback} selectedArea={props.selectedArea} />}
       <ButtonGroup>
         <b>{props.selectedArea}</b>
         <Divider />
@@ -126,46 +152,78 @@ function EditArea(props: EditAreaProps) {
         {props.editMode == EditMode.AddArea && "Add Area Mode"}
       </ButtonGroup>
       <Divider />
-      <Checkbox label="ロケーション内部座標表示" checked={innerCord} onChange={(e:ChangeEvent<HTMLInputElement>) => setInnerCord(e.target.checked)} />
-      <Divider />
-      <RadioGroup
-        inline={true}
-        selectedValue={ssarea.axleMode}
-        onChange={(evt) => {
+      <ButtonGroup>
+      <Select<string>
+            items={Array.from(props.areas.keys())}
+            itemRenderer={itemRender}
+            itemPredicate={filterItem}
+            onItemSelect={(item: string) => {setSubselect(item);}}
+            popoverProps={{ minimal: true }}
+            noResults={<MenuItem disabled={true} text="No results." roleStructure="listoption" />}
+          >
+            <Button text={subselect} rightIcon="double-caret-vertical" />
+          </Select>
+        <Button onClick={(evt) => {
           props.updateAreas((draft) => {
             const area = props.areas.get(props.selectedArea);
-            const value = evt.currentTarget?.value;
-            if (
-              area &&
-              (value === "upbound" || value === "downbound" || value === "none")
-            ) {
+            if (area && props.areas.keys().find((v) => v == subselect)) {
+              const uparea = area.uparea || [];
+              uparea.push(subselect);
               draft.set(
                 props.selectedArea,
-                new AreaPolygon(area.vertexes, area.leftVertexInnerId, value, area.callback)
+                new AreaPolygon(
+                  area.vertexes,
+                  area.leftVertexInnerId,
+                  area.axleMode,
+                  area.callback,
+                  uparea
+                )
               );
+              setSubselect("");
             }
-          });
-        }}
-      >
-        <Radio label="指定なし" value="none" />
-        <Radio label="上" value="upbound" />
-        <Radio label="下" value="downbound" />
-      </RadioGroup>
+          })
+        }}>上り側追加</Button>
+      </ButtonGroup>
+      <UL>{(ssarea.uparea || []).map((v) => <li id={props.selectedArea+"*"+v}><ControlGroup>{v}<Divider />
+      <ButtonGroup><Button onClick={
+        (evt) => {
+          props.updateAreas((draft) => {
+            const area = props.areas.get(props.selectedArea);
+            if (area) {
+              const uparea = (area.uparea || []).filter((k) => k != v);
+              draft.set(
+                props.selectedArea,
+                new AreaPolygon(
+                  area.vertexes,
+                  area.leftVertexInnerId,
+                  area.axleMode,
+                  area.callback,
+                  uparea
+                )
+              );
+              setSubselect("");
+            }
+          })
+        }
+      } icon={<Trash />} intent={Intent.DANGER}></Button></ButtonGroup></ControlGroup></li>)}</UL>
+      <Divider />
+      <Checkbox label="ロケーション内部座標表示" checked={innerCord} onChange={(e:ChangeEvent<HTMLInputElement>) => { setInnerCord(e.target.checked); }} />
       <Divider />
       <RadioGroup
         selectedValue={ssarea.vertexes[ssarea.leftVertexInnerId]}
         onChange={(evt) => {
           props.updateAreas((draft) => {
             const area = props.areas.get(props.selectedArea);
-            const value = evt.currentTarget?.value;
-            if (value && area && area.vertexes.indexOf(value) !== -1) {
+            const value = evt.currentTarget.value;
+            if (value && area && area.vertexes.includes(value)) {
               draft.set(
                 props.selectedArea,
                 new AreaPolygon(
                   area.vertexes,
                   area.vertexes.indexOf(value),
                   area.axleMode,
-                  area.callback
+                  area.callback,
+                  area.uparea
                 )
               );
             }

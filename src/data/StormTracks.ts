@@ -7,11 +7,11 @@ function itr<T>(item: T[] | T): T[] {
 }
 
 class StormTracks {
-  constructor(public offsetX: number, public offsetZ: number, public tracks: { [index: string]: TrackNode }) { }
+  constructor(public offsetX: number, public offsetZ: number, public tracks: Record<string, TrackNode>) { }
 
   static loadFromXML(offsetX: number, offsetZ: number, xmlObject: any): StormTracks {
     const tir = xmlObject?.definition?.train_tracks?.track;
-    let list: { [index: string]: TrackNode } = {};
+    const list: Record<string, TrackNode> = {};
     if (tir) {
       const fitr = itr(tir);
       for (const i of fitr) {

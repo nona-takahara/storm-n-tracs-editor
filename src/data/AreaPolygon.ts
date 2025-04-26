@@ -1,7 +1,7 @@
 import AxleMode from "./AxleMode";
 import Vector2d from "./Vector2d";
 
-type Complex = {
+interface Complex {
   re: number;
   im: number;
 }
@@ -22,7 +22,7 @@ function cxhalfarg(c: Complex): Complex {
 }
 
 class AreaPolygon {
-  constructor(public vertexes: string[], public leftVertexInnerId: number, public axleMode: AxleMode, public callback: string) { }
+  constructor(public vertexes: string[], public leftVertexInnerId: number, public axleMode: AxleMode, public callback: string, public uparea: string[]) { }
 
   isInArea(vertexes: Map<string, Vector2d>, x: number, z: number) {
     let prod: Complex = { re: 1, im: 0 };
@@ -43,9 +43,7 @@ class AreaPolygon {
       const v0 = v[(i) % this.vertexes.length];
       const v1 = v[(i + 1) % this.vertexes.length];
 
-      if (v0 && v1) {
-        prod = cxmul(prod, cxhalfarg(cxmul({ re: v1.x - x, im: v1.z - z }, { re: v0.x - x, im: -v0.z + z })));
-      }
+      prod = cxmul(prod, cxhalfarg(cxmul({ re: v1.x - x, im: v1.z - z }, { re: v0.x - x, im: -v0.z + z })));
     }
     return prod.re < 0;
   }

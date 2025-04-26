@@ -6,7 +6,7 @@ import Vector2d from "../../data/Vector2d";
 import NtracsTrack from "../../data/NtracsTrack";
 import * as EditMode from "../../EditMode";
 
-type AreaPolygonsViewProps = {
+interface AreaPolygonsViewProps {
   editMode: EditMode.EditMode;
   vertexes: Map<string, Vector2d>;
   areas: Map<string, AreaPolygon>;
@@ -14,7 +14,7 @@ type AreaPolygonsViewProps = {
   nearestIndex: string | undefined;
   selectedArea: string | undefined;
   selectedTrack: string | undefined;
-};
+}
 
 function AreaPolygonsView(props: AreaPolygonsViewProps) {
   const sl = (props.editMode === EditMode.EditTrack) && props.selectedTrack;
@@ -30,13 +30,13 @@ function AreaPolygonsView(props: AreaPolygonsViewProps) {
             g.lineStyle(1, 0x0000ff, 0.7);
             g.drawCircle(p.x, -p.z, 1.5);
           }
-          if (sl && props.tracks.get(sl)?.areas?.find(v => v.areaName == key)) {
+          if (sl && props.tracks.get(sl)?.areas.find(v => v.areaName == key)) {
             g.beginFill(0xa0ffa0, 0.3);
           } else {
             g.beginFill(0x8080ff, 0.3);
           }
         } else {
-          if (sl && props.tracks.get(sl)?.areas?.find(v => v.areaName == key
+          if (sl && props.tracks.get(sl)?.areas.find(v => v.areaName == key
           )) {
             g.beginFill(0x00c000, 0.3);
           } else {
@@ -75,10 +75,10 @@ function AreaPolygonsView(props: AreaPolygonsViewProps) {
         const list = props.tracks.get(sl);
         if (list) {
           for (let i = 1; i < list.areas.length; i++) {
-            const p1 = props.areas.get(list.areas[i - 1].areaName)?.vertexes.map(v => props.vertexes.get(v))?.
-              reduce<{ x: number, z: number, cnt: number }>((p, c) => ({ x: (p?.x || 0) + (c?.x || 0), z: (p?.z || 0) + (c?.z || 0), cnt: (p?.cnt || 0) + 1 }), { x: 0, z: 0, cnt: 0 });
-            const p2 = props.areas.get(list.areas[i].areaName)?.vertexes.map(v => props.vertexes.get(v))?.
-              reduce<{ x: number, z: number, cnt: number }>((p, c) => ({ x: (p?.x || 0) + (c?.x || 0), z: (p?.z || 0) + (c?.z || 0), cnt: (p?.cnt || 0) + 1 }), { x: 0, z: 0, cnt: 0 });
+            const p1 = props.areas.get(list.areas[i - 1].areaName)?.vertexes.map(v => props.vertexes.get(v)).
+              reduce<{ x: number, z: number, cnt: number }>((p, c) => ({ x: (p.x || 0) + (c?.x || 0), z: (p.z || 0) + (c?.z || 0), cnt: (p.cnt || 0) + 1 }), { x: 0, z: 0, cnt: 0 });
+            const p2 = props.areas.get(list.areas[i].areaName)?.vertexes.map(v => props.vertexes.get(v)).
+              reduce<{ x: number, z: number, cnt: number }>((p, c) => ({ x: (p.x || 0) + (c?.x || 0), z: (p.z || 0) + (c?.z || 0), cnt: (p.cnt || 0) + 1 }), { x: 0, z: 0, cnt: 0 });
 
             if (p1 && p2) {
               const p1p2 = {x: (p2.x / p2.cnt) - (p1.x / p1.cnt), z: (p2.z / p2.cnt) - (p1.z / p1.cnt)};
