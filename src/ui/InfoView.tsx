@@ -1,40 +1,26 @@
 import { Card } from "@blueprintjs/core";
-import { Updater } from "use-immer";
-import AreaPolygon from "../data/AreaPolygon";
-import Vector2d from "../data/Vector2d";
-import AreaMain from "./InfoViewes/AreaMain";
-import EditArea from "./InfoViewes/EditArea";
-import EditTrack from "./InfoViewes/EditTrack";
 import * as EditMode from "../EditMode";
-import NtracsTrack from "../data/NtracsTrack";
+import { useEditorSelector } from "../store/EditorStore";
+import AreaMain from "./InfoViews/AreaMain";
+import EditArea from "./InfoViews/EditArea";
+import EditTrack from "./InfoViews/EditTrack";
 
-interface InfoViewProps {
-  selectedArea: string | undefined;
-  selectedTrack: string | undefined;
-  vertexes: Map<string, Vector2d>;
-  areas: Map<string, AreaPolygon>;
-  tracks: Map<string, NtracsTrack>;
-  updateAreas: Updater<Map<string, AreaPolygon>>;
-  updateVertexes: Updater<Map<string, Vector2d>>;
-  updateTracks: Updater<Map<string, NtracsTrack>>;
-  setSelectedArea: React.Dispatch<React.SetStateAction<string | undefined>>;
-  setSelectedTrack: React.Dispatch<React.SetStateAction<string | undefined>>;
-  editMode: EditMode.EditMode;
-  setEditMode: React.Dispatch<EditMode.EditMode>;
-}
+function InfoView() {
+  const editMode = useEditorSelector((state) => state.editMode);
+  const selectedArea = useEditorSelector((state) => state.selectedArea);
 
-function InfoView(props: InfoViewProps) {
   const select = () => {
-    if (props.editMode == EditMode.AddArea || props.editMode == EditMode.EditArea) {
-      if (props.selectedArea !== undefined) {
-        return <EditArea {...props} selectedArea={props.selectedArea} />;
+    if (editMode === EditMode.AddArea || editMode === EditMode.EditArea) {
+      if (selectedArea !== undefined) {
+        return <EditArea />;
       } else {
-        return <AreaMain {...props} />;
+        return <AreaMain />;
       }
-    } else if (props.editMode == EditMode.EditTrack) {
-      return <EditTrack {...props} />
+    } else if (editMode === EditMode.EditTrack) {
+      return <EditTrack />;
     }
-  }
+    return undefined;
+  };
 
   return (
     <Card
