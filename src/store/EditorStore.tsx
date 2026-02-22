@@ -4,6 +4,7 @@ import { EditModeEvent } from "../domain/editor/editModeMachine";
 import { EditorAction, editorReducer } from "./editorReducer";
 import { createInitialEditorState, EditorState, LoadedProjectData } from "./editorTypes";
 
+// UI から利用する高レベル操作コマンド群。
 interface EditorCommands {
   hydrateProject: (data: LoadedProjectData) => void;
   sendModeEvent: (event: EditModeEvent) => void;
@@ -29,6 +30,7 @@ interface EditorCommands {
   stagePrimaryUp: (ctrlKey: boolean) => void;
 }
 
+// ストア本体が提供する低レベル API。
 interface EditorStoreApi {
   getState: () => EditorState;
   dispatch: React.Dispatch<EditorAction>;
@@ -36,14 +38,18 @@ interface EditorStoreApi {
   commands: EditorCommands;
 }
 
+// ストア共有用の React Context。
 const EditorStoreContext = createContext<EditorStoreApi | undefined>(undefined);
 
+// reducer ベースの簡易 external store を作成する。
 function createEditorStore(initialState = createInitialEditorState()): EditorStoreApi {
   let state = initialState;
   const listeners = new Set<() => void>();
 
+  // 現在状態の参照取得。
   const getState = () => state;
 
+  // 変更通知購読。返り値で購読解除できる。
   const subscribe = (listener: () => void) => {
     listeners.add(listener);
     return () => {
@@ -51,6 +57,7 @@ function createEditorStore(initialState = createInitialEditorState()): EditorSto
     };
   };
 
+  // reducer 実行後、状態変化があれば購読者へ通知する。
   const dispatch: React.Dispatch<EditorAction> = (action) => {
     const nextState = editorReducer(state, action);
     if (nextState === state) {
@@ -62,6 +69,7 @@ function createEditorStore(initialState = createInitialEditorState()): EditorSto
     });
   };
 
+  // よく使う action dispatch を呼び出しやすいコマンドへ束ねる。
   const commands: EditorCommands = {
     hydrateProject: (data) => createDispatchAction(dispatch, { type: "hydrate-project", payload: data }),
     sendModeEvent: (event) =>
@@ -150,6 +158,7 @@ function createEditorStore(initialState = createInitialEditorState()): EditorSto
   };
 }
 
+// dispatch 呼び出しを共通化し、commands 側の記述を揃える。
 function createDispatchAction(
   dispatch: React.Dispatch<EditorAction>,
   action: EditorAction
@@ -157,6 +166,7 @@ function createDispatchAction(
   dispatch(action);
 }
 
+// EditorStore をコンポーネントツリーへ供給する Provider。
 export function EditorStoreProvider({
   children,
 }: {
@@ -177,6 +187,7 @@ export function EditorStoreProvider({
   );
 }
 
+// selector 経由で EditorState の一部を購読する。
 export function useEditorSelector<T>(selector: (state: EditorState) => T): T {
   const store = useContext(EditorStoreContext);
   if (!store) {
@@ -190,6 +201,7 @@ export function useEditorSelector<T>(selector: (state: EditorState) => T): T {
   );
 }
 
+// 生の dispatch 関数を取得する。
 export function useEditorDispatch(): React.Dispatch<EditorAction> {
   const store = useContext(EditorStoreContext);
   if (!store) {
@@ -198,6 +210,7 @@ export function useEditorDispatch(): React.Dispatch<EditorAction> {
   return store.dispatch;
 }
 
+// 高レベルの編集コマンド群を取得する。
 export function useEditorCommands(): EditorCommands {
   const store = useContext(EditorStoreContext);
   if (!store) {

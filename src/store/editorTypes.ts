@@ -5,6 +5,7 @@ import StormTracks from "../data/StormTracks";
 import Vector2d from "../data/Vector2d";
 import * as EditMode from "../EditMode";
 
+// ファイル読み込み後に保持するプロジェクトデータ本体。
 export interface LoadedProjectData {
   vertexes: Map<string, Vector2d>;
   areas: Map<string, AreaPolygon>;
@@ -15,6 +16,7 @@ export interface LoadedProjectData {
   nttracks: Map<string, NtracsTrack>;
 }
 
+// エディタ UI 状態を加えたストア全体の状態。
 export interface EditorState extends LoadedProjectData {
   nearestVertex: string | undefined;
   selectedArea: string | undefined;
@@ -22,6 +24,7 @@ export interface EditorState extends LoadedProjectData {
   editMode: EditMode.EditMode;
 }
 
+// エディタ起動時の初期状態を作成する。
 export function createInitialEditorState(): EditorState {
   return {
     vertexes: new Map<string, Vector2d>(),
