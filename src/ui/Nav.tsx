@@ -1,22 +1,47 @@
 import React from "react";
-import { Alignment, Button, Divider, Navbar, Tab, TabId, Tabs } from "@blueprintjs/core";
+import { Button, Divider, Navbar, Tab, TabId, Tabs } from "@blueprintjs/core";
 import { FloppyDisk, Flows, FolderOpen, PolygonFilter } from "@blueprintjs/icons";
-import * as EditMode from "../EditMode";
+import { saveProject, loadProject } from "../services/projectService";
+import { useEditorCommands, useEditorSelector } from "../store/EditorStore";
+import { APP_VERSION } from "../appVersion";
 
-interface NavProps {
-  onLoadButtonClick: React.MouseEventHandler;
-  onSaveButtonClick: React.MouseEventHandler;
-  setEditMode: React.Dispatch<EditMode.EditMode>;
-}
+function Nav() {
+  const commands = useEditorCommands();
+  const vertexes = useEditorSelector((state) => state.vertexes);
+  const areas = useEditorSelector((state) => state.areas);
+  const addonList = useEditorSelector((state) => state.addonList);
+  const tileAssign = useEditorSelector((state) => state.tileAssign);
+  const nttracks = useEditorSelector((state) => state.nttracks);
 
-function Nav(props: NavProps) {
+  const handleLoad = () => {
+    loadProject()
+      .then((project) => {
+        commands.hydrateProject(project);
+      })
+      .catch((error: unknown) => {
+        console.error(error);
+      });
+  };
+
+  const handleSave = () => {
+    saveProject({
+      vertexes,
+      areas,
+      addons: addonList,
+      tileAssign,
+      nttracks,
+    }).catch((error: unknown) => {
+      console.error(error);
+    });
+  };
+
   const changeTab = (tab: TabId) => {
-    if (tab.toString() == "vaedit") {
-      props.setEditMode(EditMode.EditArea);
-    } else if(tab.toString() == "trackedit") {
-      props.setEditMode(EditMode.EditTrack);
+    if (tab.toString() === "vaedit") {
+      commands.sendModeEvent("OPEN_AREA_EDITOR");
+    } else if (tab.toString() === "trackedit") {
+      commands.sendModeEvent("OPEN_TRACK_EDITOR");
     }
-  }
+  };
 
   return (
     <Navbar
@@ -27,19 +52,19 @@ function Nav(props: NavProps) {
       }}
     >
         <Navbar.Group>
-          <Navbar.Heading>N-TRACS Editor <small>v0.2.2</small></Navbar.Heading>
+          <Navbar.Heading>N-TRACS Editor <small>v{APP_VERSION}</small></Navbar.Heading>
           <Navbar.Divider />
           <Button
             icon={<FolderOpen />}
             className="bp5-minimal"
             text="Load"
-            onClick={props.onLoadButtonClick}
+            onClick={handleLoad}
           />
           <Button
             icon={<FloppyDisk />}
             className="bp5-minimal"
             text="Save"
-            onClick={props.onSaveButtonClick}
+            onClick={handleSave}
           />
           <Navbar.Divider />
           <Divider />

@@ -1,4 +1,4 @@
-import { useCallback } from "react";
+import React, { useCallback } from "react";
 import { Graphics } from "@pixi/react";
 import * as PIXI from "pixi.js";
 import StormTracks from "../../data/StormTracks";
@@ -58,10 +58,10 @@ function WorldTrackView(props: WorldTrackViewProps) {
         }
       }
     },
-    [props]
+    [props.tracks]
   );
 
   return <Graphics draw={draw} />;
 }
 
-export default WorldTrackView;
+export default React.memo(WorldTrackView);

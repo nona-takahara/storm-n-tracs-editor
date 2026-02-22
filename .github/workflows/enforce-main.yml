@@ -1,0 +1,35 @@
+name: Enforce Allowed PR Sources To Main
+
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize, reopened, edited, ready_for_review]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: enforce-main-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  check-head-branch:
+    name: Validate source branch for main
+    runs-on: ubuntu-latest
+    steps:
+      - name: Show PR refs
+        run: |
+          echo "base: ${{ github.event.pull_request.base.ref }}"
+          echo "head: ${{ github.event.pull_request.head.ref }}"
+
+      - name: Fail if source branch is not allowed
+        env:
+          HEAD_REF: ${{ github.event.pull_request.head.ref }}
+        run: |
+          if [[ "$HEAD_REF" =~ ^(release/|hotfix/) ]]; then
+            echo "Allowed source branch: $HEAD_REF"
+            exit 0
+          fi
+
+          echo "::error::PR to 'main' must come from 'release/*' or 'hotfix/*'. Current source: '$HEAD_REF'."
+          exit 1
