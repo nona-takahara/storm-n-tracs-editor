@@ -6,11 +6,35 @@ function itr<T>(item: T[] | T): T[] {
   }
 }
 
+interface TrackXmlLink {
+  "@_id"?: string;
+}
+
+interface TrackXmlNode {
+  "@_id"?: string;
+  links?: {
+    link?: TrackXmlLink | TrackXmlLink[];
+  };
+  transform?: {
+    "@_30"?: string | number;
+    "@_32"?: string | number;
+  };
+}
+
+interface StormTracksXml {
+  definition?: {
+    train_tracks?: {
+      track?: TrackXmlNode | TrackXmlNode[];
+    };
+  };
+}
+
 class StormTracks {
   constructor(public offsetX: number, public offsetZ: number, public tracks: Record<string, TrackNode>) { }
 
-  static loadFromXML(offsetX: number, offsetZ: number, xmlObject: any): StormTracks {
-    const tir = xmlObject?.definition?.train_tracks?.track;
+  static loadFromXML(offsetX: number, offsetZ: number, xmlObject: unknown): StormTracks {
+    const source = xmlObject as StormTracksXml;
+    const tir = source.definition?.train_tracks?.track;
     const list: Record<string, TrackNode> = {};
     if (tir) {
       const fitr = itr(tir);
@@ -18,11 +42,11 @@ class StormTracks {
         if (i?.["@_id"]) {
           const links = i?.links?.link;
           list[i["@_id"]] = new TrackNode(
-            Number(i.transform["@_30"]),
-            Number(i.transform["@_32"]),
+            Number(i.transform?.["@_30"] ?? 0),
+            Number(i.transform?.["@_32"] ?? 0),
             Array.isArray(links)
-              ? links.map(v => v["@_id"])
-              : [links?.["@_id"] || ""]
+              ? links.map((v) => v["@_id"] ?? "")
+              : [links?.["@_id"] ?? ""]
           );
         }
       }

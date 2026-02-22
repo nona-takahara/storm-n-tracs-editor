@@ -1,0 +1,70 @@
+name: Backmerge Main To Develop After Release Or Hotfix
+
+on:
+  pull_request:
+    types: [closed]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  create-backmerge-pr:
+    name: Create backmerge PR (main -> develop)
+    if: ${{ github.event.pull_request.merged == true && github.event.pull_request.base.ref == 'main' && (startsWith(github.event.pull_request.head.ref, 'release/') || startsWith(github.event.pull_request.head.ref, 'hotfix/')) }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create pull request main -> develop
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const mergedPrNumber = context.payload.pull_request.number;
+            const mergedSource = context.payload.pull_request.head.ref;
+            const head = 'main';
+            const base = 'develop';
+
+            // Skip cleanly when required branch does not exist.
+            try {
+              await github.rest.repos.getBranch({ owner, repo, branch: base });
+            } catch (error) {
+              if (error.status === 404) {
+                core.warning(`Branch '${base}' does not exist. Skipping backmerge PR creation.`);
+                return;
+              }
+              throw error;
+            }
+
+            const existing = await github.rest.pulls.list({
+              owner,
+              repo,
+              state: 'open',
+              head: `${owner}:${head}`,
+              base,
+              per_page: 1,
+            });
+
+            if (existing.data.length > 0) {
+              core.info(`Open PR from ${head} to ${base} already exists: #${existing.data[0].number}`);
+              return;
+            }
+
+            const title = `chore(backmerge): ${head} -> ${base} after ${mergedSource}`;
+            const body = [
+              `Auto-created after #${mergedPrNumber} (${mergedSource}) was merged into main.`,
+              '',
+              'Please review and merge to keep develop in sync with production changes.',
+            ].join('\n');
+
+            const created = await github.rest.pulls.create({
+              owner,
+              repo,
+              head,
+              base,
+              title,
+              body,
+            });
+
+            core.info(`Created backmerge PR: #${created.data.number}`);

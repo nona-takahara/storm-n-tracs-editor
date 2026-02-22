@@ -16,6 +16,45 @@ const xmlParserOption = {
   ignoreDeclaration: true,
 };
 
+interface AddonComponentXml {
+  spawn_transform?: {
+    "@_30"?: string | number;
+    "@_32"?: string | number;
+    "@_00"?: string | number;
+    "@_02"?: string | number;
+    "@_20"?: string | number;
+    "@_22"?: string | number;
+  };
+  spawn_bounds?: {
+    max?: {
+      "@_x"?: string | number;
+      "@_z"?: string | number;
+    };
+    min?: {
+      "@_x"?: string | number;
+      "@_z"?: string | number;
+    };
+  };
+  "@_name"?: string;
+}
+
+interface AddonLocationXml {
+  "@_tile"?: string;
+  components?: {
+    c?: AddonComponentXml | AddonComponentXml[];
+  };
+}
+
+interface AddonRootXml {
+  playlist?: {
+    locations?: {
+      locations?: {
+        l?: AddonLocationXml | AddonLocationXml[];
+      };
+    };
+  };
+}
+
 function toArray<T>(item: T | T[] | undefined | null): T[] {
   if (Array.isArray(item)) {
     return item;
@@ -161,7 +200,7 @@ async function loadAddonVehicles(
     }
 
     try {
-      const xmlObject: any = new XMLParser(xmlParserOption).parse(result.value);
+      const xmlObject = new XMLParser(xmlParserOption).parse(result.value) as AddonRootXml;
       const locations = toArray(xmlObject?.playlist?.locations?.locations?.l);
       for (const location of locations) {
         const tileName = String(location?.["@_tile"] ?? "");
@@ -178,16 +217,16 @@ async function loadAddonVehicles(
 
           vehicles.push(
             new AddonVehicle(
-              Number(component.spawn_transform["@_30"]) + tileOffset.x,
-              Number(component.spawn_transform["@_32"]) + tileOffset.z,
-              Number(component.spawn_bounds.max["@_x"]) -
-                Number(component.spawn_bounds.min["@_x"]),
-              Number(component.spawn_bounds.min["@_z"]) -
-                Number(component.spawn_bounds.max["@_z"]),
-              Number(component.spawn_transform["@_00"]),
-              Number(component.spawn_transform["@_02"]),
-              Number(component.spawn_transform["@_20"]),
-              Number(component.spawn_transform["@_22"]),
+              Number(component.spawn_transform?.["@_30"] ?? 0) + tileOffset.x,
+              Number(component.spawn_transform?.["@_32"] ?? 0) + tileOffset.z,
+              Number(component.spawn_bounds?.max?.["@_x"] ?? 0) -
+                Number(component.spawn_bounds?.min?.["@_x"] ?? 0),
+              Number(component.spawn_bounds?.min?.["@_z"] ?? 0) -
+                Number(component.spawn_bounds?.max?.["@_z"] ?? 0),
+              Number(component.spawn_transform?.["@_00"] ?? 0),
+              Number(component.spawn_transform?.["@_02"] ?? 0),
+              Number(component.spawn_transform?.["@_20"] ?? 0),
+              Number(component.spawn_transform?.["@_22"] ?? 0),
               String(component["@_name"] ?? "")
             )
           );
