@@ -7,6 +7,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
+    "lint": "eslint .",
     "preview": "vite preview",
     "tauri": "tauri",
     "version:check": "node scripts/version-consistency.mjs check",
@@ -17,7 +18,7 @@
     "@blueprintjs/select": "^5.0.10",
     "@pixi/react": "^7.1.0",
     "@tauri-apps/api": "^1.4.0",
-    "fast-xml-parser": "^4.2.5",
+    "fast-xml-parser": "^5.3.7",
     "immer": "^10.0.2",
     "pixi.js": "^7.2.4",
     "react": "^18.2.0",
@@ -25,15 +26,17 @@
     "use-immer": "^0.9.0"
   },
   "devDependencies": {
+    "@eslint/eslintrc": "^3.3.3",
+    "@eslint/js": "^10.0.1",
     "@tauri-apps/cli": "^1.4.0",
-    "@types/node": "^18.7.10",
+    "@types/node": "^20.19.0",
     "@types/react": "^18.0.15",
     "@types/react-dom": "^18.0.6",
-    "@typescript-eslint/eslint-plugin": "^7.8.0",
-    "@typescript-eslint/parser": "^7.8.0",
-    "@vitejs/plugin-react": "^3.0.0",
-    "eslint": "^8.57.0",
+    "@typescript-eslint/eslint-plugin": "^8.56.0",
+    "@typescript-eslint/parser": "^8.56.0",
+    "@vitejs/plugin-react": "^5.1.4",
+    "eslint": "^10.0.1",
     "typescript": "^4.9.5",
-    "vite": "^4.2.1"
+    "vite": "^7.3.1"
   }
 }
