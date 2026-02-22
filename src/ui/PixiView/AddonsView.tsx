@@ -1,4 +1,4 @@
-import { useCallback } from "react";
+import React, { useCallback, useMemo } from "react";
 import { Graphics, Text } from "@pixi/react";
 import * as PIXI from "pixi.js";
 import AddonVehicle from "../../data/AddonVehicle";
@@ -37,12 +37,24 @@ function AddonsView(props: AddonsViewProps) {
         g.endFill();
       }
     },
-    [props]
+    [props.vehicles]
   );
 
-  const texts = props.vehicles.map((v) => {
-    return <Text text={v.tag || ""} x={v.x + 0.8} y={-v.z - 0.8} scale={Math.min(0.5/props.scale, 0.5)}/>;
-  });
+  const texts = useMemo(
+    () =>
+      props.vehicles.map((vehicle, index) => {
+        return (
+          <Text
+            key={`${vehicle.tag}-${vehicle.x}-${vehicle.z}-${index}`}
+            text={vehicle.tag || ""}
+            x={vehicle.x + 0.8}
+            y={-vehicle.z - 0.8}
+            scale={Math.min(0.5 / props.scale, 0.5)}
+          />
+        );
+      }),
+    [props.vehicles, props.scale]
+  );
 
   return (
     <>
@@ -52,4 +64,4 @@ function AddonsView(props: AddonsViewProps) {
   );
 }
 
-export default AddonsView;
+export default React.memo(AddonsView);
