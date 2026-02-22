@@ -1,12 +1,13 @@
 import React, { createContext, useContext, useRef, useSyncExternalStore } from "react";
 import * as EditMode from "../EditMode";
 import Vector2d from "../data/Vector2d";
+import { EditModeEvent } from "../domain/editor/editModeMachine";
 import { EditorAction, editorReducer } from "./editorReducer";
 import { createInitialEditorState, EditorState, LoadedProjectData } from "./editorTypes";
 
 interface EditorCommands {
   hydrateProject: (data: LoadedProjectData) => void;
-  sendModeEvent: (event: EditMode.EditModeEvent) => void;
+  sendModeEvent: (event: EditModeEvent) => void;
   setSelectedArea: (areaId: string | undefined) => void;
   setSelectedTrack: (trackId: string | undefined) => void;
   createArea: () => void;

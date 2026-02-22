@@ -21,6 +21,7 @@ import {
   resolveStagePrimaryDown,
   resolveStageSecondaryDown,
 } from "../domain/editor/modeHandlers";
+import { EditModeEvent, transitionEditMode } from "../domain/editor/editModeMachine";
 import {
   createEmptyTrack,
   createTrackWithAreas,
@@ -33,7 +34,7 @@ export type EditorAction =
   | { type: "set-nearest-vertex"; payload: { vertexId: string | undefined } }
   | { type: "set-selected-area"; payload: { areaId: string | undefined } }
   | { type: "set-selected-track"; payload: { trackId: string | undefined } }
-  | { type: "send-mode-event"; payload: { event: EditMode.EditModeEvent } }
+  | { type: "send-mode-event"; payload: { event: EditModeEvent } }
   | { type: "create-area" }
   | { type: "insert-vertex-between"; payload: { index: number } }
   | { type: "remove-vertex-from-selected-area"; payload: { index: number } }
@@ -61,9 +62,9 @@ export type EditorAction =
 
 function applyModeEvent(
   draft: Draft<EditorState>,
-  event: EditMode.EditModeEvent
+  event: EditModeEvent
 ): void {
-  draft.editMode = EditMode.transitionEditMode(draft.editMode, event);
+  draft.editMode = transitionEditMode(draft.editMode, event);
 }
 
 function getSelectedArea(draft: Draft<EditorState>): AreaPolygon | undefined {
