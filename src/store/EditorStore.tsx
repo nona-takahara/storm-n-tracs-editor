@@ -1,5 +1,4 @@
 import React, { createContext, useContext, useRef, useSyncExternalStore } from "react";
-import * as EditMode from "../EditMode";
 import Vector2d from "../data/Vector2d";
 import { EditModeEvent } from "../domain/editor/editModeMachine";
 import { EditorAction, editorReducer } from "./editorReducer";
