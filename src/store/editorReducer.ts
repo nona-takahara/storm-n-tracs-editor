@@ -60,6 +60,7 @@ export type EditorAction =
   | { type: "stage-secondary-down" }
   | { type: "stage-primary-up"; payload: { ctrlKey: boolean } };
 
+// 編集モードの遷移処理を一箇所に集約する。
 function applyModeEvent(
   draft: Draft<EditorState>,
   event: EditModeEvent
@@ -67,6 +68,7 @@ function applyModeEvent(
   draft.editMode = transitionEditMode(draft.editMode, event);
 }
 
+// 現在の選択が有効な場合のみ Area を返す。
 function getSelectedArea(draft: Draft<EditorState>): AreaPolygon | undefined {
   if (!draft.selectedArea) {
     return undefined;
@@ -74,6 +76,7 @@ function getSelectedArea(draft: Draft<EditorState>): AreaPolygon | undefined {
   return draft.areas.get(draft.selectedArea);
 }
 
+// エリア追加中に新規頂点を作成し、選択中エリアの末尾に追加する。
 function appendNewVertexToSelectedArea(
   draft: Draft<EditorState>,
   point: Vector2d
@@ -97,6 +100,8 @@ function appendNewVertexToSelectedArea(
   draft.nearestVertex = vertexId;
 }
 
+// 既存頂点を選択中エリアのポリゴンへ追加する。
+// 先頭頂点を再選択した場合はポリゴンを閉じて追加モードを終了する。
 function appendExistingVertexToSelectedArea(
   draft: Draft<EditorState>,
   vertexId: string
@@ -122,6 +127,7 @@ function appendExistingVertexToSelectedArea(
   );
 }
 
+// 現在選択中エリアの頂点を指していない場合のみ、座標からエリア選択を更新する。
 function selectAreaFromPoint(
   draft: Draft<EditorState>,
   point: Vector2d
@@ -146,6 +152,7 @@ function selectAreaFromPoint(
   }
 }
 
+// 最寄り頂点を 0.1 単位でスナップさせながら移動する。
 function moveNearestVertex(
   draft: Draft<EditorState>,
   point: Vector2d
@@ -161,6 +168,7 @@ function moveNearestVertex(
   );
 }
 
+// 最寄り頂点を近傍頂点へマージし、参照先を全エリアで置換してから元頂点を削除する。
 function mergeNearestVertex(draft: Draft<EditorState>): void {
   const sourceVertex = draft.nearestVertex;
   if (!sourceVertex) {
@@ -190,6 +198,7 @@ function mergeNearestVertex(draft: Draft<EditorState>): void {
   draft.vertexes.delete(sourceVertex);
 }
 
+// モードごとの primary click 解決結果を受け取り、実処理へ振り分ける。
 function applyStagePrimaryDown(
   draft: Draft<EditorState>,
   point: Vector2d,
@@ -220,6 +229,7 @@ function applyStagePrimaryDown(
   }
 }
 
+// 指定エリアを参照している全トラックからそのエリアを除去する。
 function removeAreaFromTracks(
   nttracks: Draft<Map<string, NtracsTrack>>,
   areaId: string
@@ -232,6 +242,7 @@ function removeAreaFromTracks(
   });
 }
 
+// エリア削除時に、他エリアの uparea 参照からも同エリアを除去する。
 function removeAreaFromUpareaLinks(
   areas: Draft<Map<string, AreaPolygon>>,
   areaId: string
@@ -251,6 +262,7 @@ function removeAreaFromUpareaLinks(
   });
 }
 
+// 読み込みデータの参照を切り離すため、コレクションを複製して返す。
 function cloneLoadedData(payload: LoadedProjectData): LoadedProjectData {
   return {
     vertexes: new Map(payload.vertexes),
@@ -265,6 +277,7 @@ function cloneLoadedData(payload: LoadedProjectData): LoadedProjectData {
 
 export function editorReducer(state: EditorState, action: EditorAction): EditorState {
   return produce(state, (draft) => {
+    // プロジェクト読み込み時の初期化・リセット処理。
     if (action.type === "hydrate-project") {
       const next = cloneLoadedData(action.payload);
       draft.vertexes = next.vertexes;
@@ -281,6 +294,7 @@ export function editorReducer(state: EditorState, action: EditorAction): EditorS
       return;
     }
 
+    // UI からの直接的な選択・モード更新。
     if (action.type === "set-nearest-vertex") {
       draft.nearestVertex = action.payload.vertexId;
       return;
@@ -307,6 +321,7 @@ export function editorReducer(state: EditorState, action: EditorAction): EditorS
       return;
     }
 
+    // エリア作成および頂点ジオメトリ編集。
     if (action.type === "create-area") {
       const areaId = nextAreaName(draft.areas);
       draft.areas.set(areaId, createEmptyAreaPolygon());
@@ -368,6 +383,7 @@ export function editorReducer(state: EditorState, action: EditorAction): EditorS
       return;
     }
 
+    // エリア削除とメタ情報更新。
     if (action.type === "delete-selected-area") {
       const areaId = draft.selectedArea;
       if (!areaId) {
@@ -451,6 +467,7 @@ export function editorReducer(state: EditorState, action: EditorAction): EditorS
       return;
     }
 
+    // トラックの作成・削除・構成更新。
     if (action.type === "create-track") {
       const trackId = action.payload.trackId.trim();
       if (!trackId) {
@@ -539,6 +556,7 @@ export function editorReducer(state: EditorState, action: EditorAction): EditorS
       return;
     }
 
+    // ステージ上のポインタイベントによるインタラクティブ編集。
     if (action.type === "stage-pointer-move") {
       if (action.payload.dragging) {
         moveNearestVertex(draft, action.payload.point);

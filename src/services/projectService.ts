@@ -11,11 +11,13 @@ import { decodeProjectJson } from "../io/projectDecoder";
 import { encodeProject, ProjectEncodeInput } from "../io/projectEncoder";
 import { LoadedProjectData } from "../store/editorTypes";
 
+// XML パース時の共通オプション。
 const xmlParserOption = {
   ignoreAttributes: false,
   ignoreDeclaration: true,
 };
 
+// addon XML の参照に必要な最小構造定義。
 interface AddonComponentXml {
   spawn_transform?: {
     "@_30"?: string | number;
@@ -55,6 +57,7 @@ interface AddonRootXml {
   };
 }
 
+// 単体/配列/未定義を常に配列へ正規化する。
 function toArray<T>(item: T | T[] | undefined | null): T[] {
   if (Array.isArray(item)) {
     return item;
@@ -65,25 +68,30 @@ function toArray<T>(item: T | T[] | undefined | null): T[] {
   return [item];
 }
 
+// Tauri 側のファイル読み込みコマンドを呼び出す。
 async function openFileCommand(): Promise<string> {
   const result = await invoke("open_file_command", {});
   return String(result ?? "");
 }
 
+// Tauri 側のファイル保存コマンドを呼び出す。
 async function saveFileCommand(saveValue: string): Promise<void> {
   await invoke("save_file_command", { saveValue });
 }
 
+// 指定タイル XML の読み込みコマンドを呼び出す。
 async function readTileFileCommand(filename: string): Promise<string> {
   const result = await invoke("read_tile_file_command", { filename });
   return String(result ?? "");
 }
 
+// 指定 addon XML の読み込みコマンドを呼び出す。
 async function readAddonCommand(foldername: string): Promise<string> {
   const result = await invoke("read_addon_command", { foldername });
   return String(result ?? "");
 }
 
+// プロジェクト未読み込み時の空データを作成する。
 function createEmptyLoadedProjectData(): LoadedProjectData {
   return {
     vertexes: new Map<string, Vector2d>(),
@@ -96,6 +104,7 @@ function createEmptyLoadedProjectData(): LoadedProjectData {
   };
 }
 
+// JSON 文字列をパースし、失敗時は空 DTO を返す。
 function parseProjectJson(text: string) {
   if (text.trim().length === 0) {
     return decodeProjectJson({});
@@ -110,6 +119,7 @@ function parseProjectJson(text: string) {
   }
 }
 
+// project.json の主要データを Editor 用の構造へ変換する。
 function mapProjectBaseData(text: string): Omit<LoadedProjectData, "vehicles" | "swtracks"> {
   const dto = parseProjectJson(text);
 
@@ -158,6 +168,7 @@ function mapProjectBaseData(text: string): Omit<LoadedProjectData, "vehicles" | 
   };
 }
 
+// tileAssign に含まれる全タイル XML を読み込み、StormTracks を構築する。
 async function loadStormTrackData(
   tileAssign: Map<string, Vector2d>
 ): Promise<StormTracks[]> {
@@ -186,6 +197,7 @@ async function loadStormTrackData(
   return parsedTracks;
 }
 
+// addon XML を読み込み、スポーン情報から AddonVehicle を生成する。
 async function loadAddonVehicles(
   addons: string[],
   tileAssign: Map<string, Vector2d>
@@ -240,6 +252,7 @@ async function loadAddonVehicles(
   return vehicles;
 }
 
+// プロジェクト本体と付随 XML を読み込み、エディタ状態へまとめる。
 export async function loadProject(): Promise<LoadedProjectData> {
   const loadedText = await openFileCommand();
   const base = mapProjectBaseData(loadedText);
@@ -256,6 +269,7 @@ export async function loadProject(): Promise<LoadedProjectData> {
   };
 }
 
+// エディタ状態を project.json 形式へ変換して保存する。
 export async function saveProject(data: ProjectEncodeInput): Promise<void> {
   const saveValue = JSON.stringify(encodeProject(data));
   await saveFileCommand(saveValue);

@@ -1,3 +1,4 @@
+// XML パース結果の単体/配列を配列へ正規化する。
 function itr<T>(item: T[] | T): T[] {
   if (Array.isArray(item)) {
     return item;
@@ -6,6 +7,7 @@ function itr<T>(item: T[] | T): T[] {
   }
 }
 
+// train_tracks XML の参照に必要な最小構造定義。
 interface TrackXmlLink {
   "@_id"?: string;
 }
@@ -29,9 +31,11 @@ interface StormTracksXml {
   };
 }
 
+// タイルごとの stormworks 線路データを保持するモデル。
 class StormTracks {
   constructor(public offsetX: number, public offsetZ: number, public tracks: Record<string, TrackNode>) { }
 
+  // XML オブジェクトから TrackNode 辞書を構築する。
   static loadFromXML(offsetX: number, offsetZ: number, xmlObject: unknown): StormTracks {
     const source = xmlObject as StormTracksXml;
     const tir = source.definition?.train_tracks?.track;
@@ -55,6 +59,7 @@ class StormTracks {
   }
 }
 
+// 1 つの線路ノード(座標とリンク先)。
 export class TrackNode {
   constructor(public x: number, public z: number, public links: string[]) { }
 }

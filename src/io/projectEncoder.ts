@@ -2,6 +2,7 @@ import AreaPolygon from "../data/AreaPolygon";
 import NtracsTrack from "../data/NtracsTrack";
 import Vector2d from "../data/Vector2d";
 
+// エディタ内部状態から project.json を組み立てるための入力型。
 export interface ProjectEncodeInput {
   vertexes: Map<string, Vector2d>;
   areas: Map<string, AreaPolygon>;
@@ -10,6 +11,7 @@ export interface ProjectEncodeInput {
   nttracks: Map<string, NtracsTrack>;
 }
 
+// Map を key/value を使った配列へ変換する共通ヘルパー。
 function mapEntries<V1, V2>(
   map: Map<string, V1>,
   mapper: (value: V1, key: string) => V2
@@ -17,7 +19,9 @@ function mapEntries<V1, V2>(
   return [...map].map(([key, value]) => mapper(value, key));
 }
 
+// エディタ状態を保存用のシリアライズ可能オブジェクトへ変換する。
 export function encodeProject(input: ProjectEncodeInput) {
+  // 各頂点に関連するエリア一覧を逆引きで作り、related 計算に使う。
   const relatedMap = new Map<string, string[]>();
   for (const [areaName, area] of input.areas.entries()) {
     for (const vertexId of area.vertexes) {
