@@ -3,6 +3,7 @@ import { Button, Divider, Navbar, Tab, TabId, Tabs } from "@blueprintjs/core";
 import { FloppyDisk, Flows, FolderOpen, PolygonFilter } from "@blueprintjs/icons";
 import { saveProject, loadProject } from "../services/projectService";
 import { useEditorCommands, useEditorSelector } from "../store/EditorStore";
+import { APP_VERSION } from "../appVersion";
 
 function Nav() {
   const commands = useEditorCommands();
@@ -51,7 +52,7 @@ function Nav() {
       }}
     >
         <Navbar.Group>
-          <Navbar.Heading>N-TRACS Editor <small>v0.2.2</small></Navbar.Heading>
+          <Navbar.Heading>N-TRACS Editor <small>v{APP_VERSION}</small></Navbar.Heading>
           <Navbar.Divider />
           <Button
             icon={<FolderOpen />}
