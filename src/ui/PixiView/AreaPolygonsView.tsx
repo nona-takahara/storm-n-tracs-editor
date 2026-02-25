@@ -1,4 +1,4 @@
-import React, { useCallback } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { Graphics } from "@pixi/react";
 import * as PIXI from "pixi.js";
 import AreaPolygon from "../../data/AreaPolygon";
@@ -111,6 +111,23 @@ function drawDirectionalArrow(
 function AreaPolygonsView(props: AreaPolygonsViewProps) {
   const selectedTrackInEditMode =
     props.editMode === EditMode.EditTrack ? props.selectedTrack : undefined;
+  const shouldBlinkPreview = props.previewAreaId !== undefined;
+  const [previewBlinkOn, setPreviewBlinkOn] = useState(true);
+
+  useEffect(() => {
+    if (!shouldBlinkPreview) {
+      setPreviewBlinkOn(true);
+      return;
+    }
+
+    const timerId = window.setInterval(() => {
+      setPreviewBlinkOn((value) => !value);
+    }, 400);
+
+    return () => {
+      window.clearInterval(timerId);
+    };
+  }, [shouldBlinkPreview, props.previewAreaId]);
 
   const draw = useCallback(
     (g: PIXI.Graphics) => {
@@ -126,14 +143,15 @@ function AreaPolygonsView(props: AreaPolygonsViewProps) {
 
       g.lineStyle(0.2, 0x0000ff, 1);
       props.areas.forEach((area, key) => {
+        const isPreviewArea = key === props.previewAreaId;
         const inSelectedTrack =
           selectedTrackInEditMode !== undefined &&
           props.tracks
             .get(selectedTrackInEditMode)
             ?.areas.some((entry) => entry.areaName === key);
 
-        if (key === props.previewAreaId) {
-          g.beginFill(0xffffff, 0.2);
+        if (isPreviewArea && previewBlinkOn) {
+          g.beginFill(0x400000, 0.2);
         } else if (key === props.selectedArea) {
           const p = props.vertexes.get(area.vertexes[area.leftVertexInnerId]);
           if (p) {
@@ -141,9 +159,9 @@ function AreaPolygonsView(props: AreaPolygonsViewProps) {
             g.drawCircle(p.x, -p.z, 1.5);
           }
           if (inSelectedTrack) {
-            g.beginFill(0xa0ffa0, 0.3);
+            g.beginFill(0xa0ffa0, 0.2);
           } else {
-            g.beginFill(0x8080ff, 0.3);
+            g.beginFill(0x8080ff, 0.2);
           }
         } else if (inSelectedTrack) {
           g.beginFill(0x00c000, 0.3);
@@ -236,6 +254,7 @@ function AreaPolygonsView(props: AreaPolygonsViewProps) {
       props.selectedArea,
       props.tracks,
       props.vertexes,
+      previewBlinkOn,
       selectedTrackInEditMode,
     ]
   );

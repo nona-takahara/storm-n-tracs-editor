@@ -8,6 +8,7 @@ import EditTrack from "./InfoViews/EditTrack";
 function InfoView() {
   const editMode = useEditorSelector((state) => state.editMode);
   const selectedArea = useEditorSelector((state) => state.selectedArea);
+  const isTrackMode = editMode === EditMode.EditTrack;
 
   const select = () => {
     if (editMode === EditMode.AddArea || editMode === EditMode.EditArea) {
@@ -27,11 +28,13 @@ function InfoView() {
       elevation={1}
       style={{
         position: "absolute",
-        width: "300px",
+        width: isTrackMode ? "420px" : "300px",
+        height: isTrackMode ? "calc(100vh - 72px)" : undefined,
         top: "60px",
         right: "10px",
         background: "rgba(250,250,250,0.85)",
         backdropFilter: "blur(8px)",
+        overflow: isTrackMode ? "hidden" : undefined,
       }}
     >
       {select()}
