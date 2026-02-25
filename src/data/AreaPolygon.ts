@@ -1,11 +1,13 @@
 import AxleMode from "./AxleMode";
 import Vector2d from "./Vector2d";
 
+// 角度演算に使う簡易複素数型。
 interface Complex {
   re: number;
   im: number;
 }
 
+// 複素数乗算。
 function cxmul(c1: Complex, c2: Complex): Complex {
   return {
     re: c1.re * c2.re - c1.im * c2.im,
@@ -13,6 +15,7 @@ function cxmul(c1: Complex, c2: Complex): Complex {
   };
 }
 
+// 偏角を 1/2 にした複素数を返す補助関数。
 function cxhalfarg(c: Complex): Complex {
   const r = Math.sqrt(c.re * c.re + c.im * c.im);
   return {
@@ -21,9 +24,11 @@ function cxhalfarg(c: Complex): Complex {
   }
 }
 
+// エリアポリゴン定義。
 class AreaPolygon {
   constructor(public vertexes: string[], public leftVertexInnerId: number, public axleMode: AxleMode, public callback: string, public uparea: string[]) { }
 
+  // 点がポリゴン内部にあるかを、角度積(複素数)ベースで判定する。
   isInArea(vertexes: Map<string, Vector2d>, x: number, z: number) {
     let prod: Complex = { re: 1, im: 0 };
     const v = this.vertexes.map(i => vertexes.get(i)).filter((v): v is Exclude<typeof v, undefined> => v !== undefined)
@@ -35,6 +40,7 @@ class AreaPolygon {
       maxz ||= k.z > z;
     }
 
+    // 外接矩形の外側なら内部判定不要。
     if (!(minx && minz && maxx && maxz)) {
       return false;
     }

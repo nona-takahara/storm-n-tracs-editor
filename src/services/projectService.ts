@@ -6,15 +6,27 @@ import * as AxleMode from "../data/AxleMode";
 import NtracsTrack, { AreaCollection } from "../data/NtracsTrack";
 import StormTracks from "../data/StormTracks";
 import Vector2d from "../data/Vector2d";
-import { normalizeTrackFlag } from "../domain/editor/trackCommands";
 import { decodeProjectJson } from "../io/projectDecoder";
-import { encodeProject, ProjectEncodeInput } from "../io/projectEncoder";
-import { LoadedProjectData } from "../store/editorTypes";
+import { cleanupProjectForSave, encodeProject, ProjectEncodeInput } from "../io/projectEncoder";
+import {
+  DEFAULT_PROJECT_ORIGIN_X,
+  DEFAULT_PROJECT_ORIGIN_Z,
+  LoadedProjectData,
+} from "../store/editorTypes";
 
 const xmlParserOption = {
   ignoreAttributes: false,
   ignoreDeclaration: true,
 };
+
+const DEFAULT_SW_TILE_PATH =
+  "C:\\Program Files (x86)\\Steam\\steamapps\\common\\Stormworks\\rom";
+const DEFAULT_ADDON_PATH = "C:\\";
+
+export interface AppPathConfig {
+  swTilePath: string;
+  addonPath: string;
+}
 
 interface AddonComponentXml {
   spawn_transform?: {
@@ -55,6 +67,34 @@ interface AddonRootXml {
   };
 }
 
+function asRecord(value: unknown): Record<string, unknown> | undefined {
+  if (value && typeof value === "object" && !Array.isArray(value)) {
+    return value as Record<string, unknown>;
+  }
+  return undefined;
+}
+
+function parsePathConfig(value: unknown): AppPathConfig {
+  const root = asRecord(value) ?? {};
+  const swTilePath =
+    typeof root.sw_tile_path === "string"
+      ? root.sw_tile_path
+      : typeof root.swTilePath === "string"
+      ? root.swTilePath
+      : DEFAULT_SW_TILE_PATH;
+  const addonPath =
+    typeof root.addon_path === "string"
+      ? root.addon_path
+      : typeof root.addonPath === "string"
+      ? root.addonPath
+      : DEFAULT_ADDON_PATH;
+
+  return {
+    swTilePath,
+    addonPath,
+  };
+}
+
 function toArray<T>(item: T | T[] | undefined | null): T[] {
   if (Array.isArray(item)) {
     return item;
@@ -63,6 +103,30 @@ function toArray<T>(item: T | T[] | undefined | null): T[] {
     return [];
   }
   return [item];
+}
+
+async function loadPathConfigCommand(): Promise<unknown> {
+  return invoke("load_path_config_command", {});
+}
+
+async function savePathConfigCommand(config: AppPathConfig): Promise<void> {
+  await invoke("save_path_config_command", {
+    swTilePath: config.swTilePath,
+    addonPath: config.addonPath,
+  });
+}
+
+export async function loadPathConfig(): Promise<AppPathConfig> {
+  const result = await loadPathConfigCommand();
+  return parsePathConfig(result);
+}
+
+export async function savePathConfig(config: AppPathConfig): Promise<void> {
+  const normalized: AppPathConfig = {
+    swTilePath: config.swTilePath.trim() || DEFAULT_SW_TILE_PATH,
+    addonPath: config.addonPath.trim() || DEFAULT_ADDON_PATH,
+  };
+  await savePathConfigCommand(normalized);
 }
 
 async function openFileCommand(): Promise<string> {
@@ -90,6 +154,7 @@ function createEmptyLoadedProjectData(): LoadedProjectData {
     areas: new Map<string, AreaPolygon>(),
     tileAssign: new Map<string, Vector2d>(),
     addonList: [],
+    origin: new Vector2d(DEFAULT_PROJECT_ORIGIN_X, DEFAULT_PROJECT_ORIGIN_Z),
     vehicles: [],
     swtracks: [],
     nttracks: new Map<string, NtracsTrack>(),
@@ -141,11 +206,7 @@ function mapProjectBaseData(text: string): Omit<LoadedProjectData, "vehicles" | 
   for (const track of dto.tracks) {
     nttracks.set(
       track.name,
-      new NtracsTrack(
-        track.areas.map(
-          (area) => new AreaCollection(area.name, normalizeTrackFlag(area.trackFlag))
-        )
-      )
+      new NtracsTrack(track.areas.map((area) => new AreaCollection(area.name)))
     );
   }
 
@@ -154,6 +215,7 @@ function mapProjectBaseData(text: string): Omit<LoadedProjectData, "vehicles" | 
     areas,
     tileAssign,
     addonList: [...dto.addons],
+    origin: new Vector2d(dto.origin.x, dto.origin.z),
     nttracks,
   };
 }
@@ -256,7 +318,9 @@ export async function loadProject(): Promise<LoadedProjectData> {
   };
 }
 
-export async function saveProject(data: ProjectEncodeInput): Promise<void> {
-  const saveValue = JSON.stringify(encodeProject(data));
+export async function saveProject(data: ProjectEncodeInput): Promise<ProjectEncodeInput> {
+  const cleaned = cleanupProjectForSave(data);
+  const saveValue = JSON.stringify(encodeProject(cleaned));
   await saveFileCommand(saveValue);
+  return cleaned;
 }

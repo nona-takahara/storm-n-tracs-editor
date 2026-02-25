@@ -9,6 +9,7 @@ export interface StageTransform {
   scale: number;
 }
 
+// 画面座標(clientX/clientY)をワールド座標へ変換する。
 export function toWorldPosition(
   clientX: number,
   clientY: number,
@@ -20,10 +21,12 @@ export function toWorldPosition(
   );
 }
 
+// 2点間のユークリッド距離を返す。
 export function distance(x1: number, y1: number, x2: number, y2: number): number {
   return Math.sqrt((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2));
 }
 
+// 指定座標に最も近い頂点IDを返す。threshold を超える場合は undefined。
 export function findNearestVertex(
   vertexes: Map<string, Vector2d>,
   point: Vector2d,
@@ -41,6 +44,7 @@ export function findNearestVertex(
   return nearest;
 }
 
+// sourceVertexKey 以外で最も近い頂点IDを返し、マージ候補を決める。
 export function findMergeTargetVertex(
   vertexes: Map<string, Vector2d>,
   sourceVertexKey: string,
@@ -67,6 +71,7 @@ export function findMergeTargetVertex(
   return nearest;
 }
 
+// 指定点を内包する最初のエリアIDを返す。
 export function hitTestArea(
   areas: Map<string, AreaPolygon>,
   vertexes: Map<string, Vector2d>,

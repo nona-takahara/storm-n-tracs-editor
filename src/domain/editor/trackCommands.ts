@@ -1,14 +1,4 @@
-import NtracsTrack, { AreaCollection, TrackFlag } from "../../data/NtracsTrack";
-
-export function normalizeTrackFlag(flag: string): TrackFlag {
-  if (flag === TrackFlag.upbound) {
-    return TrackFlag.upbound;
-  }
-  if (flag === TrackFlag.downbound) {
-    return TrackFlag.downbound;
-  }
-  return TrackFlag.none;
-}
+import NtracsTrack, { AreaCollection } from "../../data/NtracsTrack";
 
 export function createEmptyTrack(): NtracsTrack {
   return new NtracsTrack([]);
@@ -18,12 +8,23 @@ export function createTrackWithAreas(areas: AreaCollection[]): NtracsTrack {
   return new NtracsTrack(areas);
 }
 
-export function cycleTrackFlag(flag: TrackFlag): TrackFlag {
-  if (flag === TrackFlag.none) {
-    return TrackFlag.upbound;
+export function moveTrackAreaEntry(
+  areas: AreaCollection[],
+  fromIndex: number,
+  toIndex: number
+): AreaCollection[] {
+  if (
+    fromIndex < 0 ||
+    toIndex < 0 ||
+    fromIndex >= areas.length ||
+    toIndex >= areas.length ||
+    fromIndex === toIndex
+  ) {
+    return areas;
   }
-  if (flag === TrackFlag.upbound) {
-    return TrackFlag.downbound;
-  }
-  return TrackFlag.none;
+
+  const next = [...areas];
+  const [target] = next.splice(fromIndex, 1);
+  next.splice(toIndex, 0, target);
+  return next;
 }

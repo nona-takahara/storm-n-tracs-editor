@@ -1,4 +1,4 @@
-import React, { useCallback } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { Graphics } from "@pixi/react";
 import * as PIXI from "pixi.js";
 import AreaPolygon from "../../data/AreaPolygon";
@@ -14,12 +14,27 @@ interface AreaPolygonsViewProps {
   nearestIndex: string | undefined;
   selectedArea: string | undefined;
   selectedTrack: string | undefined;
+  previewAreaId: string | undefined;
+  previewTrackId: string | undefined;
+}
+
+interface AreaCenterPoint {
+  x: number;
+  z: number;
+}
+
+interface ArrowStyle {
+  color: number;
+  alpha: number;
+  width: number;
+  offset?: number;
+  headLength?: number;
 }
 
 function areaCenter(
   area: AreaPolygon | undefined,
   vertexes: Map<string, Vector2d>
-): { x: number; z: number } | undefined {
+): AreaCenterPoint | undefined {
   if (!area || area.vertexes.length === 0) {
     return undefined;
   }
@@ -45,105 +60,207 @@ function areaCenter(
   };
 }
 
+function drawDirectionalArrow(
+  g: PIXI.Graphics,
+  from: AreaCenterPoint,
+  to: AreaCenterPoint,
+  style: ArrowStyle
+): void {
+  const dx = to.x - from.x;
+  const dz = to.z - from.z;
+  const length = Math.sqrt(dx * dx + dz * dz);
+  if (length < 0.01) {
+    return;
+  }
+
+  const nx = dx / length;
+  const nz = dz / length;
+  const px = -nz;
+  const pz = nx;
+  const offset = style.offset ?? 0;
+  const start = {
+    x: from.x + px * offset,
+    z: from.z + pz * offset,
+  };
+  const end = {
+    x: to.x + px * offset,
+    z: to.z + pz * offset,
+  };
+
+  const headLength = Math.max(0.4, Math.min(style.headLength ?? 2, length * 0.45));
+  const headWidth = headLength * 0.6;
+  const shaftEnd = {
+    x: end.x - nx * headLength,
+    z: end.z - nz * headLength,
+  };
+
+  g.lineStyle(style.width, style.color, style.alpha);
+  g.moveTo(start.x, -start.z);
+  g.lineTo(shaftEnd.x, -shaftEnd.z);
+
+  g.beginFill(style.color, style.alpha);
+  g.drawPolygon(
+    new PIXI.Polygon([
+      new PIXI.Point(end.x, -end.z),
+      new PIXI.Point(shaftEnd.x + px * headWidth, -shaftEnd.z - pz * headWidth),
+      new PIXI.Point(shaftEnd.x - px * headWidth, -shaftEnd.z + pz * headWidth),
+    ])
+  );
+  g.endFill();
+}
+
 function AreaPolygonsView(props: AreaPolygonsViewProps) {
   const selectedTrackInEditMode =
     props.editMode === EditMode.EditTrack ? props.selectedTrack : undefined;
+  const previewTrackInEditMode =
+    props.editMode === EditMode.EditTrack ? props.previewTrackId : undefined;
+  const highlightedTrackInEditMode = previewTrackInEditMode ?? selectedTrackInEditMode;
+  const shouldBlinkPreview = props.previewAreaId !== undefined;
+  const [previewBlinkOn, setPreviewBlinkOn] = useState(true);
+
+  useEffect(() => {
+    if (!shouldBlinkPreview) {
+      setPreviewBlinkOn(true);
+      return;
+    }
+
+    const timerId = window.setInterval(() => {
+      setPreviewBlinkOn((value) => !value);
+    }, 400);
+
+    return () => {
+      window.clearInterval(timerId);
+    };
+  }, [shouldBlinkPreview, props.previewAreaId]);
+
   const draw = useCallback(
     (g: PIXI.Graphics) => {
       g.clear();
 
+      const areaCenters = new Map<string, AreaCenterPoint>();
+      props.areas.forEach((area, key) => {
+        const center = areaCenter(area, props.vertexes);
+        if (center) {
+          areaCenters.set(key, center);
+        }
+      });
+
       g.lineStyle(0.2, 0x0000ff, 1);
       props.areas.forEach((area, key) => {
-        if (key === props.selectedArea) {
+        const isPreviewArea = key === props.previewAreaId;
+        const inHighlightedTrack =
+          highlightedTrackInEditMode !== undefined &&
+          props.tracks
+            .get(highlightedTrackInEditMode)
+            ?.areas.some((entry) => entry.areaName === key);
+
+        if (isPreviewArea && previewBlinkOn) {
+          g.beginFill(0x400000, 0.2);
+        } else if (key === props.selectedArea && props.editMode !== EditMode.EditTrack) {
           const p = props.vertexes.get(area.vertexes[area.leftVertexInnerId]);
           if (p) {
             g.lineStyle(1, 0x0000ff, 0.7);
             g.drawCircle(p.x, -p.z, 1.5);
           }
-          if (
-            selectedTrackInEditMode &&
-            props.tracks
-              .get(selectedTrackInEditMode)
-              ?.areas.find((v) => v.areaName === key)
-          ) {
-            g.beginFill(0xa0ffa0, 0.3);
+          if (inHighlightedTrack) {
+            g.beginFill(0xa0ffa0, 0.2);
           } else {
-            g.beginFill(0x8080ff, 0.3);
+            g.beginFill(0x8080ff, 0.2);
           }
+        } else if (inHighlightedTrack) {
+          g.beginFill(0x00c000, 0.3);
         } else {
-          if (
-            selectedTrackInEditMode &&
-            props.tracks
-              .get(selectedTrackInEditMode)
-              ?.areas.find((v) => v.areaName === key)
-          ) {
-            g.beginFill(0x00c000, 0.3);
-          } else {
-            g.beginFill(0x0000ff, 0.3);
-          }
+          g.beginFill(0x0000ff, 0.3);
         }
 
         g.lineStyle(0.2, 0x0000ff, 1);
-        const p = new PIXI.Polygon(
+        const polygon = new PIXI.Polygon(
           area.vertexes
-            .map((v) => {
-              const p = props.vertexes.get(v);
-              if (p) {
-                return new PIXI.Point(p.x, -p.z);
+            .map((vertexId) => {
+              const vertex = props.vertexes.get(vertexId);
+              if (vertex) {
+                return new PIXI.Point(vertex.x, -vertex.z);
               }
             })
-            .filter((v): v is Exclude<typeof v, undefined> => v !== undefined)
+            .filter((vertex): vertex is Exclude<typeof vertex, undefined> => vertex !== undefined)
         );
-        g.drawPolygon(p);
+        g.drawPolygon(polygon);
         g.endFill();
       });
 
-      g.lineStyle(0);
-      props.vertexes.forEach((v, k) => {
-        if (k === props.nearestIndex) {
-          g.beginFill(0xff0000, 1);
-          g.drawCircle(v.x, -v.z, 1);
-        }
-        g.beginFill(0x0000ff, 1);
-        g.drawCircle(v.x, -v.z, 0.4);
+      if (props.editMode !== EditMode.EditTrack) {
+        // UpArea links are visible in area edit modes and rendered from uparea -> target area.
+        props.areas.forEach((targetArea, targetAreaId) => {
+          const targetCenter = areaCenters.get(targetAreaId);
+          if (!targetCenter) {
+            return;
+          }
 
-        g.endFill();
-      });
-
-      if (selectedTrackInEditMode) {
-        const list = props.tracks.get(selectedTrackInEditMode);
-        if (list) {
-          for (let i = 1; i < list.areas.length; i++) {
-            const p1 = areaCenter(props.areas.get(list.areas[i - 1].areaName), props.vertexes);
-            const p2 = areaCenter(props.areas.get(list.areas[i].areaName), props.vertexes);
-            if (p1 && p2) {
-              const p1p2 = { x: p2.x - p1.x, z: p2.z - p1.z };
-              const p1p2Length = Math.sqrt(p1p2.x * p1p2.x + p1p2.z * p1p2.z) / 4;
-              if (p1p2Length === 0) {
-                continue;
-              }
-              const p1p2Normal = { x: p1p2.x / p1p2Length, z: p1p2.z / p1p2Length };
-              const pp = new PIXI.Polygon([
-                new PIXI.Point(p1.x - p1p2Normal.z, -p1.z - p1p2Normal.x),
-                new PIXI.Point(p2.x, -p2.z),
-                new PIXI.Point(p1.x + p1p2Normal.z, -p1.z + p1p2Normal.x),
-              ]);
-              g.beginFill(0x00a0ff, 0.6);
-              g.drawPolygon(pp);
-              g.endFill();
+          targetArea.uparea.forEach((sourceAreaId) => {
+            const sourceCenter = areaCenters.get(sourceAreaId);
+            if (!sourceCenter) {
+              return;
             }
+
+            const reciprocal =
+              props.areas.get(sourceAreaId)?.uparea.includes(targetAreaId) === true;
+            const offset = reciprocal ? (sourceAreaId < targetAreaId ? 0.8 : -0.8) : 0;
+            drawDirectionalArrow(g, sourceCenter, targetCenter, {
+              color: 0x008c00,
+              alpha: 0.7,
+              width: 1,
+              offset,
+              headLength: 1.8,
+            });
+          });
+        });
+      }
+
+      // Track chain arrows are rendered only for the selected track in track-edit mode.
+      if (selectedTrackInEditMode) {
+        const selectedTrack = props.tracks.get(selectedTrackInEditMode);
+        if (selectedTrack) {
+          for (let i = 1; i < selectedTrack.areas.length; i++) {
+            const fromAreaId = selectedTrack.areas[i - 1].areaName;
+            const toAreaId = selectedTrack.areas[i].areaName;
+            const fromCenter = areaCenters.get(fromAreaId);
+            const toCenter = areaCenters.get(toAreaId);
+            if (!fromCenter || !toCenter) {
+              continue;
+            }
+
+            drawDirectionalArrow(g, fromCenter, toCenter, {
+              color: 0x00a0ff,
+              alpha: 0.85,
+              width: 0.45,
+              headLength: 2.2,
+            });
           }
         }
       }
+
+      g.lineStyle(0);
+      props.vertexes.forEach((vertex, key) => {
+        if (key === props.nearestIndex) {
+          g.beginFill(0xff0000, 1);
+          g.drawCircle(vertex.x, -vertex.z, 1);
+        }
+        g.beginFill(0x0000ff, 1);
+        g.drawCircle(vertex.x, -vertex.z, 0.4);
+        g.endFill();
+      });
     },
     [
       props.areas,
       props.editMode,
       props.nearestIndex,
+      props.previewAreaId,
+      props.previewTrackId,
       props.selectedArea,
-      props.selectedTrack,
       props.tracks,
       props.vertexes,
+      highlightedTrackInEditMode,
+      previewBlinkOn,
       selectedTrackInEditMode,
     ]
   );

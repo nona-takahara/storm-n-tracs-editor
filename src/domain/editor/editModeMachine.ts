@@ -7,6 +7,7 @@ export type EditModeEvent =
   | "FINISH_ADD_AREA"
   | "CANCEL_ADD_AREA";
 
+// モード遷移表。未定義イベントは遷移しない。
 const transitions: Record<
   EditMode.EditMode,
   Partial<Record<EditModeEvent, EditMode.EditMode>>
@@ -28,6 +29,8 @@ const transitions: Record<
   },
 };
 
+// 現在モードに対するイベント遷移結果を返す。
+// 遷移先が未定義なら currentMode を維持する。
 export function transitionEditMode(
   currentMode: EditMode.EditMode,
   event: EditModeEvent

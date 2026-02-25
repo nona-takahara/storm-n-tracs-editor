@@ -2,17 +2,15 @@ import {
   Button,
   ButtonGroup,
   Checkbox,
-  ControlGroup,
   Divider,
+  InputGroup,
   Intent,
-  MenuItem,
   Radio,
   RadioGroup,
   UL,
 } from "@blueprintjs/core";
 import { Code, Trash } from "@blueprintjs/icons";
-import { ItemPredicate, ItemRenderer, Select } from "@blueprintjs/select";
-import { ChangeEvent, useState } from "react";
+import { ChangeEvent, useEffect, useMemo, useState } from "react";
 import * as EditMode from "../../EditMode";
 import Vector2d from "../../data/Vector2d";
 import { useEditorCommands, useEditorSelector } from "../../store/EditorStore";
@@ -27,42 +25,57 @@ function EditArea() {
 
   const [showLuaDialog, setShowLuaDialog] = useState(false);
   const [showInnerCoordinate, setShowInnerCoordinate] = useState(false);
-  const [upareaCandidate, setUpareaCandidate] = useState("");
+  const [upareaQuery, setUpareaQuery] = useState("");
+  const area = selectedArea ? areas.get(selectedArea) : undefined;
+  const sharedVertexCandidates = useMemo(() => {
+    if (!selectedArea || !area) {
+      return [];
+    }
 
-  if (!selectedArea) {
-    return null;
-  }
+    const selectedVertexes = new Set(area.vertexes);
+    const candidates = new Set<string>();
 
-  const area = areas.get(selectedArea);
-  if (!area) {
+    areas.forEach((otherArea, areaId) => {
+      if (areaId === selectedArea) {
+        return;
+      }
+
+      if (otherArea.vertexes.some((vertexId) => selectedVertexes.has(vertexId))) {
+        candidates.add(areaId);
+      }
+    });
+
+    area.uparea.forEach((areaId) => {
+      if (areaId !== selectedArea) {
+        candidates.add(areaId);
+      }
+    });
+
+    return Array.from(candidates).sort((left, right) => left.localeCompare(right));
+  }, [area?.uparea, area?.vertexes, areas, selectedArea]);
+
+  const filteredCandidates = useMemo(() => {
+    const query = upareaQuery.trim().toLowerCase();
+    if (!query) {
+      return sharedVertexCandidates;
+    }
+    return sharedVertexCandidates.filter((candidate) =>
+      candidate.toLowerCase().includes(query)
+    );
+  }, [sharedVertexCandidates, upareaQuery]);
+
+  useEffect(() => {
+    commands.setPreviewArea(undefined);
+    return () => {
+      commands.setPreviewArea(undefined);
+    };
+  }, [commands, selectedArea]);
+
+  if (!selectedArea || !area) {
     return null;
   }
 
   const canDeleteVertex = area.vertexes.length > 3;
-
-  const itemRender: ItemRenderer<string> = (
-    item,
-    { handleClick, handleFocus, modifiers }
-  ) => {
-    if (!modifiers.matchesPredicate) {
-      return null;
-    }
-    return (
-      <MenuItem
-        active={modifiers.active}
-        disabled={modifiers.disabled}
-        key={item}
-        onClick={handleClick}
-        onFocus={handleFocus}
-        roleStructure="listoption"
-        text={item}
-      />
-    );
-  };
-
-  const filterItem: ItemPredicate<string> = (query, item) => {
-    return item.includes(query);
-  };
 
   return (
     <>
@@ -103,54 +116,56 @@ function EditArea() {
         {editMode === EditMode.AddArea && "Add Area Mode"}
       </ButtonGroup>
       <Divider />
-      <ButtonGroup>
-        <Select<string>
-          items={Array.from(areas.keys())}
-          itemRenderer={itemRender}
-          itemPredicate={filterItem}
-          onItemSelect={(item) => {
-            setUpareaCandidate(item);
-          }}
-          popoverProps={{ minimal: true }}
-          noResults={
-            <MenuItem
-              disabled={true}
-              text="No results."
-              roleStructure="listoption"
-            />
-          }
-        >
-          <Button text={upareaCandidate} rightIcon="double-caret-vertical" />
-        </Select>
-        <Button
-          onClick={() => {
-            commands.addSelectedAreaUparea(upareaCandidate);
-            setUpareaCandidate("");
-          }}
-        >
-          Add UpArea
-        </Button>
-      </ButtonGroup>
-      <UL>
-        {area.uparea.map((linkedArea) => (
-          <li key={`${selectedArea}*${linkedArea}`}>
-            <ControlGroup>
-              {linkedArea}
-              <Divider />
-              <ButtonGroup>
-                <Button
-                  onClick={() => {
-                    commands.removeSelectedAreaUparea(linkedArea);
-                    setUpareaCandidate("");
-                  }}
-                  icon={<Trash />}
-                  intent={Intent.DANGER}
-                />
-              </ButtonGroup>
-            </ControlGroup>
-          </li>
-        ))}
+      <InputGroup
+        value={upareaQuery}
+        onChange={(event: ChangeEvent<HTMLInputElement>) => {
+          setUpareaQuery(event.target.value);
+        }}
+        placeholder="Search UpArea candidates"
+        leftIcon="search"
+      />
+      <div style={{ fontSize: "12px", marginTop: "6px", marginBottom: "6px" }}>
+        Candidates: shared vertex areas + current UpArea links
+      </div>
+      <UL style={{ maxHeight: "180px", overflowY: "auto", marginTop: 0 }}>
+        {filteredCandidates.map((candidate) => {
+          const isChecked = area.uparea.includes(candidate);
+          const previewArea = areas.has(candidate) ? candidate : undefined;
+          return (
+            <li
+              key={`${selectedArea}-uparea-${candidate}`}
+              onMouseEnter={() => {
+                commands.setPreviewArea(previewArea);
+              }}
+              onMouseLeave={() => {
+                commands.setPreviewArea(undefined);
+              }}
+              style={{ listStyleType: "none", marginBottom: "2px" }}
+            >
+              <Checkbox
+                checked={isChecked}
+                label={candidate}
+                onFocus={() => {
+                  commands.setPreviewArea(previewArea);
+                }}
+                onBlur={() => {
+                  commands.setPreviewArea(undefined);
+                }}
+                onChange={(event: ChangeEvent<HTMLInputElement>) => {
+                  if (event.target.checked) {
+                    commands.addSelectedAreaUparea(candidate);
+                  } else {
+                    commands.removeSelectedAreaUparea(candidate);
+                  }
+                }}
+              />
+            </li>
+          );
+        })}
       </UL>
+      {filteredCandidates.length === 0 && (
+        <div style={{ fontSize: "12px", opacity: 0.7 }}>No candidates.</div>
+      )}
       <Divider />
       <Checkbox
         label="Show Inner Coordinate"

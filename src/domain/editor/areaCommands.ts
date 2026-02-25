@@ -2,10 +2,13 @@ import * as AxleMode from "../../data/AxleMode";
 import AreaPolygon from "../../data/AreaPolygon";
 import Vector2d from "../../data/Vector2d";
 
+// 空の AreaPolygon を初期値で作成する。
 export function createEmptyAreaPolygon(): AreaPolygon {
   return new AreaPolygon([], 0, AxleMode.NoChange, "", []);
 }
 
+// 頂点配列のみを差し替えた AreaPolygon を作成する。
+// leftVertexInnerId は新しい頂点数に収まる値へ補正する。
 export function createAreaWithVertexes(
   area: AreaPolygon,
   vertexes: string[]
@@ -24,6 +27,7 @@ export function createAreaWithVertexes(
   );
 }
 
+// callback だけを更新した AreaPolygon を作成する。
 export function createAreaWithCallback(
   area: AreaPolygon,
   callback: string
@@ -37,6 +41,7 @@ export function createAreaWithCallback(
   );
 }
 
+// uparea だけを更新した AreaPolygon を作成する。
 export function createAreaWithUpAreas(
   area: AreaPolygon,
   uparea: string[]
@@ -50,6 +55,8 @@ export function createAreaWithUpAreas(
   );
 }
 
+// 指定頂点を left vertex に設定した AreaPolygon を作成する。
+// 指定頂点が存在しない場合は元のオブジェクトをそのまま返す。
 export function createAreaWithLeftVertex(
   area: AreaPolygon,
   vertexId: string
@@ -68,18 +75,20 @@ export function createAreaWithLeftVertex(
   );
 }
 
+// 既存名と衝突しない Area 名を採番する。
 export function nextAreaName(areas: Map<string, AreaPolygon>): string {
   let index = areas.size;
-  while (areas.has(`Area_${index}`)) {
+  while (areas.has(String(index))) {
     index += 1;
   }
-  return `Area_${index}`;
+  return String(index);
 }
 
+// 既存名と衝突しない頂点名を採番する。
 export function nextVertexName(vertexes: Map<string, Vector2d>): string {
   let index = vertexes.size;
-  while (vertexes.has(`v${index}`)) {
+  while (vertexes.has(String(index))) {
     index += 1;
   }
-  return `v${index}`;
+  return String(index);
 }

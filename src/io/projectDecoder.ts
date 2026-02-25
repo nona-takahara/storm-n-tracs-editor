@@ -1,3 +1,4 @@
+// DTO definitions used when decoding project.json.
 export interface ProjectVertexDto {
   name: string;
   x: number;
@@ -15,7 +16,6 @@ export interface ProjectAreaDto {
 
 export interface ProjectTrackAreaDto {
   name: string;
-  trackFlag: string;
 }
 
 export interface ProjectTrackDto {
@@ -29,12 +29,18 @@ export interface ProjectTileDto {
   zOffset: number;
 }
 
+export interface ProjectOriginDto {
+  x: number;
+  z: number;
+}
+
 export interface ProjectDto {
   vertexes: ProjectVertexDto[];
   areas: ProjectAreaDto[];
   addons: string[];
   tracks: ProjectTrackDto[];
   tiles: ProjectTileDto[];
+  origin: ProjectOriginDto;
 }
 
 function asRecord(value: unknown): Record<string, unknown> | undefined {
@@ -108,7 +114,6 @@ export function decodeProjectJson(value: unknown): ProjectDto {
         .filter((area): area is Record<string, unknown> => area !== undefined)
         .map((area) => ({
           name: asString(area.name),
-          trackFlag: asString(area.trackFlag, "none"),
         }))
         .filter((area) => area.name.length > 0);
 
@@ -129,11 +134,19 @@ export function decodeProjectJson(value: unknown): ProjectDto {
     }))
     .filter((item) => item.path.length > 0);
 
+  const origin = asRecord(root.origin);
+  const originX = asNumber(root.origin_x ?? root.originX ?? origin?.x, 0);
+  const originZ = asNumber(root.origin_z ?? root.originZ ?? origin?.z, 0);
+
   return {
     vertexes,
     areas,
     addons,
     tracks,
     tiles,
+    origin: {
+      x: originX,
+      z: originZ,
+    },
   };
 }

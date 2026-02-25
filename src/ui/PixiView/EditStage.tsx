@@ -1,6 +1,6 @@
 import { Container, Stage, Text } from "@pixi/react";
 import { TextStyle } from "pixi.js";
-import React, { useLayoutEffect, useState } from "react";
+import React, { useEffect, useLayoutEffect, useState } from "react";
 import { toWorldPosition } from "../../domain/editor/geometry";
 import { useEditorCommands, useEditorSelector } from "../../store/EditorStore";
 import AddonsView from "./AddonsView";
@@ -36,12 +36,23 @@ function EditStage() {
   const nearestVertex = useEditorSelector((state) => state.nearestVertex);
   const selectedArea = useEditorSelector((state) => state.selectedArea);
   const selectedTrack = useEditorSelector((state) => state.selectedTrack);
+  const previewAreaId = useEditorSelector((state) => state.previewAreaId);
+  const previewTrackId = useEditorSelector((state) => state.previewTrackId);
+  const originX = useEditorSelector((state) => state.origin.x);
+  const originZ = useEditorSelector((state) => state.origin.z);
 
   const [width, height] = useWindowSize();
-  const [leftPos, setLeftPos] = useState(-1500);
-  const [topPos, setTopPos] = useState(-4000);
+  const [leftPos, setLeftPos] = useState(() => -originX);
+  const [topPos, setTopPos] = useState(() => originZ);
   const [scale, setScale] = useState(1);
   const [mouseLeftButtonDown, setMouseLeftButtonDown] = useState(false);
+
+  useEffect(() => {
+    setLeftPos(-originX);
+    setTopPos(originZ);
+    setScale(1);
+    setMouseLeftButtonDown(false);
+  }, [originX, originZ]);
 
   const wheelEvent = (event: React.WheelEvent<HTMLCanvasElement>) => {
     if (event.ctrlKey) {
@@ -139,6 +150,8 @@ function EditStage() {
           nearestIndex={nearestVertex}
           selectedArea={selectedArea}
           selectedTrack={selectedTrack}
+          previewAreaId={previewAreaId}
+          previewTrackId={previewTrackId}
         />
         {nearestVertexPosition && (
           <Text
