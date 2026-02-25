@@ -7,7 +7,12 @@ import NtracsTrack, { AreaCollection } from "../data/NtracsTrack";
 import StormTracks from "../data/StormTracks";
 import Vector2d from "../data/Vector2d";
 import { decodeProjectJson } from "../io/projectDecoder";
-import { cleanupProjectForSave, encodeProject, ProjectEncodeInput } from "../io/projectEncoder";
+import {
+  cleanupProjectForSave,
+  encodeProject,
+  ProjectEncodeInput,
+  renumberProjectAreaIds,
+} from "../io/projectEncoder";
 import {
   DEFAULT_PROJECT_ORIGIN_X,
   DEFAULT_PROJECT_ORIGIN_Z,
@@ -22,6 +27,7 @@ const xmlParserOption = {
 const DEFAULT_SW_TILE_PATH =
   "C:\\Program Files (x86)\\Steam\\steamapps\\common\\Stormworks\\rom";
 const DEFAULT_ADDON_PATH = "C:\\";
+const AREA_ID_PREFIX = "Area_";
 
 export interface AppPathConfig {
   swTilePath: string;
@@ -105,6 +111,49 @@ function toArray<T>(item: T | T[] | undefined | null): T[] {
   return [item];
 }
 
+function normalizeLoadedAreaId(areaId: string): string {
+  if (!areaId.startsWith(AREA_ID_PREFIX)) {
+    return areaId;
+  }
+
+  const normalized = areaId.slice(AREA_ID_PREFIX.length);
+  return normalized.length > 0 ? normalized : areaId;
+}
+
+function buildLoadedAreaIdMap(areas: { name: string }[]): Map<string, string> {
+  const map = new Map<string, string>();
+  const used = new Set<string>();
+
+  for (const area of areas) {
+    const normalized = normalizeLoadedAreaId(area.name);
+    const nextAreaId =
+      normalized.length > 0 && !used.has(normalized) ? normalized : area.name;
+
+    map.set(area.name, nextAreaId);
+    used.add(nextAreaId);
+  }
+
+  return map;
+}
+
+function mapLoadedAreaReference(
+  areaId: string,
+  areaIdMap: Map<string, string>,
+  mappedAreaIds: Set<string>
+): string | undefined {
+  const mapped = areaIdMap.get(areaId);
+  if (mapped !== undefined) {
+    return mapped;
+  }
+
+  const normalized = normalizeLoadedAreaId(areaId);
+  if (mappedAreaIds.has(normalized)) {
+    return normalized;
+  }
+
+  return undefined;
+}
+
 async function loadPathConfigCommand(): Promise<unknown> {
   return invoke("load_path_config_command", {});
 }
@@ -183,16 +232,28 @@ function mapProjectBaseData(text: string): Omit<LoadedProjectData, "vehicles" | 
     vertexes.set(vertex.name, new Vector2d(vertex.x, vertex.z));
   }
 
+  const areaIdMap = buildLoadedAreaIdMap(dto.areas);
+  const mappedAreaIds = new Set(areaIdMap.values());
+
   const areas = new Map<string, AreaPolygon>();
   for (const area of dto.areas) {
+    const areaId = areaIdMap.get(area.name);
+    if (areaId === undefined) {
+      continue;
+    }
+
+    const mappedUparea = area.uparea
+      .map((upareaId) => mapLoadedAreaReference(upareaId, areaIdMap, mappedAreaIds))
+      .filter((upareaId): upareaId is string => upareaId !== undefined);
+
     areas.set(
-      area.name,
+      areaId,
       new AreaPolygon(
         [...area.vertexes],
         area.leftVertexInnerId || 0,
         AxleMode.modeFromStr(area.axleMode),
         area.callback || "",
-        [...area.uparea]
+        mappedUparea
       )
     );
   }
@@ -204,9 +265,14 @@ function mapProjectBaseData(text: string): Omit<LoadedProjectData, "vehicles" | 
 
   const nttracks = new Map<string, NtracsTrack>();
   for (const track of dto.tracks) {
+    const mappedTrackAreas = track.areas
+      .map((area) => mapLoadedAreaReference(area.name, areaIdMap, mappedAreaIds))
+      .filter((areaId): areaId is string => areaId !== undefined)
+      .map((areaId) => new AreaCollection(areaId));
+
     nttracks.set(
       track.name,
-      new NtracsTrack(track.areas.map((area) => new AreaCollection(area.name)))
+      new NtracsTrack(mappedTrackAreas)
     );
   }
 
@@ -323,4 +389,8 @@ export async function saveProject(data: ProjectEncodeInput): Promise<ProjectEnco
   const saveValue = JSON.stringify(encodeProject(cleaned));
   await saveFileCommand(saveValue);
   return cleaned;
+}
+
+export function renumberAreaIds(data: ProjectEncodeInput): ProjectEncodeInput {
+  return renumberProjectAreaIds(data);
 }

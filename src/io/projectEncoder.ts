@@ -33,23 +33,11 @@ function clamp(value: number, min: number, max: number): number {
   return Math.min(Math.max(value, min), max);
 }
 
-export function cleanupProjectForSave(input: ProjectEncodeInput): ProjectEncodeInput {
-  const vertexIdMap = new Map<string, string>();
-  const nextVertexes = new Map<string, Vector2d>();
-  for (const [vertexId, vertex] of input.vertexes.entries()) {
-    const nextVertexId = String(vertexIdMap.size);
-    vertexIdMap.set(vertexId, nextVertexId);
-    nextVertexes.set(
-      nextVertexId,
-      new Vector2d(normalizeCoordinate(vertex.x), normalizeCoordinate(vertex.z))
-    );
-  }
-
-  const areaIdMap = new Map<string, string>();
-  for (const areaId of input.areas.keys()) {
-    areaIdMap.set(areaId, String(areaIdMap.size));
-  }
-
+function remapAreasAndTracks(
+  input: ProjectEncodeInput,
+  areaIdMap: Map<string, string>,
+  mapVertexes: (vertexes: string[]) => string[]
+): Pick<ProjectEncodeInput, "areas" | "nttracks"> {
   const nextAreas = new Map<string, AreaPolygon>();
   for (const [areaId, area] of input.areas.entries()) {
     const nextAreaId = areaIdMap.get(areaId);
@@ -57,10 +45,7 @@ export function cleanupProjectForSave(input: ProjectEncodeInput): ProjectEncodeI
       continue;
     }
 
-    const mappedVertexes = area.vertexes
-      .map((vertexId) => vertexIdMap.get(vertexId))
-      .filter((vertexId): vertexId is string => vertexId !== undefined);
-
+    const mappedVertexes = mapVertexes(area.vertexes);
     const leftVertexInnerId =
       mappedVertexes.length === 0
         ? 0
@@ -93,6 +78,38 @@ export function cleanupProjectForSave(input: ProjectEncodeInput): ProjectEncodeI
   }
 
   return {
+    areas: nextAreas,
+    nttracks: nextTracks,
+  };
+}
+
+export function cleanupProjectForSave(input: ProjectEncodeInput): ProjectEncodeInput {
+  const vertexIdMap = new Map<string, string>();
+  const nextVertexes = new Map<string, Vector2d>();
+  for (const [vertexId, vertex] of input.vertexes.entries()) {
+    const nextVertexId = String(vertexIdMap.size);
+    vertexIdMap.set(vertexId, nextVertexId);
+    nextVertexes.set(
+      nextVertexId,
+      new Vector2d(normalizeCoordinate(vertex.x), normalizeCoordinate(vertex.z))
+    );
+  }
+
+  const areaIdMap = new Map<string, string>();
+  for (const areaId of input.areas.keys()) {
+    areaIdMap.set(areaId, areaId);
+  }
+
+  const { areas: nextAreas, nttracks: nextTracks } = remapAreasAndTracks(
+    input,
+    areaIdMap,
+    (vertexes) =>
+      vertexes
+        .map((vertexId) => vertexIdMap.get(vertexId))
+        .filter((vertexId): vertexId is string => vertexId !== undefined)
+  );
+
+  return {
     vertexes: nextVertexes,
     areas: nextAreas,
     addons: [...input.addons],
@@ -102,6 +119,28 @@ export function cleanupProjectForSave(input: ProjectEncodeInput): ProjectEncodeI
       normalizeCoordinate(input.origin.x),
       normalizeCoordinate(input.origin.z)
     ),
+  };
+}
+
+export function renumberProjectAreaIds(input: ProjectEncodeInput): ProjectEncodeInput {
+  const areaIdMap = new Map<string, string>();
+  for (const areaId of input.areas.keys()) {
+    areaIdMap.set(areaId, String(areaIdMap.size));
+  }
+
+  const { areas: nextAreas, nttracks: nextTracks } = remapAreasAndTracks(
+    input,
+    areaIdMap,
+    (vertexes) => [...vertexes]
+  );
+
+  return {
+    vertexes: new Map(input.vertexes),
+    areas: nextAreas,
+    addons: [...input.addons],
+    tileAssign: new Map(input.tileAssign),
+    nttracks: nextTracks,
+    origin: new Vector2d(input.origin.x, input.origin.z),
   };
 }
 
