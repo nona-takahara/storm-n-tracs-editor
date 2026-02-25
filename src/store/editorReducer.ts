@@ -36,6 +36,7 @@ export type EditorAction =
   | { type: "set-selected-track"; payload: { trackId: string | undefined } }
   | { type: "set-track-chain-select-enabled"; payload: { enabled: boolean } }
   | { type: "set-preview-area"; payload: { areaId: string | undefined } }
+  | { type: "set-preview-track"; payload: { trackId: string | undefined } }
   | { type: "send-mode-event"; payload: { event: EditModeEvent } }
   | { type: "create-area" }
   | { type: "insert-vertex-between"; payload: { index: number } }
@@ -337,6 +338,7 @@ export function editorReducer(state: EditorState, action: EditorAction): EditorS
       draft.selectedTrack = undefined;
       draft.trackChainSelectEnabled = false;
       draft.previewAreaId = undefined;
+      draft.previewTrackId = undefined;
       draft.editMode = EditMode.EditArea;
       return;
     }
@@ -361,6 +363,7 @@ export function editorReducer(state: EditorState, action: EditorAction): EditorS
         trackId === undefined || draft.nttracks.has(trackId)
           ? trackId
           : draft.selectedTrack;
+      draft.previewTrackId = undefined;
       if (!draft.selectedTrack) {
         draft.trackChainSelectEnabled = false;
       }
@@ -380,9 +383,22 @@ export function editorReducer(state: EditorState, action: EditorAction): EditorS
       return;
     }
 
+    if (action.type === "set-preview-track") {
+      const trackId = action.payload.trackId;
+      draft.previewTrackId =
+        trackId === undefined || draft.nttracks.has(trackId)
+          ? trackId
+          : draft.previewTrackId;
+      return;
+    }
+
     if (action.type === "send-mode-event") {
       applyModeEvent(draft, action.payload.event);
       draft.previewAreaId = undefined;
+      draft.previewTrackId = undefined;
+      if (action.payload.event === "OPEN_TRACK_EDITOR") {
+        draft.selectedTrack = undefined;
+      }
       if (
         action.payload.event === "OPEN_TRACK_EDITOR" ||
         draft.editMode !== EditMode.EditTrack
@@ -551,6 +567,7 @@ export function editorReducer(state: EditorState, action: EditorAction): EditorS
         draft.nttracks.set(trackId, createEmptyTrack());
       }
       draft.selectedTrack = trackId;
+      draft.previewTrackId = undefined;
       return;
     }
 
@@ -561,6 +578,7 @@ export function editorReducer(state: EditorState, action: EditorAction): EditorS
       draft.nttracks.delete(draft.selectedTrack);
       draft.selectedTrack = undefined;
       draft.trackChainSelectEnabled = false;
+      draft.previewTrackId = undefined;
       return;
     }
 

@@ -15,6 +15,7 @@ interface AreaPolygonsViewProps {
   selectedArea: string | undefined;
   selectedTrack: string | undefined;
   previewAreaId: string | undefined;
+  previewTrackId: string | undefined;
 }
 
 interface AreaCenterPoint {
@@ -111,6 +112,9 @@ function drawDirectionalArrow(
 function AreaPolygonsView(props: AreaPolygonsViewProps) {
   const selectedTrackInEditMode =
     props.editMode === EditMode.EditTrack ? props.selectedTrack : undefined;
+  const previewTrackInEditMode =
+    props.editMode === EditMode.EditTrack ? props.previewTrackId : undefined;
+  const highlightedTrackInEditMode = previewTrackInEditMode ?? selectedTrackInEditMode;
   const shouldBlinkPreview = props.previewAreaId !== undefined;
   const [previewBlinkOn, setPreviewBlinkOn] = useState(true);
 
@@ -144,26 +148,26 @@ function AreaPolygonsView(props: AreaPolygonsViewProps) {
       g.lineStyle(0.2, 0x0000ff, 1);
       props.areas.forEach((area, key) => {
         const isPreviewArea = key === props.previewAreaId;
-        const inSelectedTrack =
-          selectedTrackInEditMode !== undefined &&
+        const inHighlightedTrack =
+          highlightedTrackInEditMode !== undefined &&
           props.tracks
-            .get(selectedTrackInEditMode)
+            .get(highlightedTrackInEditMode)
             ?.areas.some((entry) => entry.areaName === key);
 
         if (isPreviewArea && previewBlinkOn) {
           g.beginFill(0x400000, 0.2);
-        } else if (key === props.selectedArea) {
+        } else if (key === props.selectedArea && props.editMode !== EditMode.EditTrack) {
           const p = props.vertexes.get(area.vertexes[area.leftVertexInnerId]);
           if (p) {
             g.lineStyle(1, 0x0000ff, 0.7);
             g.drawCircle(p.x, -p.z, 1.5);
           }
-          if (inSelectedTrack) {
+          if (inHighlightedTrack) {
             g.beginFill(0xa0ffa0, 0.2);
           } else {
             g.beginFill(0x8080ff, 0.2);
           }
-        } else if (inSelectedTrack) {
+        } else if (inHighlightedTrack) {
           g.beginFill(0x00c000, 0.3);
         } else {
           g.beginFill(0x0000ff, 0.3);
@@ -251,9 +255,11 @@ function AreaPolygonsView(props: AreaPolygonsViewProps) {
       props.editMode,
       props.nearestIndex,
       props.previewAreaId,
+      props.previewTrackId,
       props.selectedArea,
       props.tracks,
       props.vertexes,
+      highlightedTrackInEditMode,
       previewBlinkOn,
       selectedTrackInEditMode,
     ]

@@ -139,7 +139,7 @@ function EditTrack() {
   const [trackBrowserOpen, setTrackBrowserOpen] = useState(
     selectedTrack === undefined
   );
-  const [clearAlertOpen, setClearAlertOpen] = useState(false);
+  const [deleteAlertOpen, setDeleteAlertOpen] = useState(false);
 
   const selectedTrackAreas = selectedTrack
     ? tracks.get(selectedTrack)?.areas ?? []
@@ -189,6 +189,7 @@ function EditTrack() {
       return;
     }
     commands.createTrack(trackId);
+    commands.setPreviewTrack(undefined);
     setNewTrackId("");
     setTrackSearchQuery("");
     setTrackBrowserOpen(false);
@@ -219,12 +220,14 @@ function EditTrack() {
   useEffect(() => {
     if (!selectedTrack) {
       commands.setPreviewArea(undefined);
+      commands.setPreviewTrack(undefined);
     }
   }, [commands, selectedTrack]);
 
   useEffect(() => {
     return () => {
       commands.setPreviewArea(undefined);
+      commands.setPreviewTrack(undefined);
     };
   }, [commands]);
 
@@ -236,6 +239,9 @@ function EditTrack() {
             small={true}
             icon={trackBrowserOpen ? "chevron-up" : "chevron-down"}
             onClick={() => {
+              if (trackBrowserOpen) {
+                commands.setPreviewTrack(undefined);
+              }
               setTrackBrowserOpen((open) => !open);
             }}
           >
@@ -314,8 +320,23 @@ function EditTrack() {
                       alignText="left"
                       intent={isSelected ? Intent.PRIMARY : undefined}
                       minimal={!isSelected}
+                      onMouseEnter={() => {
+                        commands.setPreviewArea(undefined);
+                        commands.setPreviewTrack(trackId);
+                      }}
+                      onMouseLeave={() => {
+                        commands.setPreviewTrack(undefined);
+                      }}
+                      onFocus={() => {
+                        commands.setPreviewArea(undefined);
+                        commands.setPreviewTrack(trackId);
+                      }}
+                      onBlur={() => {
+                        commands.setPreviewTrack(undefined);
+                      }}
                       onClick={() => {
                         commands.setSelectedTrack(trackId);
+                        commands.setPreviewTrack(undefined);
                         setTrackBrowserOpen(false);
                       }}
                       text={`${trackId} (${areaCount})`}
@@ -348,16 +369,16 @@ function EditTrack() {
       {selectedTrack && (
         <ButtonGroup style={{ marginBottom: "8px" }}>
           <Button
-            onClick={commands.deleteSelectedTrack}
+            onClick={() => {
+              setDeleteAlertOpen(true);
+            }}
             icon={<Trash />}
             intent={Intent.DANGER}
           >
             Delete Track
           </Button>
           <Button
-            onClick={() => {
-              setClearAlertOpen(true);
-            }}
+            onClick={commands.clearSelectedTrack}
             icon={<Clean />}
             intent={Intent.WARNING}
           >
@@ -415,22 +436,23 @@ function EditTrack() {
 
       <Alert
         cancelButtonText="Cancel"
-        confirmButtonText="Clear"
-        icon={<Clean />}
-        intent={Intent.WARNING}
-        isOpen={clearAlertOpen}
+        confirmButtonText="Delete"
+        icon={<Trash />}
+        intent={Intent.DANGER}
+        isOpen={deleteAlertOpen}
         onCancel={() => {
-          setClearAlertOpen(false);
+          setDeleteAlertOpen(false);
         }}
         onClose={() => {
-          setClearAlertOpen(false);
+          setDeleteAlertOpen(false);
         }}
         onConfirm={() => {
-          commands.clearSelectedTrack();
-          setClearAlertOpen(false);
+          commands.deleteSelectedTrack();
+          commands.setPreviewTrack(undefined);
+          setDeleteAlertOpen(false);
         }}
       >
-        <p>Clear all areas from the selected track?</p>
+        <p>Delete the selected track?</p>
       </Alert>
     </div>
   );

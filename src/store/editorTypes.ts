@@ -23,6 +23,7 @@ export interface EditorState extends LoadedProjectData {
   selectedTrack: string | undefined;
   trackChainSelectEnabled: boolean;
   previewAreaId: string | undefined;
+  previewTrackId: string | undefined;
   editMode: EditMode.EditMode;
 }
 
@@ -41,6 +42,7 @@ export function createInitialEditorState(): EditorState {
     selectedTrack: undefined,
     trackChainSelectEnabled: false,
     previewAreaId: undefined,
+    previewTrackId: undefined,
     editMode: EditMode.EditArea,
   };
 }

@@ -12,6 +12,7 @@ interface EditorCommands {
   setSelectedTrack: (trackId: string | undefined) => void;
   setTrackChainSelectEnabled: (enabled: boolean) => void;
   setPreviewArea: (areaId: string | undefined) => void;
+  setPreviewTrack: (trackId: string | undefined) => void;
   createArea: () => void;
   insertVertexBetween: (index: number) => void;
   removeVertexFromSelectedArea: (index: number) => void;
@@ -90,6 +91,11 @@ function createEditorStore(initialState = createInitialEditorState()): EditorSto
       createDispatchAction(dispatch, {
         type: "set-preview-area",
         payload: { areaId },
+      }),
+    setPreviewTrack: (trackId) =>
+      createDispatchAction(dispatch, {
+        type: "set-preview-track",
+        payload: { trackId },
       }),
     createArea: () => createDispatchAction(dispatch, { type: "create-area" }),
     insertVertexBetween: (index) =>
