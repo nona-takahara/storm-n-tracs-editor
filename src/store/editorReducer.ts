@@ -31,6 +31,7 @@ import { EditorState, LoadedProjectData } from "./editorTypes";
 
 export type EditorAction =
   | { type: "hydrate-project"; payload: LoadedProjectData }
+  | { type: "set-project-origin"; payload: { x: number; z: number } }
   | { type: "set-nearest-vertex"; payload: { vertexId: string | undefined } }
   | { type: "set-selected-area"; payload: { areaId: string | undefined } }
   | { type: "set-selected-track"; payload: { trackId: string | undefined } }
@@ -64,7 +65,7 @@ export type EditorAction =
   | { type: "stage-secondary-down" }
   | { type: "stage-primary-up"; payload: { ctrlKey: boolean } };
 
-// 編集モードの遷移処理を一箇所に集約する。
+// 鬩搾ｽｱ繝ｻ・ｨ鬯ｮ・ｮ郢晢ｽｻ・守坩・ｹ譎｢・ｽ・ｼ驛｢譎擾ｽｳ・ｨ郢晢ｽｻ鬯ｩ蛹・ｽｽ・ｷ鬩募∞・ｽ・ｻ髯ｷ繝ｻ・ｽ・ｦ鬨ｾ繝ｻ繝ｻ繝ｻ螳壼初・つ鬩阪ｅ繝ｻ陜ｨ蝣､・ｸ・ｺ繝ｻ・ｫ鬯ｮ・ｮ郢晢ｽｻ繝ｻ・ｴ郢晢ｽｻ隨倥・・ｹ・ｧ闕ｵ謨鳴郢晢ｽｻ
 function applyModeEvent(
   draft: Draft<EditorState>,
   event: EditModeEvent
@@ -72,7 +73,7 @@ function applyModeEvent(
   draft.editMode = transitionEditMode(draft.editMode, event);
 }
 
-// 選択中トラックへ areaId を末尾追加する。重複や不整合は無視する。
+// 鬯ｩ蛹・ｽｽ・ｸ髫ｰ螢ｽ・ｨ雋ｻ・ｽ・ｸ繝ｻ・ｭ驛｢譎冗樟・主ｸｷ・ｹ譏ｴ繝ｻ邵ｺ驢搾ｽｸ・ｺ繝ｻ・ｸ areaId 驛｢・ｧ陷ｻ莠･・ｿ・ｰ髯昴・・ｽ・ｾ鬮ｴ謇假ｽｽ・ｽ髯ｷ莨夲ｽ｣・ｰ驍ｵ・ｺ陷ｷ・ｶ繝ｻ迢暦ｽｸ・ｲ郢ｧ荵晁｣滄ｫｫ髦ｪ繝ｻ繝ｻ繝ｻ蜿蛾密・ｴ驍丞ｹ・・陋ｹ・ｻ郢晢ｽｻ髴取ｻゑｽｽ・｡鬮ｫ蠅薙§隨倥・・ｹ・ｧ闕ｵ謨鳴郢晢ｽｻ
 function appendAreaToSelectedTrackById(
   draft: Draft<EditorState>,
   areaId: string
@@ -96,7 +97,7 @@ function appendAreaToSelectedTrackById(
   );
 }
 
-// 現在の選択が有効な場合のみ Area を返す。
+// 髴托ｽｴ繝ｻ・ｾ髯懶ｽｨ繝ｻ・ｨ驍ｵ・ｺ繝ｻ・ｮ鬯ｩ蛹・ｽｽ・ｸ髫ｰ螢ｽ・ｧ・ｭ遯ｶ・ｲ髫ｴ蟶ｷ逕･隴滄・・ｸ・ｺ繝ｻ・ｪ髯懶ｽ｣繝ｻ・ｴ髯ｷ・ｷ陋ｹ・ｻ郢晢ｽｻ驍ｵ・ｺ繝ｻ・ｿ Area 驛｢・ｧ陞ｳ螟ｲ・ｽ・ｿ隴∫ｵｶ繝ｻ驍ｵ・ｲ郢晢ｽｻ
 function getSelectedArea(draft: Draft<EditorState>): AreaPolygon | undefined {
   if (!draft.selectedArea) {
     return undefined;
@@ -104,7 +105,7 @@ function getSelectedArea(draft: Draft<EditorState>): AreaPolygon | undefined {
   return draft.areas.get(draft.selectedArea);
 }
 
-// エリア追加中に新規頂点を作成し、選択中エリアの末尾に追加する。
+// 驛｢・ｧ繝ｻ・ｨ驛｢譎｢・ｽ・ｪ驛｢・ｧ繝ｻ・｢鬮ｴ謇假ｽｽ・ｽ髯ｷ莨夲ｽ｣・ｰ髣包ｽｳ繝ｻ・ｭ驍ｵ・ｺ繝ｻ・ｫ髫ｴ繝ｻ・ｽ・ｰ鬮ｫ蜍滓ｲ√・・ｰ郢ｧ蟲ｨ笳矩Δ・ｧ陷代・・ｽ・ｽ隲帛現繝ｻ驍ｵ・ｺ陷会ｽｱ・つ郢晢ｽｻ遶城メ・ｬ螢ｽ・ｨ雋ｻ・ｽ・ｸ繝ｻ・ｭ驛｢・ｧ繝ｻ・ｨ驛｢譎｢・ｽ・ｪ驛｢・ｧ繝ｻ・｢驍ｵ・ｺ繝ｻ・ｮ髫ｴ蟷｢・ｽ・ｫ髯昴・・ｽ・ｾ驍ｵ・ｺ繝ｻ・ｫ鬮ｴ謇假ｽｽ・ｽ髯ｷ莨夲ｽ｣・ｰ驍ｵ・ｺ陷ｷ・ｶ繝ｻ迢暦ｽｸ・ｲ郢晢ｽｻ
 function appendNewVertexToSelectedArea(
   draft: Draft<EditorState>,
   point: Vector2d
@@ -128,8 +129,8 @@ function appendNewVertexToSelectedArea(
   draft.nearestVertex = vertexId;
 }
 
-// 既存頂点を選択中エリアのポリゴンへ追加する。
-// 先頭頂点を再選択した場合はポリゴンを閉じて追加モードを終了する。
+// 髫ｴ魃会ｽｽ・｢髯昴・ﾂ・ｬ繝ｻ・ｰ郢ｧ蟲ｨ笳矩Δ・ｧ陝ｶ譏ｶ繝ｻ髫ｰ螢ｽ・ｨ雋ｻ・ｽ・ｸ繝ｻ・ｭ驛｢・ｧ繝ｻ・ｨ驛｢譎｢・ｽ・ｪ驛｢・ｧ繝ｻ・｢驍ｵ・ｺ繝ｻ・ｮ驛｢譎・ｺ｢・取㏍・ｹ・ｧ繝ｻ・ｴ驛｢譎｢・ｽ・ｳ驍ｵ・ｺ繝ｻ・ｸ鬮ｴ謇假ｽｽ・ｽ髯ｷ莨夲ｽ｣・ｰ驍ｵ・ｺ陷ｷ・ｶ繝ｻ迢暦ｽｸ・ｲ郢晢ｽｻ
+// 髯ｷ閧ｲ・｣・ｯ繝ｻ・ｰ繝ｻ・ｭ鬯ｯ繝ｻ・臥ｸｺ蟶ｷ・ｹ・ｧ髮区ｧｭ繝ｻ鬯ｩ蛹・ｽｽ・ｸ髫ｰ螢ｽ・ｧ・ｭ繝ｻ・ｰ驍ｵ・ｺ雋・ｽｷ繝ｻ・ｰ繝ｻ・ｴ髯ｷ・ｷ陋ｹ・ｻ郢晢ｽｻ驛｢譎・ｺ｢・取㏍・ｹ・ｧ繝ｻ・ｴ驛｢譎｢・ｽ・ｳ驛｢・ｧ陝ｶ譎城匕驍ｵ・ｺ陋滂ｽ･遯ｶ・ｻ鬮ｴ謇假ｽｽ・ｽ髯ｷ莨夲ｽ｣・ｰ驛｢譎｢・ｽ・｢驛｢譎｢・ｽ・ｼ驛｢譎擾ｽｳ・ｨ繝ｻ蟶昴♀郢ｧ繝ｻ・ｽ・ｺ郢晢ｽｻ隨倥・・ｹ・ｧ闕ｵ謨鳴郢晢ｽｻ
 function appendExistingVertexToSelectedArea(
   draft: Draft<EditorState>,
   vertexId: string
@@ -155,7 +156,7 @@ function appendExistingVertexToSelectedArea(
   );
 }
 
-// 現在選択中エリアの頂点を指していない場合のみ、座標からエリア選択を更新する。
+// 髴托ｽｴ繝ｻ・ｾ髯懶ｽｨ繝ｻ・ｨ鬯ｩ蛹・ｽｽ・ｸ髫ｰ螢ｽ・ｨ雋ｻ・ｽ・ｸ繝ｻ・ｭ驛｢・ｧ繝ｻ・ｨ驛｢譎｢・ｽ・ｪ驛｢・ｧ繝ｻ・｢驍ｵ・ｺ繝ｻ・ｮ鬯ｯ繝ｻ・臥ｸｺ蟶ｷ・ｹ・ｧ陷ｻ蝓滂ｽｬ・ｰ驍ｵ・ｺ陷会ｽｱ遯ｶ・ｻ驍ｵ・ｺ郢晢ｽｻ遶企・・ｸ・ｺ郢晢ｽｻ繝ｻ・ｰ繝ｻ・ｴ髯ｷ・ｷ陋ｹ・ｻ郢晢ｽｻ驍ｵ・ｺ繝ｻ・ｿ驍ｵ・ｲ遶乗劼・ｽ・ｺ繝ｻ・ｧ髫ｶ轣倡函・ゑｽｰ驛｢・ｧ陝ｲ・ｨ邵ｺ鬘費ｽｹ譎｢・ｽ・ｪ驛｢・ｧ繝ｻ・｢鬯ｩ蛹・ｽｽ・ｸ髫ｰ螢ｽ・ｧ・ｭ繝ｻ螳夲ｽｭ蜴・ｽｽ・ｴ髫ｴ繝ｻ・ｽ・ｰ驍ｵ・ｺ陷ｷ・ｶ繝ｻ迢暦ｽｸ・ｲ郢晢ｽｻ
 function selectAreaFromPoint(
   draft: Draft<EditorState>,
   point: Vector2d
@@ -180,7 +181,7 @@ function selectAreaFromPoint(
   }
 }
 
-// 最寄り頂点を 0.1 単位でスナップさせながら移動する。
+// 髫ｴ蟠｢ﾂ髯昴・繝ｻ繝ｻ莨・ｽｬ繝ｻ・臥ｸｺ蟶ｷ・ｹ・ｧ郢晢ｽｻ0.1 髯ｷ髮・繝ｻ・ｽ・ｽ鬮ｦ・ｪ邵ｲ蝣､・ｹ・ｧ繝ｻ・ｹ驛｢譎会ｽｿ・ｫ郢晢ｽ｣驛｢譎丞ｹｲ繝ｻ繝ｻ・ｸ・ｺ陝ｶ蜷ｮ繝ｻ驍ｵ・ｺ陟暮ｯ会ｽｽ陋ｾﾂｧ繝ｻ・ｻ髯ｷ蟠趣ｽｼ謚ｫ繝ｻ驛｢・ｧ闕ｵ謨鳴郢晢ｽｻ
 function moveNearestVertex(
   draft: Draft<EditorState>,
   point: Vector2d
@@ -196,7 +197,7 @@ function moveNearestVertex(
   );
 }
 
-// 最寄り頂点を近傍頂点へマージし、参照先を全エリアで置換してから元頂点を削除する。
+// 髫ｴ蟠｢ﾂ髯昴・繝ｻ繝ｻ莨・ｽｬ繝ｻ・臥ｸｺ蟶ｷ・ｹ・ｧ陞ｳ螟ｲ・ｽ・ｿ陞滂ｽｧ繝ｻ蝓ｼ・ｬ繝ｻ・臥ｸｺ蟶ｷ・ｸ・ｺ繝ｻ・ｸ驛｢譎・ｽｧ・ｭ郢晢ｽｻ驛｢・ｧ繝ｻ・ｸ驍ｵ・ｺ陷会ｽｱ・つ遶乗刮蟠滄恷・｣繝ｻ・ｧ髯ｷ莠･迴ｾ繝ｻ螳壽ｦ繝ｻ・ｨ驛｢・ｧ繝ｻ・ｨ驛｢譎｢・ｽ・ｪ驛｢・ｧ繝ｻ・｢驍ｵ・ｺ繝ｻ・ｧ鬩励ｑ・ｽ・ｮ髫ｰ・ｰ陝ｶ蜻ｻ・ｼ・ｰ驍ｵ・ｺ繝ｻ・ｦ驍ｵ・ｺ闕ｵ譎｢・ｽ闃ｽ諤ｦ郢晢ｽｻ繝ｻ・ｰ郢ｧ蟲ｨ笳矩Δ・ｧ髮区ｨ抵ｽ朱ｬｮ・ｯ繝ｻ・､驍ｵ・ｺ陷ｷ・ｶ繝ｻ迢暦ｽｸ・ｲ郢晢ｽｻ
 function mergeNearestVertex(draft: Draft<EditorState>): void {
   const sourceVertex = draft.nearestVertex;
   if (!sourceVertex) {
@@ -226,7 +227,7 @@ function mergeNearestVertex(draft: Draft<EditorState>): void {
   draft.vertexes.delete(sourceVertex);
 }
 
-// モードごとの primary click 解決結果を受け取り、実処理へ振り分ける。
+// 驛｢譎｢・ｽ・｢驛｢譎｢・ｽ・ｼ驛｢譎擾ｽｳ・ｨ繝ｻ繝ｻ・ｸ・ｺ繝ｻ・ｨ驍ｵ・ｺ繝ｻ・ｮ primary click 鬮ｫ證ｦ・ｽ・｣髮手ｶ｣・ｽ・ｺ鬩搾ｽｨ陷亥沺・｣・｡驛｢・ｧ髮区ｧｫ・･・ｳ驍ｵ・ｺ陞滂ｽｧ陷ｿ蜥擾ｽｹ・ｧ驗呻ｽｫ・つ遶乗劼・ｽ・ｮ雋・ｽｷ郢晢ｽｻ鬨ｾ繝ｻ繝ｻ遶城メ・ｬ蜴・ｽｽ・ｯ驛｢・ｧ鬮ｮ竏壹・驍ｵ・ｺ闔会ｽ｣繝ｻ迢暦ｽｸ・ｲ郢晢ｽｻ
 function applyStagePrimaryDown(
   draft: Draft<EditorState>,
   point: Vector2d,
@@ -275,7 +276,7 @@ function applyStagePrimaryDown(
   }
 }
 
-// 指定エリアを参照している全トラックからそのエリアを除去する。
+// 髫ｰ謔ｶ繝ｻ繝ｻ・ｮ陞｢・ｹ邵ｺ鬘費ｽｹ譎｢・ｽ・ｪ驛｢・ｧ繝ｻ・｢驛｢・ｧ髮区ｨ貞ｴ滄恷・｣繝ｻ・ｧ驍ｵ・ｺ陷会ｽｱ遯ｶ・ｻ驍ｵ・ｺ郢晢ｽｻ繝ｻ邇匁ｦ繝ｻ・ｨ驛｢譎冗樟・主ｸｷ・ｹ譏ｴ繝ｻ邵ｺ驢搾ｽｸ・ｺ闕ｵ譎｢・ｽ閾･・ｸ・ｺ隴擾ｽｴ郢晢ｽｻ驛｢・ｧ繝ｻ・ｨ驛｢譎｢・ｽ・ｪ驛｢・ｧ繝ｻ・｢驛｢・ｧ陝ｶ譎乗ｱる匚・ｴ繝ｻ・ｻ驍ｵ・ｺ陷ｷ・ｶ繝ｻ迢暦ｽｸ・ｲ郢晢ｽｻ
 function removeAreaFromTracks(
   nttracks: Draft<Map<string, NtracsTrack>>,
   areaId: string
@@ -288,7 +289,7 @@ function removeAreaFromTracks(
   });
 }
 
-// エリア削除時に、他エリアの uparea 参照からも同エリアを除去する。
+// 驛｢・ｧ繝ｻ・ｨ驛｢譎｢・ｽ・ｪ驛｢・ｧ繝ｻ・｢髯ｷ蜿ｰ・ｼ竏晄ｱる垓蠑ｱ・・ｫ企豪・ｸ・ｲ遶擾ｽｽ繝ｻ・ｻ隰費ｽｶ邵ｺ鬘費ｽｹ譎｢・ｽ・ｪ驛｢・ｧ繝ｻ・｢驍ｵ・ｺ繝ｻ・ｮ uparea 髯ｷ・ｿ郢ｧ蟲ｨ繝ｻ驍ｵ・ｺ闕ｵ譎｢・ｽ閾･・ｹ・ｧ郢ｧ繝ｻ繝ｻ驛｢・ｧ繝ｻ・ｨ驛｢譎｢・ｽ・ｪ驛｢・ｧ繝ｻ・｢驛｢・ｧ陝ｶ譎乗ｱる匚・ｴ繝ｻ・ｻ驍ｵ・ｺ陷ｷ・ｶ繝ｻ迢暦ｽｸ・ｲ郢晢ｽｻ
 function removeAreaFromUpareaLinks(
   areas: Draft<Map<string, AreaPolygon>>,
   areaId: string
@@ -308,13 +309,14 @@ function removeAreaFromUpareaLinks(
   });
 }
 
-// 読み込みデータの参照を切り離すため、コレクションを複製して返す。
+// 鬮ｫ・ｱ繝ｻ・ｭ驍ｵ・ｺ繝ｻ・ｿ鬮ｴ雜｣・ｽ・ｼ驍ｵ・ｺ繝ｻ・ｿ驛｢譏ｴ繝ｻ郢晢ｽｻ驛｢・ｧ繝ｻ・ｿ驍ｵ・ｺ繝ｻ・ｮ髯ｷ・ｿ郢ｧ蟲ｨ繝ｻ驛｢・ｧ髮区ｧｭ繝ｻ驛｢・ｧ闔ｨ竏晢ｽｱ・ｬ驍ｵ・ｺ陷ｷ・ｶ隨ｳ繝ｻ・ｹ・ｧ遶丞仰遶丞｣ｹ・・Δ譎｢・ｽ・ｬ驛｢・ｧ繝ｻ・ｯ驛｢・ｧ繝ｻ・ｷ驛｢譎｢・ｽ・ｧ驛｢譎｢・ｽ・ｳ驛｢・ｧ陞ｳ螟ｲ・ｽ・､郢晢ｽｻ繝ｻ・｣繝ｻ・ｽ驍ｵ・ｺ陷会ｽｱ遯ｶ・ｻ鬮ｴ隨ｬ魍堤ｬ倥・・ｸ・ｲ郢晢ｽｻ
 function cloneLoadedData(payload: LoadedProjectData): LoadedProjectData {
   return {
     vertexes: new Map(payload.vertexes),
     areas: new Map(payload.areas),
     tileAssign: new Map(payload.tileAssign),
     addonList: [...payload.addonList],
+    origin: new Vector2d(payload.origin.x, payload.origin.z),
     vehicles: [...payload.vehicles],
     swtracks: [...payload.swtracks],
     nttracks: new Map(payload.nttracks),
@@ -323,13 +325,14 @@ function cloneLoadedData(payload: LoadedProjectData): LoadedProjectData {
 
 export function editorReducer(state: EditorState, action: EditorAction): EditorState {
   return produce(state, (draft) => {
-    // プロジェクト読み込み時の初期化・リセット処理。
+    // 驛｢譎丞ｹｲ・取ｺｽ・ｹ・ｧ繝ｻ・ｸ驛｢・ｧ繝ｻ・ｧ驛｢・ｧ繝ｻ・ｯ驛｢譎槭Γ繝ｻ・ｪ繝ｻ・ｭ驍ｵ・ｺ繝ｻ・ｿ鬮ｴ雜｣・ｽ・ｼ驍ｵ・ｺ繝ｻ・ｿ髫ｴ蠑ｱ・・ｹ晢ｽｻ髯具ｽｻ隴弱・・・刹・ｹ隰費ｽｶ郢晢ｽｻ驛｢譎｢・ｽ・ｪ驛｢・ｧ繝ｻ・ｻ驛｢譏ｴ繝ｻ郢晢ｽｨ髯ｷ繝ｻ・ｽ・ｦ鬨ｾ繝ｻ繝ｻ・つ郢晢ｽｻ
     if (action.type === "hydrate-project") {
       const next = cloneLoadedData(action.payload);
       draft.vertexes = next.vertexes;
       draft.areas = next.areas;
       draft.tileAssign = next.tileAssign;
       draft.addonList = next.addonList;
+      draft.origin = next.origin;
       draft.vehicles = next.vehicles;
       draft.swtracks = next.swtracks;
       draft.nttracks = next.nttracks;
@@ -343,7 +346,12 @@ export function editorReducer(state: EditorState, action: EditorAction): EditorS
       return;
     }
 
-    // UI からの直接的な選択・モード更新。
+    if (action.type === "set-project-origin") {
+      draft.origin = new Vector2d(action.payload.x, action.payload.z);
+      return;
+    }
+
+    // UI 驍ｵ・ｺ闕ｵ譎｢・ｽ閾･・ｸ・ｺ繝ｻ・ｮ鬨ｾ・ｶ繝ｻ・ｴ髫ｰ證ｦ・ｽ・･鬨ｾ・ｧ郢晢ｽｻ遶企ｷｹ・ｩ蛹・ｽｽ・ｸ髫ｰ螢ｽ・ｧ・ｭ郢晢ｽｻ驛｢譎｢・ｽ・｢驛｢譎｢・ｽ・ｼ驛｢譎牙愛陝ｲ・ｩ髫ｴ繝ｻ・ｽ・ｰ驍ｵ・ｲ郢晢ｽｻ
     if (action.type === "set-nearest-vertex") {
       draft.nearestVertex = action.payload.vertexId;
       return;
@@ -408,7 +416,7 @@ export function editorReducer(state: EditorState, action: EditorAction): EditorS
       return;
     }
 
-    // エリア作成および頂点ジオメトリ編集。
+    // 驛｢・ｧ繝ｻ・ｨ驛｢譎｢・ｽ・ｪ驛｢・ｧ繝ｻ・｢髣厄ｽｴ隲帛現繝ｻ驍ｵ・ｺ驗呻ｽｫ繝ｻ閧ｲ・ｸ・ｺ繝ｻ・ｳ鬯ｯ繝ｻ・臥ｸｺ蟶ｷ・ｹ・ｧ繝ｻ・ｸ驛｢・ｧ繝ｻ・ｪ驛｢譎｢・ｽ・｡驛｢譎冗樟・取・縺薙・・ｨ鬯ｮ・ｮ郢晢ｽｻ・つ郢晢ｽｻ
     if (action.type === "create-area") {
       const areaId = nextAreaName(draft.areas);
       draft.areas.set(areaId, createEmptyAreaPolygon());
@@ -470,7 +478,7 @@ export function editorReducer(state: EditorState, action: EditorAction): EditorS
       return;
     }
 
-    // エリア削除とメタ情報更新。
+    // 驛｢・ｧ繝ｻ・ｨ驛｢譎｢・ｽ・ｪ驛｢・ｧ繝ｻ・｢髯ｷ蜿ｰ・ｼ竏晄ｱるし・ｺ繝ｻ・ｨ驛｢譎｢・ｽ・｡驛｢・ｧ繝ｻ・ｿ髫ｲ・ｰ郢晢ｽｻ繝ｻ・ｰ繝ｻ・ｱ髫ｴ蜴・ｽｽ・ｴ髫ｴ繝ｻ・ｽ・ｰ驍ｵ・ｲ郢晢ｽｻ
     if (action.type === "delete-selected-area") {
       const areaId = draft.selectedArea;
       if (!areaId) {
@@ -557,7 +565,7 @@ export function editorReducer(state: EditorState, action: EditorAction): EditorS
       return;
     }
 
-    // トラックの作成・削除・構成更新。
+    // 驛｢譎冗樟・主ｸｷ・ｹ譏ｴ繝ｻ邵ｺ驢搾ｽｸ・ｺ繝ｻ・ｮ髣厄ｽｴ隲帛現繝ｻ驛｢譎｢・ｽ・ｻ髯ｷ蜿ｰ・ｼ竏晄ｱるΔ譎｢・ｽ・ｻ髫ｶ雋樒私郢晢ｽｻ髫ｴ蜴・ｽｽ・ｴ髫ｴ繝ｻ・ｽ・ｰ驍ｵ・ｲ郢晢ｽｻ
     if (action.type === "create-track") {
       const trackId = action.payload.trackId.trim();
       if (!trackId) {
@@ -647,7 +655,7 @@ export function editorReducer(state: EditorState, action: EditorAction): EditorS
       return;
     }
 
-    // ステージ上のポインタイベントによるインタラクティブ編集。
+    // 驛｢・ｧ繝ｻ・ｹ驛｢譏ｴ繝ｻ郢晢ｽｻ驛｢・ｧ繝ｻ・ｸ髣包ｽｳ驗呻ｽｫ郢晢ｽｻ驛｢譎・ｺ｢邵ｺ繝ｻ・ｹ譎｢・ｽ・ｳ驛｢・ｧ繝ｻ・ｿ驛｢・ｧ繝ｻ・､驛｢譎冗函・趣ｽｦ驛｢譎冗樟遶企豪・ｹ・ｧ陋ｹ・ｻ繝ｻ迢暦ｽｹ・ｧ繝ｻ・､驛｢譎｢・ｽ・ｳ驛｢・ｧ繝ｻ・ｿ驛｢譎｢・ｽ・ｩ驛｢・ｧ繝ｻ・ｯ驛｢譏ｴ繝ｻ邵ｺ繝ｻ・ｹ譏懶ｽｹ貊ゑｽｽ・ｷ繝ｻ・ｨ鬯ｮ・ｮ郢晢ｽｻ・つ郢晢ｽｻ
     if (action.type === "stage-pointer-move") {
       if (action.payload.dragging) {
         moveNearestVertex(draft, action.payload.point);

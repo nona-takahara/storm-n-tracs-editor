@@ -10,6 +10,7 @@ export interface ProjectEncodeInput {
   addons: string[];
   tileAssign: Map<string, Vector2d>;
   nttracks: Map<string, NtracsTrack>;
+  origin: Vector2d;
 }
 
 function mapEntries<V1, V2>(
@@ -40,10 +41,7 @@ export function cleanupProjectForSave(input: ProjectEncodeInput): ProjectEncodeI
     vertexIdMap.set(vertexId, nextVertexId);
     nextVertexes.set(
       nextVertexId,
-      new Vector2d(
-        normalizeCoordinate(vertex.x),
-        normalizeCoordinate(vertex.z)
-      )
+      new Vector2d(normalizeCoordinate(vertex.x), normalizeCoordinate(vertex.z))
     );
   }
 
@@ -100,6 +98,10 @@ export function cleanupProjectForSave(input: ProjectEncodeInput): ProjectEncodeI
     addons: [...input.addons],
     tileAssign: new Map(input.tileAssign),
     nttracks: nextTracks,
+    origin: new Vector2d(
+      normalizeCoordinate(input.origin.x),
+      normalizeCoordinate(input.origin.z)
+    ),
   };
 }
 
@@ -143,5 +145,7 @@ export function encodeProject(input: ProjectEncodeInput) {
       x_offset: offset.x,
       z_offset: offset.z,
     })),
+    origin_x: input.origin.x,
+    origin_z: input.origin.z,
   };
 }
