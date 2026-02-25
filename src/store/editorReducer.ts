@@ -1,6 +1,6 @@
 import { Draft, produce } from "immer";
 import AreaPolygon from "../data/AreaPolygon";
-import NtracsTrack, { AreaCollection, TrackFlag } from "../data/NtracsTrack";
+import NtracsTrack, { AreaCollection } from "../data/NtracsTrack";
 import Vector2d from "../data/Vector2d";
 import * as EditMode from "../EditMode";
 import {
@@ -25,7 +25,7 @@ import { EditModeEvent, transitionEditMode } from "../domain/editor/editModeMach
 import {
   createEmptyTrack,
   createTrackWithAreas,
-  cycleTrackFlag,
+  moveTrackAreaEntry,
 } from "../domain/editor/trackCommands";
 import { EditorState, LoadedProjectData } from "./editorTypes";
 
@@ -34,6 +34,8 @@ export type EditorAction =
   | { type: "set-nearest-vertex"; payload: { vertexId: string | undefined } }
   | { type: "set-selected-area"; payload: { areaId: string | undefined } }
   | { type: "set-selected-track"; payload: { trackId: string | undefined } }
+  | { type: "set-track-chain-select-enabled"; payload: { enabled: boolean } }
+  | { type: "set-preview-area"; payload: { areaId: string | undefined } }
   | { type: "send-mode-event"; payload: { event: EditModeEvent } }
   | { type: "create-area" }
   | { type: "insert-vertex-between"; payload: { index: number } }
@@ -46,9 +48,10 @@ export type EditorAction =
   | { type: "create-track"; payload: { trackId: string } }
   | { type: "delete-selected-track" }
   | { type: "add-selected-area-to-track" }
+  | { type: "append-area-to-selected-track-by-id"; payload: { areaId: string } }
   | { type: "clear-selected-track" }
-  | { type: "cycle-track-flag"; payload: { index: number } }
   | { type: "remove-track-area"; payload: { index: number } }
+  | { type: "move-track-area"; payload: { fromIndex: number; toIndex: number } }
   | {
       type: "stage-pointer-move";
       payload: { point: Vector2d; dragging: boolean };
@@ -66,6 +69,30 @@ function applyModeEvent(
   event: EditModeEvent
 ): void {
   draft.editMode = transitionEditMode(draft.editMode, event);
+}
+
+// 選択中トラックへ areaId を末尾追加する。重複や不整合は無視する。
+function appendAreaToSelectedTrackById(
+  draft: Draft<EditorState>,
+  areaId: string
+): void {
+  if (!draft.selectedTrack || !draft.areas.has(areaId)) {
+    return;
+  }
+
+  const track = draft.nttracks.get(draft.selectedTrack);
+  if (!track) {
+    return;
+  }
+
+  if (track.areas.some((entry) => entry.areaName === areaId)) {
+    return;
+  }
+
+  draft.nttracks.set(
+    draft.selectedTrack,
+    createTrackWithAreas(track.areas.concat(new AreaCollection(areaId)))
+  );
 }
 
 // 現在の選択が有効な場合のみ Area を返す。
@@ -204,6 +231,24 @@ function applyStagePrimaryDown(
   point: Vector2d,
   shiftKey: boolean
 ): void {
+  if (
+    draft.editMode === EditMode.EditTrack &&
+    draft.trackChainSelectEnabled &&
+    draft.selectedTrack
+  ) {
+    const hitArea = hitTestArea(draft.areas, draft.vertexes, point);
+    if (hitArea) {
+      draft.selectedArea = hitArea;
+      appendAreaToSelectedTrackById(draft, hitArea);
+      return;
+    }
+
+    if (draft.nearestVertex === undefined) {
+      draft.selectedArea = undefined;
+    }
+    return;
+  }
+
   const selectedArea = getSelectedArea(draft);
   const result = resolveStagePrimaryDown({
     mode: draft.editMode,
@@ -290,6 +335,8 @@ export function editorReducer(state: EditorState, action: EditorAction): EditorS
       draft.nearestVertex = undefined;
       draft.selectedArea = undefined;
       draft.selectedTrack = undefined;
+      draft.trackChainSelectEnabled = false;
+      draft.previewAreaId = undefined;
       draft.editMode = EditMode.EditArea;
       return;
     }
@@ -304,6 +351,7 @@ export function editorReducer(state: EditorState, action: EditorAction): EditorS
       const areaId = action.payload.areaId;
       draft.selectedArea =
         areaId === undefined || draft.areas.has(areaId) ? areaId : draft.selectedArea;
+      draft.previewAreaId = undefined;
       return;
     }
 
@@ -313,11 +361,34 @@ export function editorReducer(state: EditorState, action: EditorAction): EditorS
         trackId === undefined || draft.nttracks.has(trackId)
           ? trackId
           : draft.selectedTrack;
+      if (!draft.selectedTrack) {
+        draft.trackChainSelectEnabled = false;
+      }
+      return;
+    }
+
+    if (action.type === "set-track-chain-select-enabled") {
+      draft.trackChainSelectEnabled =
+        action.payload.enabled &&
+        draft.editMode === EditMode.EditTrack &&
+        draft.selectedTrack !== undefined;
+      return;
+    }
+
+    if (action.type === "set-preview-area") {
+      draft.previewAreaId = action.payload.areaId;
       return;
     }
 
     if (action.type === "send-mode-event") {
       applyModeEvent(draft, action.payload.event);
+      draft.previewAreaId = undefined;
+      if (
+        action.payload.event === "OPEN_TRACK_EDITOR" ||
+        draft.editMode !== EditMode.EditTrack
+      ) {
+        draft.trackChainSelectEnabled = false;
+      }
       return;
     }
 
@@ -394,6 +465,9 @@ export function editorReducer(state: EditorState, action: EditorAction): EditorS
       removeAreaFromUpareaLinks(draft.areas, areaId);
       removeAreaFromTracks(draft.nttracks, areaId);
       draft.selectedArea = undefined;
+      if (draft.previewAreaId === areaId) {
+        draft.previewAreaId = undefined;
+      }
       return;
     }
 
@@ -486,26 +560,47 @@ export function editorReducer(state: EditorState, action: EditorAction): EditorS
       }
       draft.nttracks.delete(draft.selectedTrack);
       draft.selectedTrack = undefined;
+      draft.trackChainSelectEnabled = false;
       return;
     }
 
     if (action.type === "add-selected-area-to-track") {
-      if (!draft.selectedTrack || !draft.selectedArea) {
+      if (!draft.selectedArea) {
         return;
       }
+      appendAreaToSelectedTrackById(draft, draft.selectedArea);
+      return;
+    }
+
+    if (action.type === "append-area-to-selected-track-by-id") {
+      const areaId = action.payload.areaId;
+      if (!areaId) {
+        return;
+      }
+      appendAreaToSelectedTrackById(draft, areaId);
+      return;
+    }
+
+    if (action.type === "move-track-area") {
+      if (!draft.selectedTrack) {
+        return;
+      }
+
       const track = draft.nttracks.get(draft.selectedTrack);
       if (!track) {
         return;
       }
-      if (track.areas.some((entry) => entry.areaName === draft.selectedArea)) {
+
+      const nextAreas = moveTrackAreaEntry(
+        track.areas,
+        action.payload.fromIndex,
+        action.payload.toIndex
+      );
+      if (nextAreas === track.areas) {
         return;
       }
-      draft.nttracks.set(
-        draft.selectedTrack,
-        createTrackWithAreas(
-          track.areas.concat(new AreaCollection(draft.selectedArea, TrackFlag.none))
-        )
-      );
+
+      draft.nttracks.set(draft.selectedTrack, createTrackWithAreas(nextAreas));
       return;
     }
 
@@ -514,28 +609,6 @@ export function editorReducer(state: EditorState, action: EditorAction): EditorS
         return;
       }
       draft.nttracks.set(draft.selectedTrack, createEmptyTrack());
-      return;
-    }
-
-    if (action.type === "cycle-track-flag") {
-      if (!draft.selectedTrack) {
-        return;
-      }
-      const track = draft.nttracks.get(draft.selectedTrack);
-      if (!track) {
-        return;
-      }
-      draft.nttracks.set(
-        draft.selectedTrack,
-        createTrackWithAreas(
-          track.areas.map((entry, index) => {
-            if (index !== action.payload.index) {
-              return entry;
-            }
-            return new AreaCollection(entry.areaName, cycleTrackFlag(entry.trackFlag));
-          })
-        )
-      );
       return;
     }
 

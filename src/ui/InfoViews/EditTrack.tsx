@@ -6,15 +6,23 @@ import {
   Intent,
   MenuItem,
   OL,
+  Switch,
 } from "@blueprintjs/core";
-import { Add, Clean, Trash } from "@blueprintjs/icons";
+import { Clean, Trash } from "@blueprintjs/icons";
 import { ItemPredicate, ItemRenderer, Select } from "@blueprintjs/select";
+import {
+  ChangeEvent,
+  MouseEventHandler,
+} from "react";
 import { useEditorCommands, useEditorSelector } from "../../store/EditorStore";
 
 function EditTrack() {
   const commands = useEditorCommands();
   const selectedTrack = useEditorSelector((state) => state.selectedTrack);
   const tracks = useEditorSelector((state) => state.nttracks);
+  const trackChainSelectEnabled = useEditorSelector(
+    (state) => state.trackChainSelectEnabled
+  );
 
   const itemRender: ItemRenderer<string> = (
     item,
@@ -44,6 +52,13 @@ function EditTrack() {
     ? tracks.get(selectedTrack)?.areas ?? []
     : [];
 
+  const moveRow = (fromIndex: number, toIndex: number) => {
+    if (toIndex < 0 || toIndex >= selectedTrackAreas.length) {
+      return;
+    }
+    commands.moveTrackArea(fromIndex, toIndex);
+  };
+
   return (
     <div>
       <ControlGroup>
@@ -52,7 +67,7 @@ function EditTrack() {
           createNewItemRenderer={(
             query: string,
             active: boolean,
-            handleClick: React.MouseEventHandler<HTMLElement>
+            handleClick: MouseEventHandler<HTMLElement>
           ) => (
             <MenuItem
               icon="add"
@@ -93,11 +108,23 @@ function EditTrack() {
         )}
       </ControlGroup>
       <Divider />
+      <Switch
+        checked={trackChainSelectEnabled}
+        disabled={!selectedTrack}
+        label="Area Chain Select"
+        onChange={(event: ChangeEvent<HTMLInputElement>) => {
+          commands.setTrackChainSelectEnabled(event.target.checked);
+        }}
+      />
+      <div style={{ fontSize: "12px", marginTop: "4px", marginBottom: "8px", opacity: 0.8 }}>
+        {selectedTrack
+          ? trackChainSelectEnabled
+            ? "Chain Select ON: click an area on stage to append it."
+            : "Chain Select OFF: stage click only selects an area."
+          : "Select or create a track to enable chain selection."}
+      </div>
       {selectedTrack && (
         <ButtonGroup>
-          <Button onClick={commands.addSelectedAreaToTrack} icon={<Add />}>
-            Add
-          </Button>
           <Button
             onClick={commands.clearSelectedTrack}
             icon={<Clean />}
@@ -110,26 +137,37 @@ function EditTrack() {
       <OL>
         {selectedTrackAreas.map((entry, index) => (
           <li key={`${entry.areaName}-${index}`}>
-            <ControlGroup>
-              <b>{entry.areaName}</b>
-              <Divider />
-              <ButtonGroup>
-                <Button
-                  onClick={() => {
-                    commands.cycleTrackFlag(index);
-                  }}
-                >
-                  {entry.trackFlag}
-                </Button>
-                <Button
-                  onClick={() => {
-                    commands.removeTrackArea(index);
-                  }}
-                  icon={<Trash />}
-                  intent={Intent.DANGER}
-                />
-              </ButtonGroup>
-            </ControlGroup>
+              <ControlGroup>
+                <b>{entry.areaName}</b>
+                <Divider />
+                <ButtonGroup>
+                  <Button
+                    onClick={() => {
+                      moveRow(index, index - 1);
+                    }}
+                    disabled={index === 0}
+                    title="Move up"
+                  >
+                    Up
+                  </Button>
+                  <Button
+                    onClick={() => {
+                      moveRow(index, index + 1);
+                    }}
+                    disabled={index === selectedTrackAreas.length - 1}
+                    title="Move down"
+                  >
+                    Down
+                  </Button>
+                  <Button
+                    onClick={() => {
+                      commands.removeTrackArea(index);
+                    }}
+                    icon={<Trash />}
+                    intent={Intent.DANGER}
+                  />
+                </ButtonGroup>
+              </ControlGroup>
           </li>
         ))}
       </OL>

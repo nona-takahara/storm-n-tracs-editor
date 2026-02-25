@@ -6,7 +6,6 @@ import * as AxleMode from "../data/AxleMode";
 import NtracsTrack, { AreaCollection } from "../data/NtracsTrack";
 import StormTracks from "../data/StormTracks";
 import Vector2d from "../data/Vector2d";
-import { normalizeTrackFlag } from "../domain/editor/trackCommands";
 import { decodeProjectJson } from "../io/projectDecoder";
 import { encodeProject, ProjectEncodeInput } from "../io/projectEncoder";
 import { LoadedProjectData } from "../store/editorTypes";
@@ -151,11 +150,7 @@ function mapProjectBaseData(text: string): Omit<LoadedProjectData, "vehicles" | 
   for (const track of dto.tracks) {
     nttracks.set(
       track.name,
-      new NtracsTrack(
-        track.areas.map(
-          (area) => new AreaCollection(area.name, normalizeTrackFlag(area.trackFlag))
-        )
-      )
+      new NtracsTrack(track.areas.map((area) => new AreaCollection(area.name)))
     );
   }
 

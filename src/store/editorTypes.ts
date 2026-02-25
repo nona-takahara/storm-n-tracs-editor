@@ -21,6 +21,8 @@ export interface EditorState extends LoadedProjectData {
   nearestVertex: string | undefined;
   selectedArea: string | undefined;
   selectedTrack: string | undefined;
+  trackChainSelectEnabled: boolean;
+  previewAreaId: string | undefined;
   editMode: EditMode.EditMode;
 }
 
@@ -37,6 +39,8 @@ export function createInitialEditorState(): EditorState {
     nearestVertex: undefined,
     selectedArea: undefined,
     selectedTrack: undefined,
+    trackChainSelectEnabled: false,
+    previewAreaId: undefined,
     editMode: EditMode.EditArea,
   };
 }

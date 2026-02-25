@@ -1,18 +1,11 @@
-// ntracs 側トラックのエリア列を保持するモデル。
+// ntracs side track model that stores area sequence.
 class NtracsTrack {
-  constructor(public areas: AreaCollection[]) { }
+  constructor(public areas: AreaCollection[]) {}
 }
 
-// トラック内の 1 エリア参照とフラグ。
+// One area reference in a track sequence.
 export class AreaCollection {
-  constructor(public areaName: string, public trackFlag: TrackFlag) { }
-}
-
-// トラック進行方向フラグ。
-export enum TrackFlag {
-  none = "none",
-  upbound = "upbound",
-  downbound = "downbound"
+  constructor(public areaName: string) {}
 }
 
 export default NtracsTrack;

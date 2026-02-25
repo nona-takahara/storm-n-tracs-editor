@@ -10,6 +10,8 @@ interface EditorCommands {
   sendModeEvent: (event: EditModeEvent) => void;
   setSelectedArea: (areaId: string | undefined) => void;
   setSelectedTrack: (trackId: string | undefined) => void;
+  setTrackChainSelectEnabled: (enabled: boolean) => void;
+  setPreviewArea: (areaId: string | undefined) => void;
   createArea: () => void;
   insertVertexBetween: (index: number) => void;
   removeVertexFromSelectedArea: (index: number) => void;
@@ -21,9 +23,10 @@ interface EditorCommands {
   createTrack: (trackId: string) => void;
   deleteSelectedTrack: () => void;
   addSelectedAreaToTrack: () => void;
+  appendAreaToSelectedTrackById: (areaId: string) => void;
   clearSelectedTrack: () => void;
-  cycleTrackFlag: (index: number) => void;
   removeTrackArea: (index: number) => void;
+  moveTrackArea: (fromIndex: number, toIndex: number) => void;
   stagePointerMove: (point: Vector2d, dragging: boolean) => void;
   stagePrimaryDown: (point: Vector2d, shiftKey: boolean) => void;
   stageSecondaryDown: () => void;
@@ -78,6 +81,16 @@ function createEditorStore(initialState = createInitialEditorState()): EditorSto
       createDispatchAction(dispatch, { type: "set-selected-area", payload: { areaId } }),
     setSelectedTrack: (trackId) =>
       createDispatchAction(dispatch, { type: "set-selected-track", payload: { trackId } }),
+    setTrackChainSelectEnabled: (enabled) =>
+      createDispatchAction(dispatch, {
+        type: "set-track-chain-select-enabled",
+        payload: { enabled },
+      }),
+    setPreviewArea: (areaId) =>
+      createDispatchAction(dispatch, {
+        type: "set-preview-area",
+        payload: { areaId },
+      }),
     createArea: () => createDispatchAction(dispatch, { type: "create-area" }),
     insertVertexBetween: (index) =>
       createDispatchAction(dispatch, {
@@ -119,17 +132,22 @@ function createEditorStore(initialState = createInitialEditorState()): EditorSto
       createDispatchAction(dispatch, { type: "delete-selected-track" }),
     addSelectedAreaToTrack: () =>
       createDispatchAction(dispatch, { type: "add-selected-area-to-track" }),
+    appendAreaToSelectedTrackById: (areaId) =>
+      createDispatchAction(dispatch, {
+        type: "append-area-to-selected-track-by-id",
+        payload: { areaId },
+      }),
     clearSelectedTrack: () =>
       createDispatchAction(dispatch, { type: "clear-selected-track" }),
-    cycleTrackFlag: (index) =>
-      createDispatchAction(dispatch, {
-        type: "cycle-track-flag",
-        payload: { index },
-      }),
     removeTrackArea: (index) =>
       createDispatchAction(dispatch, {
         type: "remove-track-area",
         payload: { index },
+      }),
+    moveTrackArea: (fromIndex, toIndex) =>
+      createDispatchAction(dispatch, {
+        type: "move-track-area",
+        payload: { fromIndex, toIndex },
       }),
     stagePointerMove: (point, dragging) =>
       createDispatchAction(dispatch, {

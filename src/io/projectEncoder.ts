@@ -54,7 +54,6 @@ export function encodeProject(input: ProjectEncodeInput) {
       name,
       areas: track.areas.map((area) => ({
         name: area.areaName,
-        trackFlag: area.trackFlag,
       })),
     })),
     tiles: mapEntries(input.tileAssign, (offset, path) => ({

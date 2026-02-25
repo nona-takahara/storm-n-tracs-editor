@@ -16,7 +16,6 @@ export interface ProjectAreaDto {
 
 export interface ProjectTrackAreaDto {
   name: string;
-  trackFlag: string;
 }
 
 export interface ProjectTrackDto {
@@ -115,7 +114,6 @@ export function decodeProjectJson(value: unknown): ProjectDto {
         .filter((area): area is Record<string, unknown> => area !== undefined)
         .map((area) => ({
           name: asString(area.name),
-          trackFlag: asString(area.trackFlag, "none"),
         }))
         .filter((area) => area.name.length > 0);
 

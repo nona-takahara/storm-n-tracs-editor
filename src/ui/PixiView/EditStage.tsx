@@ -36,6 +36,7 @@ function EditStage() {
   const nearestVertex = useEditorSelector((state) => state.nearestVertex);
   const selectedArea = useEditorSelector((state) => state.selectedArea);
   const selectedTrack = useEditorSelector((state) => state.selectedTrack);
+  const previewAreaId = useEditorSelector((state) => state.previewAreaId);
 
   const [width, height] = useWindowSize();
   const [leftPos, setLeftPos] = useState(-1500);
@@ -139,6 +140,7 @@ function EditStage() {
           nearestIndex={nearestVertex}
           selectedArea={selectedArea}
           selectedTrack={selectedTrack}
+          previewAreaId={previewAreaId}
         />
         {nearestVertexPosition && (
           <Text
