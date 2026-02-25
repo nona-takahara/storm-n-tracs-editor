@@ -1,9 +1,9 @@
 import React from "react";
 import { Button, Divider, Navbar, Tab, TabId, Tabs } from "@blueprintjs/core";
 import { FloppyDisk, Flows, FolderOpen, PolygonFilter } from "@blueprintjs/icons";
-import { saveProject, loadProject } from "../services/projectService";
-import { useEditorCommands, useEditorSelector } from "../store/EditorStore";
+import { loadProject, saveProject } from "../services/projectService";
 import { APP_VERSION } from "../appVersion";
+import { useEditorCommands, useEditorSelector } from "../store/EditorStore";
 
 function Nav() {
   const commands = useEditorCommands();
@@ -12,6 +12,8 @@ function Nav() {
   const addonList = useEditorSelector((state) => state.addonList);
   const tileAssign = useEditorSelector((state) => state.tileAssign);
   const nttracks = useEditorSelector((state) => state.nttracks);
+  const vehicles = useEditorSelector((state) => state.vehicles);
+  const swtracks = useEditorSelector((state) => state.swtracks);
 
   const handleLoad = () => {
     loadProject()
@@ -30,9 +32,21 @@ function Nav() {
       addons: addonList,
       tileAssign,
       nttracks,
-    }).catch((error: unknown) => {
-      console.error(error);
-    });
+    })
+      .then((cleaned) => {
+        commands.hydrateProject({
+          vertexes: cleaned.vertexes,
+          areas: cleaned.areas,
+          tileAssign: cleaned.tileAssign,
+          addonList: cleaned.addons,
+          nttracks: cleaned.nttracks,
+          vehicles,
+          swtracks,
+        });
+      })
+      .catch((error: unknown) => {
+        console.error(error);
+      });
   };
 
   const changeTab = (tab: TabId) => {
@@ -51,26 +65,18 @@ function Nav() {
         backdropFilter: "blur(8px)",
       }}
     >
-        <Navbar.Group>
-          <Navbar.Heading>N-TRACS Editor <small>v{APP_VERSION}</small></Navbar.Heading>
-          <Navbar.Divider />
-          <Button
-            icon={<FolderOpen />}
-            className="bp5-minimal"
-            text="Load"
-            onClick={handleLoad}
-          />
-          <Button
-            icon={<FloppyDisk />}
-            className="bp5-minimal"
-            text="Save"
-            onClick={handleSave}
-          />
-          <Navbar.Divider />
-          <Divider />
+      <Navbar.Group>
+        <Navbar.Heading>
+          N-TRACS Editor <small>v{APP_VERSION}</small>
+        </Navbar.Heading>
+        <Navbar.Divider />
+        <Button icon={<FolderOpen />} className="bp5-minimal" text="Load" onClick={handleLoad} />
+        <Button icon={<FloppyDisk />} className="bp5-minimal" text="Save" onClick={handleSave} />
+        <Navbar.Divider />
+        <Divider />
         <Tabs onChange={changeTab}>
           <Tab id="vaedit" title="Vertecies / Area" icon={<PolygonFilter />} />
-          <Tab id="trackedit" title="Track Join" icon={<Flows />}/>
+          <Tab id="trackedit" title="Track Join" icon={<Flows />} />
         </Tabs>
       </Navbar.Group>
     </Navbar>

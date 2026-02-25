@@ -7,7 +7,7 @@ import NtracsTrack, { AreaCollection } from "../data/NtracsTrack";
 import StormTracks from "../data/StormTracks";
 import Vector2d from "../data/Vector2d";
 import { decodeProjectJson } from "../io/projectDecoder";
-import { encodeProject, ProjectEncodeInput } from "../io/projectEncoder";
+import { cleanupProjectForSave, encodeProject, ProjectEncodeInput } from "../io/projectEncoder";
 import { LoadedProjectData } from "../store/editorTypes";
 
 // XML パース時の共通オプション。
@@ -265,7 +265,9 @@ export async function loadProject(): Promise<LoadedProjectData> {
 }
 
 // エディタ状態を project.json 形式へ変換して保存する。
-export async function saveProject(data: ProjectEncodeInput): Promise<void> {
-  const saveValue = JSON.stringify(encodeProject(data));
+export async function saveProject(data: ProjectEncodeInput): Promise<ProjectEncodeInput> {
+  const cleaned = cleanupProjectForSave(data);
+  const saveValue = JSON.stringify(encodeProject(cleaned));
   await saveFileCommand(saveValue);
+  return cleaned;
 }
