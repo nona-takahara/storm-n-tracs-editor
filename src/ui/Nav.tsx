@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Button, Divider, Navbar, Tab, TabId, Tabs } from "@blueprintjs/core";
 import { Cog, FloppyDisk, Flows, FolderOpen, PolygonFilter } from "@blueprintjs/icons";
 import { APP_VERSION } from "../appVersion";
-import { loadProject, saveProject } from "../services/projectService";
+import { loadProject, renumberAreaIds, saveProject } from "../services/projectService";
 import { useEditorCommands, useEditorSelector } from "../store/EditorStore";
 import ProjectSettingsDialog from "./ProjectSettingsDialog";
 import SettingsDialog from "./SettingsDialog";
@@ -57,6 +57,28 @@ function Nav() {
       });
   };
 
+  const handleRenumberAreaIds = () => {
+    const renumbered = renumberAreaIds({
+      vertexes,
+      areas,
+      addons: addonList,
+      tileAssign,
+      nttracks,
+      origin,
+    });
+
+    commands.hydrateProject({
+      vertexes: renumbered.vertexes,
+      areas: renumbered.areas,
+      tileAssign: renumbered.tileAssign,
+      addonList: renumbered.addons,
+      origin: renumbered.origin,
+      nttracks: renumbered.nttracks,
+      vehicles,
+      swtracks,
+    });
+  };
+
   const changeTab = (tab: TabId) => {
     if (tab.toString() === "vaedit") {
       commands.sendModeEvent("OPEN_AREA_EDITOR");
@@ -106,6 +128,13 @@ function Nav() {
             onClick={() => {
               setProjectSettingsOpen(true);
             }}
+          />
+          <Navbar.Divider />
+          <Divider />
+          <Button
+            className="bp5-minimal"
+            text="Renumber Area IDs"
+            onClick={handleRenumberAreaIds}
           />
           <Navbar.Divider />
           <Divider />
