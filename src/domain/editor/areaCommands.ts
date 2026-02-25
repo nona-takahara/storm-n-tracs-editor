@@ -78,17 +78,17 @@ export function createAreaWithLeftVertex(
 // 既存名と衝突しない Area 名を採番する。
 export function nextAreaName(areas: Map<string, AreaPolygon>): string {
   let index = areas.size;
-  while (areas.has(`Area_${index}`)) {
+  while (areas.has(String(index))) {
     index += 1;
   }
-  return `Area_${index}`;
+  return String(index);
 }
 
 // 既存名と衝突しない頂点名を採番する。
 export function nextVertexName(vertexes: Map<string, Vector2d>): string {
   let index = vertexes.size;
-  while (vertexes.has(`v${index}`)) {
+  while (vertexes.has(String(index))) {
     index += 1;
   }
-  return `v${index}`;
+  return String(index);
 }

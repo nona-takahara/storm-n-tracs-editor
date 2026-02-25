@@ -1,33 +1,30 @@
-import NtracsTrack, { AreaCollection, TrackFlag } from "../../data/NtracsTrack";
+import NtracsTrack, { AreaCollection } from "../../data/NtracsTrack";
 
-// 文字列入力を TrackFlag に正規化する。
-export function normalizeTrackFlag(flag: string): TrackFlag {
-  if (flag === TrackFlag.upbound) {
-    return TrackFlag.upbound;
-  }
-  if (flag === TrackFlag.downbound) {
-    return TrackFlag.downbound;
-  }
-  return TrackFlag.none;
-}
-
-// 空の NtracsTrack を作成する。
 export function createEmptyTrack(): NtracsTrack {
   return new NtracsTrack([]);
 }
 
-// 指定 AreaCollection 配列で NtracsTrack を再構築する。
 export function createTrackWithAreas(areas: AreaCollection[]): NtracsTrack {
   return new NtracsTrack(areas);
 }
 
-// フラグを none -> upbound -> downbound -> none の順で循環させる。
-export function cycleTrackFlag(flag: TrackFlag): TrackFlag {
-  if (flag === TrackFlag.none) {
-    return TrackFlag.upbound;
+export function moveTrackAreaEntry(
+  areas: AreaCollection[],
+  fromIndex: number,
+  toIndex: number
+): AreaCollection[] {
+  if (
+    fromIndex < 0 ||
+    toIndex < 0 ||
+    fromIndex >= areas.length ||
+    toIndex >= areas.length ||
+    fromIndex === toIndex
+  ) {
+    return areas;
   }
-  if (flag === TrackFlag.upbound) {
-    return TrackFlag.downbound;
-  }
-  return TrackFlag.none;
+
+  const next = [...areas];
+  const [target] = next.splice(fromIndex, 1);
+  next.splice(toIndex, 0, target);
+  return next;
 }

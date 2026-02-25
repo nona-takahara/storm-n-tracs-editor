@@ -1,4 +1,4 @@
-// project.json のデコードで利用する DTO 定義群。
+// DTO definitions used when decoding project.json.
 export interface ProjectVertexDto {
   name: string;
   x: number;
@@ -16,7 +16,6 @@ export interface ProjectAreaDto {
 
 export interface ProjectTrackAreaDto {
   name: string;
-  trackFlag: string;
 }
 
 export interface ProjectTrackDto {
@@ -30,15 +29,20 @@ export interface ProjectTileDto {
   zOffset: number;
 }
 
+export interface ProjectOriginDto {
+  x: number;
+  z: number;
+}
+
 export interface ProjectDto {
   vertexes: ProjectVertexDto[];
   areas: ProjectAreaDto[];
   addons: string[];
   tracks: ProjectTrackDto[];
   tiles: ProjectTileDto[];
+  origin: ProjectOriginDto;
 }
 
-// object かつ非配列の場合のみ Record として扱う。
 function asRecord(value: unknown): Record<string, unknown> | undefined {
   if (value && typeof value === "object" && !Array.isArray(value)) {
     return value as Record<string, unknown>;
@@ -46,17 +50,14 @@ function asRecord(value: unknown): Record<string, unknown> | undefined {
   return undefined;
 }
 
-// 配列でなければ空配列へフォールバックする。
 function asArray(value: unknown): unknown[] {
   return Array.isArray(value) ? value : [];
 }
 
-// 文字列でなければ fallback を返す。
 function asString(value: unknown, fallback = ""): string {
   return typeof value === "string" ? value : fallback;
 }
 
-// number もしくは数値文字列を number へ変換し、失敗時は fallback を返す。
 function asNumber(value: unknown, fallback = 0): number {
   if (typeof value === "number" && Number.isFinite(value)) {
     return value;
@@ -70,14 +71,12 @@ function asNumber(value: unknown, fallback = 0): number {
   return fallback;
 }
 
-// 配列要素を文字列へ寄せて空文字を除外する。
 function asStringArray(value: unknown): string[] {
   return asArray(value)
     .map((item) => asString(item))
     .filter((item) => item.length > 0);
 }
 
-// 不正値を吸収しながら project.json 相当の構造へ正規化する。
 export function decodeProjectJson(value: unknown): ProjectDto {
   const root = asRecord(value) ?? {};
 
@@ -115,7 +114,6 @@ export function decodeProjectJson(value: unknown): ProjectDto {
         .filter((area): area is Record<string, unknown> => area !== undefined)
         .map((area) => ({
           name: asString(area.name),
-          trackFlag: asString(area.trackFlag, "none"),
         }))
         .filter((area) => area.name.length > 0);
 
@@ -136,11 +134,19 @@ export function decodeProjectJson(value: unknown): ProjectDto {
     }))
     .filter((item) => item.path.length > 0);
 
+  const origin = asRecord(root.origin);
+  const originX = asNumber(root.origin_x ?? root.originX ?? origin?.x, 0);
+  const originZ = asNumber(root.origin_z ?? root.originZ ?? origin?.z, 0);
+
   return {
     vertexes,
     areas,
     addons,
     tracks,
     tiles,
+    origin: {
+      x: originX,
+      z: originZ,
+    },
   };
 }
